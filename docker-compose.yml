@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 1. Our Cloud Storage Container
+  minio:
+    image: minio/minio
+    container_name: cloudshare-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: cloudshare_admin
+      MINIO_ROOT_PASSWORD: cloudshare_password
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  # 2. Our Spring Boot Backend Container
+  backend:
+    build: .
+    container_name: cloudshare-api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      # Since they are now in the same Docker Compose network,
+      # the backend can talk directly to the container named "minio"
+      - MINIO_ENDPOINT=http://minio:9000
+    depends_on:
+      - minio
+
+# This ensures your MinIO files survive even if the container is restarted
+volumes:
+  minio_data:
