@@ -156,6 +156,27 @@ public class TriageController {
     }
 
     // ──────────────────────────────────────────────
+    //  POST /triage/{sessionId}/force-complete — Soft Gate override
+    // ──────────────────────────────────────────────
+
+    @PostMapping("/{sessionId}/force-complete")
+    public ResponseEntity<Map<String, Object>> forceCompleteSession(@PathVariable UUID sessionId) {
+        String clerkUserId = getAuthenticatedUserId();
+        try {
+            triageService.forceCompleteSession(sessionId, clerkUserId);
+            return ResponseEntity.ok(Map.of(
+                    "sessionId", sessionId,
+                    "status", "READY_FOR_DRAFTING",
+                    "message", "Session marked as complete at user's request. You may now generate the brief."
+            ));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (SecurityException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+        }
+    }
+
+    // ──────────────────────────────────────────────
     //  PRIVATE HELPERS
     // ──────────────────────────────────────────────
 

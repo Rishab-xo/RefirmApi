@@ -19,7 +19,7 @@ public record GenerateBriefRequest(
         String categoryLabel,
 
         /** Structured facts gathered during intake, keyed by fact ID (e.g., "nature_of_dispute" -> "Illegal lockout"). */
-        Map<String, String> gatheredFacts,
+        Map<String, Object> gatheredFacts,
 
         /** Optional: Triage session ID for audit trail and session-based loading. */
         UUID sessionId,

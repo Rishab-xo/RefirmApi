@@ -62,12 +62,30 @@ public class BriefGenerationService {
             }
         }
 
-        final String statutesForPrompt = retrievedLaws;
+        Map<String, String> factsMap = gatheredFacts != null ? gatheredFacts : Map.of();
+        String retrievedContext = (retrievedLaws != null && !retrievedLaws.isBlank()) ? retrievedLaws : "EMPTY";
 
-        // 3. Drafting — send structured facts + retrieved statutes to the LLM
+        // 3. Drafting — bulletproof XML prompt with strict grounding and safe fallback
+        String systemPrompt = """
+                You are a strict, precise Indian legal advocate drafting a petition. You MUST obey the instructions below unconditionally.
+
+                <EXTRACTED_FACTS>
+                %s
+                </EXTRACTED_FACTS>
+
+                <RETRIEVED_STATUTES>
+                %s
+                </RETRIEVED_STATUTES>
+
+                <STRICT_INSTRUCTIONS>
+                1. RELIEF / PRAYER: You MUST pull the exact financial figures and addresses from the <EXTRACTED_FACTS>. DO NOT invent, assume, or alter any amounts. If the facts do not contain specific amounts, use standard placeholder brackets like [INSERT AMOUNT].
+                2. STATUTORY CITATIONS: You are strictly forbidden from citing ANY Section number that does not explicitly appear inside the <RETRIEVED_STATUTES> block. 
+                3. FALLBACK: If the <RETRIEVED_STATUTES> block is completely empty or irrelevant, you must formulate the legal grounds based on general common law principles and DO NOT invent or cite any specific Section numbers.
+                </STRICT_INSTRUCTIONS>
+                """.formatted(factsMap.toString(), retrievedContext);
+
         String draft = chatClient.prompt()
-                .system(sys -> sys.text(systemPromptTemplate)
-                        .param("statutes", statutesForPrompt))
+                .system(systemPrompt)
                 .user(structuredFactsText)
                 .call()
                 .content();
@@ -96,16 +114,44 @@ public class BriefGenerationService {
             }
         }
 
-        final String statutesForPrompt = retrievedLaws;
+        String retrievedContext = (retrievedLaws != null && !retrievedLaws.isBlank()) ? retrievedLaws : "EMPTY";
+        String factsString = (sessionFacts != null && !sessionFacts.isBlank()) ? sessionFacts : "No facts provided";
+
+        String systemPrompt = """
+                You are a strict, precise Indian legal advocate drafting a petition. You MUST obey the instructions below unconditionally.
+
+                <EXTRACTED_FACTS>
+                %s
+                </EXTRACTED_FACTS>
+
+                <RETRIEVED_STATUTES>
+                %s
+                </RETRIEVED_STATUTES>
+
+                <STRICT_INSTRUCTIONS>
+                1. RELIEF / PRAYER: You MUST pull the exact financial figures and addresses from the <EXTRACTED_FACTS>. DO NOT invent, assume, or alter any amounts. If the facts do not contain specific amounts, use standard placeholder brackets like [INSERT AMOUNT].
+                2. STATUTORY CITATIONS: You are strictly forbidden from citing ANY Section number that does not explicitly appear inside the <RETRIEVED_STATUTES> block. 
+                3. FALLBACK: If the <RETRIEVED_STATUTES> block is completely empty or irrelevant, you must formulate the legal grounds based on general common law principles and DO NOT invent or cite any specific Section numbers.
+                </STRICT_INSTRUCTIONS>
+                """.formatted(factsString, retrievedContext);
 
         String draft = chatClient.prompt()
-                .system(sys -> sys.text(systemPromptTemplate)
-                        .param("statutes", statutesForPrompt))
+                .system(systemPrompt)
                 .user(sessionFacts != null ? sessionFacts : "")
                 .call()
                 .content();
 
         return new GenerateBriefResponse(draft, retrievedLaws, hasStatutes);
+    }
+
+    private String buildPromptWithStatutes(String statutes) {
+        try {
+            String template = systemPromptTemplate.getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            return template.replace("{statutes}", statutes != null ? statutes : "");
+        } catch (java.io.IOException e) {
+            log.error("Failed to read brief-system.st", e);
+            throw new IllegalStateException("Failed to read brief system prompt resource", e);
+        }
     }
 
     /**

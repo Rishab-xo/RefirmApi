@@ -22,20 +22,30 @@ public class TriageSession implements Persistable<UUID> {
     @Column(name = "session_id")
     private UUID sessionId;
 
+    @Column(name = "user_id", nullable = false)
     private String clerkUserId;
-    private String status;
-    private Instant createdAt;
-    private boolean isComplete;
+
+    @Column(name = "status")
+    private String status = "IN_PROGRESS";
+
+    @Column(name = "created_at")
+    private Instant createdAt = Instant.now();
+
+    @Column(name = "is_complete")
+    private boolean isComplete = false;
+
+    @Column(name = "is_emergency")
+    private boolean isEmergency = false;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "issue_category")
     private LegalCategory issueCategory;
 
-    @Column(columnDefinition = "TEXT")
-    // If using JSON mapping, keep your existing annotations here
+    @Column(name = "gathered_facts", columnDefinition = "TEXT")
     private String gatheredFacts;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(name = "chat_history", columnDefinition = "jsonb")
     private List<ConversationTurn> chatHistory = new ArrayList<>();
 
     // ─── PERSISTABLE CONFIGURATION FOR PRE-ASSIGNED UUIDS ───
