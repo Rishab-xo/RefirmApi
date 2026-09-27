@@ -3,6 +3,7 @@ package com.app.refirm.core.controller;
 import com.app.refirm.core.dto.GenerateBriefRequest;
 import com.app.refirm.core.dto.GenerateBriefResponse;
 import com.app.refirm.core.service.BriefGenerationService;
+import com.app.refirm.triage.entities.LegalCategory;
 import com.app.refirm.triage.entities.TriageSession;
 import com.app.refirm.triage.repo.TriageSessionRepo;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,15 +36,22 @@ public class DraftController {
      */
     @PostMapping("/generate")
     public ResponseEntity<GenerateBriefResponse> generateBriefFromRequest(@RequestBody GenerateBriefRequest request) {
-        String legalDomain = (request.domain() != null && !request.domain().isBlank())
+
+        // 1. Get the raw string from the frontend payload
+        String rawDomain = (request.domain() != null && !request.domain().isBlank())
                 ? request.domain()
                 : "CIVIL_PROPERTY";
 
+        // 2. THE FIX: Safely parse the frontend string into your Enum, then extract the correct DB Domain
+        String legalDomain = LegalCategory.fromStringSafe(rawDomain).getDbDomain();
+
         String categoryLabel = (request.categoryLabel() != null && !request.categoryLabel().isBlank())
                 ? request.categoryLabel()
-                : legalDomain;
+                : LegalCategory.fromStringSafe(rawDomain).getDisplayLabel();
 
         Map<String, String> factsMap = new java.util.HashMap<>();
+
+        // Read facts from the request payload initially
         if (request.gatheredFacts() != null) {
             for (Map.Entry<String, ?> entry : request.gatheredFacts().entrySet()) {
                 Object rawVal = entry.getValue();
@@ -56,21 +64,26 @@ public class DraftController {
             }
         }
 
-        // If factsMap was not supplied in the request body, but sessionId was given, load from session
-        if (factsMap.isEmpty() && request.sessionId() != null) {
-            TriageSession session = sessionRepo.findById(request.sessionId())
-                    .orElse(null);
+        // SESSION-FIRST LOGIC: If a sessionId is passed, it completely overrides the frontend payload
+        if (request.sessionId() != null) {
+            TriageSession session = sessionRepo.findById(request.sessionId()).orElse(null);
 
             if (session != null) {
+                // 1. Force the domain to the one securely stored in the DB
                 if (session.getIssueCategory() != null) {
-                    legalDomain = session.getIssueCategory().name();
+                    legalDomain = session.getIssueCategory().getDbDomain();
                     categoryLabel = session.getIssueCategory().getDisplayLabel();
                 }
+
+                // 2. Force the facts to the ones securely stored in the DB
                 try {
                     String rawFacts = session.getGatheredFacts();
                     if (rawFacts != null && !rawFacts.isBlank()) {
                         Map<String, Object> rawMap = objectMapper.readValue(rawFacts, new TypeReference<Map<String, Object>>() {});
                         if (rawMap != null) {
+                            // Clear any unverified facts sent by the frontend
+                            factsMap.clear();
+
                             for (Map.Entry<String, Object> entry : rawMap.entrySet()) {
                                 Object rawVal = entry.getValue();
                                 if (rawVal != null) {
@@ -83,6 +96,7 @@ public class DraftController {
                         }
                     }
                 } catch (Exception ignored) {
+                    // Ignored intentionally, will fall back to frontend facts if DB facts fail to parse
                 }
             }
         }
@@ -124,8 +138,8 @@ public class DraftController {
             );
         }
 
-        // 3. Extract metadata labels
-        String legalDomain = session.getIssueCategory().name();
+        // 3. Extract metadata labels using DB Domain mapping
+        String legalDomain = session.getIssueCategory().getDbDomain();
         String categoryLabel = session.getIssueCategory().getDisplayLabel();
 
         // 4. Deserialize JSON facts string using TypeReference<Map<String, Object>> armor

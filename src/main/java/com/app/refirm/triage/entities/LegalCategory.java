@@ -14,26 +14,32 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum LegalCategory {
 
-    CIVIL_PROPERTY("Civil & Property Law"),
-    CRIMINAL_LAW("Criminal Law"),
-    FAMILY_MATRIMONIAL("Family & Matrimonial Law"),
-    CORPORATE_COMMERCIAL("Corporate & Commercial Law"),
-    LABOUR_EMPLOYMENT("Labour & Employment Law"),
-    CONSUMER_GRIEVANCE("Consumer Grievance"),
-    TAX_CUSTOMS("Tax & Customs"),
-    INTELLECTUAL_PROPERTY("Intellectual Property"),
-    CONSTITUTIONAL_WRIT("Constitutional & Writ Petitions"),
-    UNKNOWN("Unknown — Pending Classification"),
-    NEEDS_HUMAN_TRIAGE("Needs Human Triage");
+    CIVIL_PROPERTY("Civil & Property Law", "CIVIL_PROPERTY"),
+    CRIMINAL_LAW("Criminal Law", "CRIMINAL_LAW"),
+    FAMILY_MATRIMONIAL("Family & Matrimonial Law", "FAMILY_MATRIMONIAL"),
+    CORPORATE_COMMERCIAL("Corporate & Commercial Law", "CORPORATE_COMMERCIAL"),
+    LABOUR_EMPLOYMENT("Labour & Employment Law", "LABOUR_EMPLOYMENT"),
+    CONSUMER_GRIEVANCE("Consumer Grievance", "CONSUMER_GRIEVANCE"),
+    TAX_CUSTOMS("Tax & Customs", "TAXATION"), // Mapped to match database metadata
+    INTELLECTUAL_PROPERTY("Intellectual Property", "INTELLECTUAL_PROPERTY"),
+    CONSTITUTIONAL_WRIT("Constitutional & Writ Petitions", "CONSTITUTIONAL_WRIT"),
+    UNKNOWN("Unknown — Pending Classification", "UNKNOWN"),
+    NEEDS_HUMAN_TRIAGE("Needs Human Triage", "NEEDS_HUMAN_TRIAGE");
 
     private final String displayLabel;
+    private final String dbDomain;
 
-    LegalCategory(String displayLabel) {
+    LegalCategory(String displayLabel, String dbDomain) {
         this.displayLabel = displayLabel;
+        this.dbDomain = dbDomain;
     }
 
     public String getDisplayLabel() {
         return displayLabel;
+    }
+
+    public String getDbDomain() {
+        return dbDomain;
     }
 
     @JsonValue

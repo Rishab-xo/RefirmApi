@@ -23,28 +23,28 @@ public class LegalRetrievalService {
     }
 
     public String retrieveRelevantStatutes(String caseFacts, String legalDomain) {
-        // Resolve legal domain to canonical enum name (e.g. "Civil Property" -> "CIVIL_PROPERTY")
+
+        // ARCHITECTURAL FIX: Rely exclusively on the centralized LegalCategory enum for sanitization.
+        // fromStringSafe() normalizes any dirty input (frontend or DB).
+        // getDbDomain() guarantees perfect alignment with Neon PgVector metadata tags.
         LegalCategory resolvedCategory = LegalCategory.fromStringSafe(legalDomain);
-        String targetDomain = (resolvedCategory != LegalCategory.NEEDS_HUMAN_TRIAGE && resolvedCategory != LegalCategory.UNKNOWN)
-                ? resolvedCategory.name()
-                : (legalDomain != null ? legalDomain.trim().toUpperCase().replace(" ", "_") : "CIVIL_PROPERTY");
+        String targetDomain = resolvedCategory.getDbDomain();
 
-        log.info("Executing semantic RAG query for domain: {} (resolved from: {})", targetDomain, legalDomain);
+        log.info("Executing semantic RAG query for database domain: {} (resolved from raw input: {})", targetDomain, legalDomain);
 
-        // Safe, programmatic metadata filtering prevents injection
+        // Safe, programmatic metadata filtering prevents NoSQL/Vector injection
         var filterBuilder = new FilterExpressionBuilder();
 
         SearchRequest request = SearchRequest.builder()
                 .query(caseFacts)
                 .topK(8) // Increased to ensure both Procedural and Substantive laws are captured
-//                .similarityThreshold(0.35) // Lowered to catch plain-English vs formal-legalese matches
                 .filterExpression(filterBuilder.eq("legal_domain", targetDomain).build())
                 .build();
 
         List<Document> relevantDocuments = vectorStore.similaritySearch(request);
 
         if (relevantDocuments.isEmpty()) {
-            log.warn("Threshold starvation: No relevant statutes found for domain: {}", targetDomain);
+            log.warn("Threshold starvation: No relevant statutes found for database domain: {}", targetDomain);
             // Throw a specific exception to short-circuit the BriefGenerationService
             throw new IllegalStateException("INSUFFICIENT_STATUTES");
         }
