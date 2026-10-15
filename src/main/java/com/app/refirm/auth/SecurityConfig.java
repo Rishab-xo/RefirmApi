@@ -50,8 +50,32 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/admin/**", "/triage/**", "/draft/**", "/export/**", "/ai/**").permitAll()
+                        .requestMatchers(
+                                "/error",
+                                "/health",
+                                "/api/v1.0/health",
+                                "/api/v1.0/auth/**",
+                                "/api/v1.0/webhooks/**",
+                                "/intake",
+                                "/intake/**",
+                                "/api/v1.0/intake",
+                                "/api/v1.0/intake/**",
+                                "/triage",
+                                "/triage/**",
+                                "/api/triage",
+                                "/api/triage/**",
+                                "/api/v1.0/triage",
+                                "/api/v1.0/triage/**",
+                                "/draft",
+                                "/draft/**",
+                                "/export",
+                                "/export/**",
+                                "/api/v1.0/export",
+                                "/api/v1.0/export/**",
+                                "/ai",
+                                "/ai/**",
+                                "/admin/**"
+                        ).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated() )
                 .addFilterBefore(clerkJwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -74,7 +98,7 @@ public class SecurityConfig {
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-        configuration.setAllowedOrigins(java.util.List.of("http://localhost:3000","http://localhost:5173", "https://cloud-share-project.vercel.app"));
+        configuration.setAllowedOrigins(java.util.List.of("http://localhost:3000","http://localhost:5173","http://localhost:5174", "https://cloud-share-project.vercel.app"));
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.List.of("*"));
         configuration.setAllowCredentials(true);

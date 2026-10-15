@@ -96,11 +96,23 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+
+		<!-- Flexmark Markdown to HTML Parser -->
+		<dependency>
+			<groupId>com.vladsch.flexmark</groupId>
+			<artifactId>flexmark-all</artifactId>
+			<version>0.64.8</version>
+		</dependency>
+
 		<!-- HTML Parser & Sanitizer -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.17.2</version>
+			<version>1.18.3</version>
 		</dependency>
 
 		<!-- PDF Generation -->

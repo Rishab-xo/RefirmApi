@@ -4,27 +4,24 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Top-Level Domain legal taxonomy for the Refirm triage pipeline.
- * <p>
- * Uses broad buckets intentionally to prevent LLM "analysis paralysis" —
- * sub-categorization happens downstream in Phase 2 (Retrieval Engine).
- * <p>
- * {@code UNKNOWN} and {@code NEEDS_HUMAN_TRIAGE} serve as deterministic
- * fallback values when the LLM cannot classify or when it fails entirely.
+ * Top-Level Domain legal taxonomy matching the 13 OKF bundle domains.
  */
 public enum LegalCategory {
 
+    BANKING("Banking & Finance Law", "BANKING"),
     CIVIL_PROPERTY("Civil & Property Law", "CIVIL_PROPERTY"),
-    CRIMINAL_LAW("Criminal Law", "CRIMINAL_LAW"),
-    FAMILY_MATRIMONIAL("Family & Matrimonial Law", "FAMILY_MATRIMONIAL"),
-    CORPORATE_COMMERCIAL("Corporate & Commercial Law", "CORPORATE_COMMERCIAL"),
-    LABOUR_EMPLOYMENT("Labour & Employment Law", "LABOUR_EMPLOYMENT"),
-    CONSUMER_GRIEVANCE("Consumer Grievance", "CONSUMER_GRIEVANCE"),
-    TAX_CUSTOMS("Tax & Customs", "TAXATION"), // Mapped to match database metadata
-    INTELLECTUAL_PROPERTY("Intellectual Property", "INTELLECTUAL_PROPERTY"),
-    CONSTITUTIONAL_WRIT("Constitutional & Writ Petitions", "CONSTITUTIONAL_WRIT"),
-    UNKNOWN("Unknown — Pending Classification", "UNKNOWN"),
-    NEEDS_HUMAN_TRIAGE("Needs Human Triage", "NEEDS_HUMAN_TRIAGE");
+    CONSTITUTIONAL("Constitutional & Writ Law", "CONSTITUTIONAL"),
+    CONSUMER("Consumer Protection & Grievance", "CONSUMER"),
+    CORPORATE("Corporate & Commercial Law", "CORPORATE"),
+    CRIMINAL("Criminal Law", "CRIMINAL"),
+    CYBER("Cyber & Information Technology Law", "CYBER"),
+    EMPLOYMENT("Labour & Employment Law", "EMPLOYMENT"),
+    ENVIRONMENTAL("Environmental Law", "ENVIRONMENTAL"),
+    FAMILY("Family & Matrimonial Law", "FAMILY"),
+    IP("Intellectual Property Law", "IP"),
+    TAXATION("Taxation & Customs", "TAXATION"),
+    TENANCY("Tenancy & Rent Control", "TENANCY"),
+    UNKNOWN("Unknown — Pending Classification", "UNKNOWN");
 
     private final String displayLabel;
     private final String dbDomain;
@@ -49,14 +46,12 @@ public enum LegalCategory {
 
     /**
      * Safely resolves a string to a {@link LegalCategory}, returning
-     * {@code NEEDS_HUMAN_TRIAGE} if the value is null, blank, or invalid.
-     * Annotated with {@code @JsonCreator} so Jackson automatically uses this
-     * tolerant resolver during JSON deserialization.
+     * {@code UNKNOWN} if the value is null, blank, or invalid.
      */
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static LegalCategory fromStringSafe(String value) {
         if (value == null || value.isBlank()) {
-            return NEEDS_HUMAN_TRIAGE;
+            return UNKNOWN;
         }
         String clean = value.trim().toUpperCase().replace(" ", "_").replace("-", "_").replace("&", "").replaceAll("_+", "_");
         try {
@@ -69,16 +64,20 @@ public enum LegalCategory {
                     return cat;
                 }
             }
-            if (clean.contains("CIVIL") || clean.contains("PROPERTY")) return CIVIL_PROPERTY;
-            if (clean.contains("CRIMIN")) return CRIMINAL_LAW;
-            if (clean.contains("CONSUMER")) return CONSUMER_GRIEVANCE;
-            if (clean.contains("FAMILY") || clean.contains("MATRIMON")) return FAMILY_MATRIMONIAL;
-            if (clean.contains("LABOUR") || clean.contains("EMPLOY")) return LABOUR_EMPLOYMENT;
-            if (clean.contains("CORP") || clean.contains("COMMERC")) return CORPORATE_COMMERCIAL;
-            if (clean.contains("TAX") || clean.contains("CUSTOM")) return TAX_CUSTOMS;
-            if (clean.contains("IP") || clean.contains("INTELLECT")) return INTELLECTUAL_PROPERTY;
-            if (clean.contains("WRIT") || clean.contains("CONSTITUT")) return CONSTITUTIONAL_WRIT;
-            return NEEDS_HUMAN_TRIAGE;
+            if (clean.contains("BANK") || clean.contains("LOAN") || clean.contains("SARFAESI") || clean.contains("NPA")) return BANKING;
+            if (clean.contains("TENAN") || clean.contains("RENT") || clean.contains("LANDLORD") || clean.contains("EVICTION")) return TENANCY;
+            if (clean.contains("CIVIL") || clean.contains("PROPERTY") || clean.contains("PARTITION") || clean.contains("REAL") || clean.contains("ESTATE") || clean.contains("RERA")) return CIVIL_PROPERTY;
+            if (clean.contains("CONSTITUT") || clean.contains("WRIT") || clean.contains("FUNDAMENTAL")) return CONSTITUTIONAL;
+            if (clean.contains("CONSUMER") || clean.contains("DEFECT")) return CONSUMER;
+            if (clean.contains("CORP") || clean.contains("COMMERC") || clean.contains("COMPANY")) return CORPORATE;
+            if (clean.contains("CRIMIN") || clean.contains("FIR") || clean.contains("POLICE") || clean.contains("BAIL")) return CRIMINAL;
+            if (clean.contains("CYBER") || clean.contains("IT_ACT") || clean.contains("HACK") || clean.contains("PHISH")) return CYBER;
+            if (clean.contains("LABOUR") || clean.contains("EMPLOY") || clean.contains("WAGE") || clean.contains("SALARY")) return EMPLOYMENT;
+            if (clean.contains("ENVIRON") || clean.contains("POLLUTION") || clean.contains("NGT")) return ENVIRONMENTAL;
+            if (clean.contains("FAMILY") || clean.contains("MATRIMON") || clean.contains("DIVORCE") || clean.contains("DOWRY")) return FAMILY;
+            if (clean.contains("IP") || clean.contains("INTELLECT") || clean.contains("TRADEMARK") || clean.contains("COPYRIGHT") || clean.contains("PATENT")) return IP;
+            if (clean.contains("TAX") || clean.contains("CUSTOM") || clean.contains("GST")) return TAXATION;
+            return UNKNOWN;
         }
     }
 }

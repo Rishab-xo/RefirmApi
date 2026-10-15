@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Primary;
 
 /**
  * AI Configuration for Refirm.
- * Configures OpenAI (gpt-4o-mini / text-embedding-3-small) as the primary models
+ * Configures OpenAI (gpt-6-luna / text-embedding-3-small) as the primary models
  * while keeping Ollama available in the ApplicationContext for multi-model agentic workflows.
  */
 @Configuration
@@ -33,6 +33,7 @@ public class AiConfig {
 
     @Bean
     @Primary
+    @org.springframework.context.annotation.Scope(org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public ChatClient.Builder primaryChatClientBuilder(
             @Qualifier("openAiChatModel") ChatModel openAiChatModel) {
         return ChatClient.builder(openAiChatModel);
@@ -73,6 +74,52 @@ public class AiConfig {
     public ChatClient.Builder deepSeekChatClientBuilder(
             @Qualifier("deepSeekChatModel") ChatModel deepSeekChatModel) {
         return ChatClient.builder(deepSeekChatModel);
+    }
+
+    /**
+     * Dedicated reasoning ChatModel bean for OpenAI reasoning models (o3-mini / o1).
+     * Builds an isolated OpenAiChatModel with no default temperature, preventing
+     * Spring AI's auto-configured temperature (0.7) from causing HTTP 400 parameter errors.
+     */
+    @Bean(name = "reasoningChatModel")
+    public ChatModel reasoningChatModel(
+            @org.springframework.beans.factory.annotation.Value("${spring.ai.openai.chat.base-url:https://api.openai.com}") String baseUrl,
+            @org.springframework.beans.factory.annotation.Value("${spring.ai.openai.chat.api-key}") String apiKey,
+            @org.springframework.beans.factory.annotation.Value("${refirm.ai.models.reasoning:o3-mini}") String reasoningModel
+    ) {
+        org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory =
+                new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(java.time.Duration.ofSeconds(30));
+        requestFactory.setReadTimeout(java.time.Duration.ofSeconds(90));
+
+        org.springframework.web.client.RestClient.Builder restClientBuilder =
+                org.springframework.web.client.RestClient.builder().requestFactory(requestFactory);
+
+        org.springframework.ai.openai.api.OpenAiApi openAiApi = org.springframework.ai.openai.api.OpenAiApi.builder()
+                .baseUrl(baseUrl)
+                .apiKey(apiKey)
+                .restClientBuilder(restClientBuilder)
+                .build();
+
+        return org.springframework.ai.openai.OpenAiChatModel.builder()
+                .openAiApi(openAiApi)
+                .defaultOptions(org.springframework.ai.openai.OpenAiChatOptions.builder()
+                        .model(reasoningModel)
+                        .build())
+                .build();
+    }
+
+    @Bean(name = "reasoningChatClient")
+    public ChatClient reasoningChatClient(
+            @Qualifier("reasoningChatModel") ChatModel reasoningChatModel) {
+        return ChatClient.builder(reasoningChatModel).build();
+    }
+
+    @Bean(name = "reasoningChatClientBuilder")
+    @org.springframework.context.annotation.Scope(org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public ChatClient.Builder reasoningChatClientBuilder(
+            @Qualifier("reasoningChatModel") ChatModel reasoningChatModel) {
+        return ChatClient.builder(reasoningChatModel);
     }
 }
 

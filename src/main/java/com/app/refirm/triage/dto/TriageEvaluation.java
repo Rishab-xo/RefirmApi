@@ -46,7 +46,7 @@ public record TriageEvaluation(
         return new TriageEvaluation(
                 Boolean.TRUE.equals(isComplete),
                 nextQuestion != null ? nextQuestion : "",
-                issueCategory != null ? issueCategory : LegalCategory.NEEDS_HUMAN_TRIAGE,
+                issueCategory != null ? issueCategory : LegalCategory.UNKNOWN,
                 Boolean.TRUE.equals(isEmergency),
                 extractedFacts != null ? extractedFacts : List.of(),
                 factChecklist != null ? factChecklist : FactChecklist.empty()

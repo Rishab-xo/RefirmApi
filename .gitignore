@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+src/main/resources/okf-bundles/
+
+# Environment files
+.env
+.env.*
+.env.backup
