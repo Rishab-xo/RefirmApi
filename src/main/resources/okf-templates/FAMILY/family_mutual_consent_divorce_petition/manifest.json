@@ -1,0 +1,94 @@
+{
+  "templateId": "family_mutual_consent_divorce_petition",
+  "title": "Joint Petition for Dissolution of Marriage by Mutual Consent under Section 13B of the Hindu Marriage Act, 1955",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "FAMILY",
+  "targetPerspective": "NEUTRAL_EVALUATOR",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when both spouses have mutually agreed to dissolve their marriage peacefully and have settled all claims of permanent alimony, stridhan, child custody, and maintenance.",
+  "variantComparisonNote": "First motion mutual consent divorce joint petition under Section 13B(1). Distinct from contested divorce petition under Section 13(1) and maintenance petitions.",
+  "youWillNeed": "Marriage certificate/invitation card, joint photographs, settlement agreement / MoU, proof of separate residences for over 1 year.",
+  "legalBasis": "Section 13B(1) Hindu Marriage Act, 1955; Amardeep Singh v. Harveen Kaur (2017); Section 28 Special Marriage Act, 1954.",
+  "triggerKeywords": [
+    "mutual consent divorce",
+    "13b",
+    "joint petition",
+    "permanent alimony",
+    "stridhan",
+    "child custody"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Parties have been living separately for a period of one year or more",
+    "Parties have not been able to live together and have mutually agreed that marriage should be dissolved",
+    "No coercion, fraud, or undue influence in giving consent under Section 23(1)(bb)",
+    "Comprehensive settlement of permanent alimony, stridhan, and child custody recorded"
+  ],
+  "particulars": [
+    {
+      "key": "family_court_name",
+      "label": "Family Court Name",
+      "description": "Principal Judge / Family Court Designation",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "court_city",
+      "label": "Court City / Seat",
+      "description": "City where Family Court is situated",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "petitioner_one_name",
+      "label": "Petitioner No. 1 (Husband/Wife)",
+      "description": "Full name of first petitioner",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "petitioner_two_name",
+      "label": "Petitioner No. 2 (Spouse)",
+      "description": "Full name of second petitioner",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "marriage_date",
+      "label": "Date of Marriage",
+      "description": "Date of solemnization of marriage",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "permanent_alimony_amount",
+      "label": "Permanent Alimony Sum (INR)",
+      "description": "Settled lump sum alimony or zero if waived",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "petition_date",
+      "label": "Filing Date",
+      "description": "Date of presenting joint petition",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "marriage_and_separation_facts",
+      "title": "Marriage Solemnization & Cohabitation History",
+      "draftingInstruction": "Narrate marriage solemnization on {{FACT:marriage_date}}, brief cohabitation, emergence of temperamental incompatibility, and continuous separate living for more than one year."
+    },
+    {
+      "blockKey": "settlement_terms_custody_and_alimony",
+      "title": "Settlement of Alimony, Stridhan & Custody",
+      "draftingInstruction": "Detail full and final settlement, payment of ₹{{FACT:permanent_alimony_amount}}/- as permanent alimony, return of all stridhan articles, child custody arrangement, and mutual waiver of future claims."
+    },
+    {
+      "blockKey": "statutory_averments_and_joint_prayer",
+      "title": "Statutory Declarations & Joint Prayer",
+      "draftingInstruction": "Declare free consent without force/fraud/collusion under Section 23(1)(bb) of Hindu Marriage Act, 1955 and pray for decree of dissolution by mutual consent."
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "templateId": "civil_order39_temporary_injunction",
+  "title": "Application for Ad-Interim Ex-Parte Temporary Injunction under Order XXXIX Rules 1 & 2 read with Section 151 CPC, 1908",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CIVIL_PROPERTY",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when seeking urgent interlocutory protection to prevent alienation, demolition, waste, damage, or third-party creation over immovable property pending disposal of suit.",
+  "variantComparisonNote": "Interlocutory injunction application under Order XXXIX CPC accompanying the main plaint. Distinct from final decree of permanent injunction.",
+  "youWillNeed": "Title deeds, sale deed / conveyance, revenue records (Jamabandi/Khatauni), site photographs, electricity bills proving possession.",
+  "legalBasis": "Order XXXIX Rules 1 & 2 read with Section 151 Code of Civil Procedure, 1908; Specific Relief Act, 1963; Gujarat Bottling Co. Ltd. v. Coca Cola Co. (1995).",
+  "triggerKeywords": [
+    "temporary injunction",
+    "order 39 rule 1 and 2",
+    "stay application",
+    "status quo",
+    "ex parte injunction",
+    "property dispute"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Establishment of a strong prima facie case in favor of the applicant",
+    "Demonstration that balance of convenience tilts heavily in applicant's favor",
+    "Proof of imminent threat of irreparable injury not compensable by damages",
+    "Urgent grounds dispensing with prior notice under Order XXXIX Rule 3 CPC"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Court Designation",
+      "description": "Designation of Trial Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Court Seat",
+      "description": "City of court jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "applicant_plaintiff",
+      "label": "Applicant / Plaintiff Name",
+      "description": "Full name of plaintiff seeking stay",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "respondent_defendant",
+      "label": "Respondent / Defendant Name",
+      "description": "Name of defendant against whom injunction is sought",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "property_description",
+      "label": "Suit Property Description",
+      "description": "Municipal or revenue description of immovable property",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "application_date",
+      "label": "Date of Application",
+      "description": "Date of filing injunction application",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "subject_matter_and_threat_of_alienation_or_waste",
+      "title": "Possession, Title & Imminent Threat",
+      "draftingInstruction": "Narrate Plaintiff's lawful ownership and settled possession of {{FACT:property_description}}, and Defendant's overt threats of dispossession, demolition, or third-party sale."
+    },
+    {
+      "blockKey": "trinity_principles_of_injunction",
+      "title": "Tripartite Injunction Benchmark Principles",
+      "draftingInstruction": "Establish strong prima facie case, balance of convenience, and irreparable injury under Gujarat Bottling principles, justifying ex-parte ad-interim relief under Order XXXIX Rule 3."
+    },
+    {
+      "blockKey": "prayer_for_ex_parte_injunction",
+      "title": "Prayer for Ad-Interim Temporary Injunction",
+      "draftingInstruction": "Draft explicit prayer restraining {{FACT:respondent_defendant}}, servants, and agents from alienating, creating encumbrances, or disturbing peaceful possession of {{FACT:property_description}}."
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "templateId": "employment_unpaid_wages_termination_notice",
+  "title": "Legal Notice for Wrongful Termination, Non-Payment of Salary, and Full and Final Settlement",
+  "category": "NOTICES",
+  "primaryDomain": "EMPLOYMENT",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when an employee has been wrongfully or abruptly terminated without notice pay, statutory dues, earned wages, or gratuity settlement.",
+  "variantComparisonNote": "Pre-litigation legal notice by employee's advocate. Distinct from formal claim petition before Labour Commissioner or Industrial Tribunal.",
+  "youWillNeed": "Offer letter, employment contract, salary slips, termination email, bank account statements proving non-credit.",
+  "legalBasis": "Payment of Wages Act, 1936; Payment of Gratuity Act, 1972; Section 73 Indian Contract Act, 1872; Industrial Disputes Act, 1947.",
+  "triggerKeywords": [
+    "unpaid salary",
+    "wrongful termination",
+    "severance",
+    "full and final",
+    "gratuity",
+    "employment legal notice"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Details of employment tenure, designation, and last drawn monthly salary",
+    "Breach of contractual notice period or unlawful summary termination",
+    "Itemized ledger of unpaid salary, notice pay, gratuity, and leave encashment",
+    "Peremptory 15-day demand before initiating labour court / civil action"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "description": "Date of dispatching legal notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "employee_name",
+      "label": "Employee / Client Name",
+      "description": "Full name of aggrieved employee",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "employer_company_name",
+      "label": "Employer Company",
+      "description": "Name of employer entity",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "designation",
+      "label": "Designation / Role",
+      "description": "Job designation of employee",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "total_dues_amount",
+      "label": "Total Claim Dues (INR)",
+      "description": "Aggregate unpaid wages and settlement sum",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "employment_location",
+      "label": "Work Location / City",
+      "description": "Office location or jurisdiction city",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "employment_history_and_unlawful_termination",
+      "title": "Employment History & Breach of Contract",
+      "draftingInstruction": "Narrate employment history of {{FACT:employee_name}} as {{FACT:designation}}, exemplary service record, and sudden unlawful termination in breach of employment covenants."
+    },
+    {
+      "blockKey": "computation_of_unpaid_dues",
+      "title": "Itemized Computation of Terminal Dues",
+      "draftingInstruction": "Provide itemized computation totaling ₹{{FACT:total_dues_amount}}/- covering unpaid salary, severance notice pay, gratuity, and accrued leave encashment."
+    },
+    {
+      "blockKey": "statutory_demand_and_litigation_notice",
+      "title": "Peremptory Demand & Legal Repercussions",
+      "draftingInstruction": "Call upon company to remit total settlement within 15 days, failing which proceedings under Payment of Wages Act, Gratuity Act, and civil recovery suit will be initiated with 18% interest."
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "templateId": "tax_income_tax_rectification_application",
+  "title": "Application for Rectification of Mistake Apparent from the Record under Section 154 of the Income-tax Act, 1961",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "TAXATION",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when an Assessing Officer or CPC Bengaluru has issued an intimation or order under Section 143(1)/143(3) containing a patent clerical or calculation error, such as denial of TDS credit or MAT credit.",
+  "variantComparisonNote": "Administrative rectification under Section 154 before Assessing Officer. Distinct from formal first appeal before CIT (Appeals) under Section 246A.",
+  "youWillNeed": "Copy of ITR-V, intimation under Section 143(1), Form 26AS / AIS / TIS showing tax deductions, challans of advance tax.",
+  "legalBasis": "Section 154 Income-tax Act, 1961; T.S. Balaram, ITO v. Volkart Brothers (1971); Section 244A (Interest on refunds).",
+  "triggerKeywords": [
+    "income tax rectification",
+    "section 154",
+    "tds mismatch",
+    "cpc 143(1)",
+    "rectification application",
+    "tax refund"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Mistake is patent, obvious, and apparent from the face of the record",
+    "No contentious or debatable question of law involved",
+    "Application filed within 4 years from the end of the financial year in which order was passed",
+    "Specific claim for credit of prepaid taxes and interest under Section 244A"
+  ],
+  "particulars": [
+    {
+      "key": "assessing_officer_designation",
+      "label": "Assessing Officer Designation",
+      "description": "Designation of Jurisdictional AO or CPC Bengaluru",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "assessee_name",
+      "label": "Assessee Name",
+      "description": "Full name of taxpayer assessee",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "pan_number",
+      "label": "Permanent Account Number (PAN)",
+      "description": "10-digit alphanumeric PAN",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "assessment_year",
+      "label": "Assessment Year (AY)",
+      "description": "Relevant Assessment Year e.g. 2025-26",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "rectification_amount",
+      "label": "Disputed / Rectification Sum (INR)",
+      "description": "Amount of wrongly computed demand or refund denied",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "place",
+      "label": "Place / City",
+      "description": "City of taxpayer / jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "application_date",
+      "label": "Application Date",
+      "description": "Date of presenting application",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "factual_matrix_and_intimation_details",
+      "title": "Filing Background & Impugned Intimation",
+      "draftingInstruction": "Detail filing of return of income for AY {{FACT:assessment_year}}, receipt of intimation under Section 143(1), and creation of unlawful demand or reduction of refund."
+    },
+    {
+      "blockKey": "specification_of_mistake_apparent_from_record",
+      "title": "Demonstration of Mistake Apparent from Record",
+      "draftingInstruction": "Demonstrate glaring mistake apparent from record regarding TDS credit appearing in Form 26AS/AIS, clerical computational error, and application of Section 154."
+    },
+    {
+      "blockKey": "prayer_for_rectification_and_refund",
+      "title": "Prayer for Rectification & Revised Refund",
+      "draftingInstruction": "Pray for rectification of intimation, grant of lawful tax credit, cancellation of demand of ₹{{FACT:rectification_amount}}/- and issuance of refund with interest under Section 244A."
+    }
+  ]
+}

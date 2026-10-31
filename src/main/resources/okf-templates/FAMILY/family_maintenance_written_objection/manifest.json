@@ -1,0 +1,80 @@
+{
+  "templateId": "family_maintenance_written_objection",
+  "title": "Written Statement and Objections to Maintenance Application under Section 144 BNSS, 2023",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "FAMILY",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when representing a husband or earning spouse defending against an inflated maintenance claim, establishing applicant's independent income, desertion, or concealment of assets.",
+  "variantComparisonNote": "Formal defense written objection. Distinct from original maintenance petition.",
+  "youWillNeed": "Income tax returns, bank statements, proof of applicant's qualifications and employment, proof of elderly dependent parents and medical liabilities.",
+  "legalBasis": "Section 144(4) Bharatiya Nagarik Suraksha Sanhita, 2023; Rajnesh v. Neha (2020); Deb Narayan Halder v. Anushree Halder (2003).",
+  "triggerKeywords": [
+    "maintenance reply",
+    "written statement 144 bnss",
+    "rebuttal",
+    "independent income",
+    "desertion",
+    "rajnesh v neha"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Specific denial of allegations of cruelty, harassment, or demand for dowry",
+    "Proof that applicant left matrimonial home voluntarily without justifiable cause",
+    "Establishment that applicant is professionally qualified or gainfully employed",
+    "Disclosure affidavit of assets and liabilities disclosing true financial obligations"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Court Designation",
+      "description": "Family Court / Magistrate Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Court Seat / District",
+      "description": "City of court jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "respondent_name",
+      "label": "Respondent (Husband)",
+      "description": "Full legal name of respondent spouse",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "applicant_name",
+      "label": "Applicant (Wife)",
+      "description": "Full legal name of applicant spouse",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "reply_date",
+      "label": "Filing Date",
+      "description": "Date of submitting written statement",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_objections_and_concealment",
+      "title": "Preliminary Objections & Material Concealment",
+      "draftingInstruction": "Draft preliminary objections highlighting voluntary desertion under Section 144(4) BNSS, suppression of applicant's income and qualification, and misuse of summary proceedings."
+    },
+    {
+      "blockKey": "para_wise_reply_and_income_affidavit_defense",
+      "title": "Para-Wise Rebuttal & Financial Realities",
+      "draftingInstruction": "Traverse each paragraph of the application, demonstrate respondent's genuine net income, statutory deductions, aged parent liabilities, and provide itemized rebuttal."
+    },
+    {
+      "blockKey": "prayer_for_dismissal",
+      "title": "Prayer for Dismissal / Rejection of Claim",
+      "draftingInstruction": "Draft formal prayer to dismiss the maintenance application with costs, or alternatively cap any nominal support strictly in accordance with Rajnesh v. Neha principles."
+    }
+  ]
+}

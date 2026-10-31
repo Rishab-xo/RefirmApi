@@ -120,7 +120,7 @@ public class TriageService {
             } catch (Exception primaryEx) {
                 log.warn("Classification via lunaChatClient failed, falling back to conversationChatClient: {}", primaryEx.getMessage());
                 result = conversationClient.prompt()
-                        .options(OpenAiChatOptions.builder().model("gpt-6-luna").build())
+                        .options(OpenAiChatOptions.builder().model("gpt-6-luna").temperature(1.0).build())
                         .system(systemPrompt)
                         .user(userStory)
                         .call()
@@ -362,7 +362,7 @@ public class TriageService {
                 );
 
             return extractionClient.prompt()
-                    .options(OpenAiChatOptions.builder().model("gpt-6-luna").build())
+                    .options(OpenAiChatOptions.builder().model("gpt-6-luna").temperature(1.0).build())
                     .system(systemPrompt)
                     .user(userMessage)
                     .call()
@@ -398,7 +398,7 @@ public class TriageService {
 
         try {
             return conversationClient.prompt()
-                    .options(OpenAiChatOptions.builder().model("gpt-6-luna").build())
+                    .options(OpenAiChatOptions.builder().model("gpt-6-luna").temperature(1.0).build())
                     .system(systemPrompt)
                     .user(userMessage)
                     .advisors(MessageChatMemoryAdvisor.builder(chatMemory).build())

@@ -36,7 +36,10 @@ public class AiConfig {
     @org.springframework.context.annotation.Scope(org.springframework.beans.factory.config.ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public ChatClient.Builder primaryChatClientBuilder(
             @Qualifier("openAiChatModel") ChatModel openAiChatModel) {
-        return ChatClient.builder(openAiChatModel);
+        return ChatClient.builder(openAiChatModel)
+                .defaultOptions(org.springframework.ai.openai.OpenAiChatOptions.builder()
+                        .temperature(1.0)
+                        .build());
     }
 
     @Bean

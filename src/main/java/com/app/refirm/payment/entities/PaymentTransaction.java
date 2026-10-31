@@ -37,6 +37,7 @@ public class PaymentTransaction {
     @Column(name = "status")
     private String status;
 
+    @Builder.Default
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
 

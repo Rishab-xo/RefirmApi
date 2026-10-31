@@ -1,0 +1,94 @@
+{
+  "templateId": "bnss_sec482_anticipatory_bail",
+  "title": "Application for Anticipatory Bail under Section 482 of the Bharatiya Nagarik Suraksha Sanhita, 2023",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CRIMINAL",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when a client has a genuine and reasonable apprehension of arrest in a non-bailable cognizable case before the Court of Session or High Court under Section 482 BNSS, 2023.",
+  "variantComparisonNote": "Pre-arrest protective remedy under Section 482 BNSS. Distinct from regular post-arrest bail under Section 480/483 BNSS.",
+  "youWillNeed": "Copy of FIR (if available) or complaint, police notice under Section 35(3) BNSS, proof of residence and roots in society, medical certificates if applicable.",
+  "legalBasis": "Section 482 Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS); Gurbaksh Singh Sibbia v. State of Punjab (1980); Sushila Aggarwal v. State (NCT of Delhi) (2020).",
+  "triggerKeywords": [
+    "anticipatory bail",
+    "pre arrest",
+    "bnss 482",
+    "apprehension of arrest",
+    "non bailable",
+    "sessions court"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Reasonable belief and tangible apprehension of arrest in non-bailable offense",
+    "Absence of flight risk and deep roots in society",
+    "Willingness to join and cooperate with investigation under Section 482(2) BNSS",
+    "Undertaking not to tamper with evidence or influence witnesses"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Court Designation",
+      "description": "Court of Session or High Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Court Seat / District",
+      "description": "City where court is situated",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "applicant_name",
+      "label": "Applicant Name",
+      "description": "Full name of person seeking pre-arrest bail",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "respondent_state",
+      "label": "Prosecuting State",
+      "description": "State / Prosecution Authority",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "fir_number",
+      "label": "FIR / Complaint Number",
+      "description": "FIR number or preliminary enquiry reference",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "police_station",
+      "label": "Police Station",
+      "description": "Jurisdictional police station",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "application_date",
+      "label": "Date of Application",
+      "description": "Filing date of bail petition",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "apprehension_of_arrest_and_fir_facts",
+      "title": "Apprehension of Arrest & Case Background",
+      "draftingInstruction": "Detail genesis of false allegations, registration or threat of FIR No. {{FACT:fir_number}}, oblique political/commercial motive, and imminent apprehension of custodial arrest."
+    },
+    {
+      "blockKey": "grounds_for_anticipatory_bail",
+      "title": "Grounds Warranting Pre-Arrest Protection",
+      "draftingInstruction": "Articulate clean antecedents, lack of custodial requirement, purely documentary nature of investigation, deep societal roots, and satisfaction of Sushila Aggarwal constitutional benchmarks."
+    },
+    {
+      "blockKey": "interim_protection_prayer",
+      "title": "Prayer for Pre-Arrest Bail & Interim Protection",
+      "draftingInstruction": "Draft comprehensive prayer for direction that in the event of arrest in FIR No. {{FACT:fir_number}}, Applicant be enlarged on bail, with ad-interim ex-parte protection pending notice."
+    }
+  ]
+}

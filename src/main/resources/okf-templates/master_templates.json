@@ -1,0 +1,851 @@
+[
+  {
+    "templateId": "consumer_legal_notice_deficiency",
+    "title": "Pre-Litigation Legal Notice for Deficiency in Service & Unfair Trade Practice (CPA 2019)",
+    "category": "NOTICES",
+    "primaryDomain": "CONSUMER",
+    "targetPerspective": "CLAIMANT_PETITIONER",
+    "whenToUse": "Issue this formal pre-litigation legal notice when a vendor, e-commerce company, bank, or service provider has committed a deficiency in service, unfair trade practice, or refusal of refund.",
+    "variantComparisonNote": "Use this demand notice BEFORE initiating proceedings before the District Commission. If the notice period has already elapsed without satisfactory resolution, proceed directly to 'consumer_complaint_sec35_edaakhil'.",
+    "youWillNeed": "Tax invoice or booking receipt, payment transaction ID, email communications demonstrating grievance, and proof of opposite party registered address.",
+    "legalBasis": "Sections 2(11) (Deficiency in Service), 2(47) (Unfair Trade Practice), and Section 35 of the Consumer Protection Act, 2019.",
+    "particulars": [
+      {
+        "key": "sender_advocate_name",
+        "label": "Sender Advocate Name",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "advocate_chamber",
+        "label": "Advocate Chamber Address & Contact",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "notice_date",
+        "label": "Date of Legal Notice",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      },
+      {
+        "key": "client_name",
+        "label": "Client / Consumer Full Name",
+        "required": true,
+        "ledgerSourceKey": "perspectiveClient.name"
+      },
+      {
+        "key": "client_address",
+        "label": "Client Residence Address",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "opposite_party_name",
+        "label": "Opposite Party / Entity Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "opposite_party_address",
+        "label": "Opposite Party Registered Office Address",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "dispute_amount",
+        "label": "Disputed Claim Amount (INR)",
+        "required": true,
+        "ledgerSourceKey": "disputeAmount"
+      },
+      {
+        "key": "notice_period_days",
+        "label": "Notice Cure Period (Days)",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "chronology_of_facts",
+        "title": "Chronological Summary of Transactions & Deficiency",
+        "draftingInstruction": "Draft an aggressive, factual chronology detailing the commercial transaction, consideration paid, specific dates of delivery failure or unauthorized debit, and the opposite party's failure to rectify."
+      },
+      {
+        "blockKey": "statutory_grounds",
+        "title": "Statutory Breaches & Statutory Provisions Cited",
+        "draftingInstruction": "Detail specific violations under the Consumer Protection Act, 2019 including Section 2(11) for deficiency in service, Section 2(47) for unfair trade practice, and any governing statutory circulars or guidelines."
+      },
+      {
+        "blockKey": "itemized_demands",
+        "title": "Itemized Demand for Refund, Interest & Damages",
+        "draftingInstruction": "Formulate a numbered, itemized demand table covering principal refund amount, statutory interest at 18% per annum, quantified compensation for mental agony, and legal drafting costs."
+      }
+    ],
+    "skeletonMarkdown": "# LEGAL NOTICE\n\n**REGISTERED A.D. / SPEED POST / LEGAL NOTICE EMAIL**\n\n**FROM:**\n**{{FACT:sender_advocate_name}}**, Advocate\n{{FACT:advocate_chamber}}\n\n**DATE:** {{FACT:notice_date}}\n\n**TO:**\n**{{FACT:opposite_party_name}}**\n{{FACT:opposite_party_address}}\n\n---\n\n**SUBJECT:** LEGAL NOTICE UNDER THE CONSUMER PROTECTION ACT, 2019 FOR DEFICIENCY IN SERVICE, UNFAIR TRADE PRACTICE, AND NON-REFUND OF SUM OF ₹{{FACT:dispute_amount}} DUE TO MY CLIENT, **{{FACT:client_name}}**.\n\nSir / Madam,\n\nUnder instructions from and on behalf of my client, **{{FACT:client_name}}**, residing at {{FACT:client_address}} (hereinafter referred to as **\"My Client\"**), I hereby serve upon you, the Noticee, this formal Legal Notice as follows:\n\n### 1. FACTUAL MATRIX & CHRONOLOGY OF DEFICIENCY\n{{AI_BLOCK:chronology_of_facts}}\n\n### 2. STATUTORY GROUNDS & BREACHES OF CONSUMER RIGHTS\n{{AI_BLOCK:statutory_grounds}}\n\n### 3. ITEMIZED DEMAND & PRE-LITIGATION REQUISITIONS\n{{AI_BLOCK:itemized_demands}}\n\n### 4. FINAL PEREMPTORY CALL\nYou are hereby called upon to comply with the aforesaid requisitions and credit the requisite sums to My Client within a peremptory period of **{{FACT:notice_period_days}} days** from the receipt of this Notice. Take notice that failing strict compliance, My Client has given me peremptory instructions to initiate formal proceedings against you before the appropriate Consumer Disputes Redressal Commission under Section 35 of the Consumer Protection Act, 2019, as well as initiating appropriate penal proceedings, at your sole risk, cost, and legal consequence.\n\nA copy of this Legal Notice has been retained in my chamber records for future evidentiary production.\n\nYours faithfully,\n\n\n**{{FACT:sender_advocate_name}}**\nAdvocate for My Client\n{{FACT:advocate_chamber}}"
+  },
+  {
+    "templateId": "consumer_complaint_sec35_edaakhil",
+    "title": "Section 35 Consumer Complaint (e-Daakhil Format)",
+    "category": "PLEADINGS_COMPLAINTS",
+    "primaryDomain": "CONSUMER",
+    "targetPerspective": "CLAIMANT_PETITIONER",
+    "whenToUse": "Use when filing an original formal complaint before the District Consumer Disputes Redressal Commission under Section 35 of the Consumer Protection Act, 2019 via the e-Daakhil digital portal or physical registry.",
+    "variantComparisonNote": "Use this for originating complaints at the District level. If challenging an existing District Commission order, use 'consumer_appeal_sec41_state_comm'. If defending a complaint on behalf of a bank or vendor, use 'written_statement_opposite_party'.",
+    "youWillNeed": "Indexed copy of complaint, memo of parties, receipts/invoices, copy of legal notice sent, courier tracking proof, and Section 63 BSA electronic evidence certificate.",
+    "legalBasis": "Sections 34, 35, 38, 39, and 69 of the Consumer Protection Act, 2019 read with Consumer Protection (Consumer Commission Procedure) Regulations, 2020.",
+    "particulars": [
+      {
+        "key": "court_name",
+        "label": "District Consumer Commission Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "place",
+        "label": "Seat of Commission / City",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "complainant_name",
+        "label": "Complainant Full Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "complainant_address",
+        "label": "Complainant Complete Address",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "opposite_party_name",
+        "label": "Opposite Party Full Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "opposite_party_address",
+        "label": "Opposite Party Complete Address",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "dispute_amount",
+        "label": "Total Pecuniary Claim (INR)",
+        "required": true,
+        "ledgerSourceKey": "disputeAmount"
+      },
+      {
+        "key": "filing_date",
+        "label": "Date of Filing",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "synopsis_and_list_of_dates",
+        "title": "Synopsis & Chronological List of Dates",
+        "draftingInstruction": "Draft a crisp 1-page synopsis detailing the dispute inception, transaction date, breach, notice issuance, and cause of action."
+      },
+      {
+        "blockKey": "facts_of_complaint",
+        "title": "Substantive Statement of Facts",
+        "draftingInstruction": "Draft exhaustive numbered paragraphs outlining the relationship of consumer and service provider/seller, transaction consideration, failure to perform, and financial loss."
+      },
+      {
+        "blockKey": "statutory_grounds",
+        "title": "Grounds for Redressal under CPA 2019",
+        "draftingInstruction": "Set out structured grounds (Ground A to Ground F) showing gross deficiency under Section 2(11), deceptive/unfair practice under Section 2(47), and consumer vulnerability."
+      },
+      {
+        "blockKey": "jurisdiction_and_limitation",
+        "title": "Pecuniary, Territorial Jurisdiction & Limitation",
+        "draftingInstruction": "State the pecuniary jurisdiction under Section 34(1) (< ₹50 Lakhs), territorial jurisdiction under Section 34(2), and limitation compliance within 2 years under Section 69."
+      },
+      {
+        "blockKey": "itemized_prayer",
+        "title": "Itemized Prayer for Relief under Section 39",
+        "draftingInstruction": "Formulate a formal prayer seeking refund of principal amount with 18% p.a. interest, quantified compensation for harassment, punitive damages, and litigation expenses."
+      },
+      {
+        "blockKey": "annexure_index",
+        "title": "Verified Index of Documents and Evidence",
+        "draftingInstruction": "List all attached evidentiary documents (Annexure C-1 onwards) with description, date, and page numbers."
+      }
+    ],
+    "skeletonMarkdown": "# BEFORE THE HON'BLE {{FACT:court_name}} AT {{FACT:place}}\n\n**CONSUMER COMPLAINT NO. ________ OF 2026**\n\n**IN THE MATTER OF:**\n\n**{{FACT:complainant_name}}**\nResiding at: {{FACT:complainant_address}}\n...**COMPLAINANT**\n\n**VERSUS**\n\n**{{FACT:opposite_party_name}}**\nHaving registered office at: {{FACT:opposite_party_address}}\n...**OPPOSITE PARTY**\n\n---\n\n### COMPLAINT UNDER SECTION 35 OF THE CONSUMER PROTECTION ACT, 2019 FOR DEFICIENCY IN SERVICE AND UNFAIR TRADE PRACTICE\n\n**MOST RESPECTFULLY SHOWETH:**\n\n### I. SYNOPSIS AND LIST OF RELEVANT DATES\n{{AI_BLOCK:synopsis_and_list_of_dates}}\n\n### II. PARTIES TO THE COMPLAINT\n1. That the Complainant, **{{FACT:complainant_name}}**, is an individual consumer residing at {{FACT:complainant_address}}, who availed services/goods for valuable consideration and is a bona fide \"Consumer\" under Section 2(7) of the Consumer Protection Act, 2019.\n2. That the Opposite Party, **{{FACT:opposite_party_name}}**, is a commercial enterprise carrying on business at {{FACT:opposite_party_address}}, engaged in the provision of the contested goods/services.\n\n### III. FACTUAL MATRIX GIVING RISE TO THE COMPLAINT\n{{AI_BLOCK:facts_of_complaint}}\n\n### IV. GROUNDS OF COMPLAINT\n{{AI_BLOCK:statutory_grounds}}\n\n### V. JURISDICTION AND LIMITATION (SECTIONS 34 & 69 CPA, 2019)\n{{AI_BLOCK:jurisdiction_and_limitation}}\n\n### VI. VALUATION FOR PECUNIARY JURISDICTION\nThe value of goods/services paid as consideration alongside total compensation claimed is **₹{{FACT:dispute_amount}}**, which strictly falls within the pecuniary competence of this Hon'ble District Commission under Section 34(1) of the Act.\n\n### VII. PRAYER\n{{AI_BLOCK:itemized_prayer}}\n\n### VIII. INDEX OF ANNEXURES\n{{AI_BLOCK:annexure_index}}\n\n---\n\n### AFFIDAVIT OF VERIFICATION\n\nI, **{{FACT:complainant_name}}**, the Complainant above-named, do hereby solemnly affirm and state on oath as follows:\n\n1. That I am the Complainant in the accompanying Complaint and am fully conversant with the facts and circumstances of the case, and as such competent to depose to this affidavit.\n2. That the contents of Paragraphs I to VI of the accompanying Complaint are true and correct to my personal knowledge and belief, based on records maintained in normal course, and no part of it is false and nothing material has been concealed therefrom.\n3. That the accompanying documents annexed hereto are true and authentic copies of their respective originals.\n\nVerified at **{{FACT:place}}** on this **{{FACT:filing_date}}**.\n\n\n**DEPONENT / COMPLAINANT**\n\n**VERIFICATION:**\nVerified at {{FACT:place}} on {{FACT:filing_date}} that the contents of the above affidavit are true and correct. No part of it is false and nothing material has been concealed.\n\n**DEPONENT**"
+  },
+  {
+    "templateId": "consumer_appeal_sec41_state_comm",
+    "title": "First Appeal under Section 41 Consumer Protection Act, 2019",
+    "category": "APPEALS",
+    "primaryDomain": "CONSUMER",
+    "targetPerspective": "CLAIMANT_PETITIONER",
+    "whenToUse": "Use before the State Consumer Disputes Redressal Commission to challenge an adverse or erroneous final order passed by a District Consumer Commission.",
+    "variantComparisonNote": "Use strictly for statutory appellate challenges against District Commission orders within the 45-day limitation window. Do NOT use for original filings (use 'consumer_complaint_sec35_edaakhil').",
+    "youWillNeed": "Certified copy of the impugned order of District Commission, memorandum of appeal, statutory deposit receipt under Section 41 proviso (50% of ordered amount), and delay condonation application if beyond 45 days.",
+    "legalBasis": "Section 41 of the Consumer Protection Act, 2019 read with Regulation 14 of the Consumer Protection (Consumer Commission Procedure) Regulations, 2020.",
+    "particulars": [
+      {
+        "key": "state_commission_name",
+        "label": "State Consumer Commission Name",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "district_commission_name",
+        "label": "Originating District Commission Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "impugned_order_date",
+        "label": "Date of Impugned Order",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "complaint_case_number",
+        "label": "Original Complaint Number & Year",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "appellant_name",
+        "label": "Appellant Full Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "respondent_name",
+        "label": "Respondent Full Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "place",
+        "label": "Commission City / State",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "filing_date",
+        "label": "Date of Filing Appeal",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "facts_and_impugned_order",
+        "title": "Procedural History and Gist of Impugned Order",
+        "draftingInstruction": "Draft the procedural chronology of how the complaint was filed before the District Commission, what evidence was tendered, and the material findings in the impugned order."
+      },
+      {
+        "blockKey": "grounds_of_appeal",
+        "title": "Substantive Grounds of Appeal",
+        "draftingInstruction": "Draft numbered grounds showing how the District Commission erred in law and fact, overlooked documentary evidence, or misapplied the Consumer Protection Act, 2019."
+      },
+      {
+        "blockKey": "limitation_and_condonation",
+        "title": "Limitation Compliance (45-Day Window)",
+        "draftingInstruction": "Set out statement of limitation under Section 41 (45 days from receipt of certified copy) and averments for condonation of delay if filed beyond 45 days."
+      },
+      {
+        "blockKey": "prayer_relief",
+        "title": "Appellate Relief & Prayer",
+        "draftingInstruction": "Draft formal appellate prayer seeking setting aside of the impugned order, grant of original consumer prayers, and interim stay of coercive recovery."
+      }
+    ],
+    "skeletonMarkdown": "# BEFORE THE HON'BLE {{FACT:state_commission_name}} AT {{FACT:place}}\n\n**FIRST APPEAL NO. ________ OF 2026**\n\n(Arising out of Impugned Order dated {{FACT:impugned_order_date}} passed by {{FACT:district_commission_name}} in CC No. {{FACT:complaint_case_number}})\n\n**IN THE MATTER OF:**\n\n**{{FACT:appellant_name}}**\n...**APPELLANT**\n\n**VERSUS**\n\n**{{FACT:respondent_name}}**\n...**RESPONDENT**\n\n---\n\n### MEMORANDUM OF FIRST APPEAL UNDER SECTION 41 OF THE CONSUMER PROTECTION ACT, 2019\n\n**MOST RESPECTFULLY SHOWETH:**\n\n1. That the Appellant prefers this First Appeal against the final order dated **{{FACT:impugned_order_date}}** passed by the Learned **{{FACT:district_commission_name}}** in Consumer Complaint No. **{{FACT:complaint_case_number}}**.\n\n### I. FACTS OF THE CASE & ERROR IN IMPUGNED ORDER\n{{AI_BLOCK:facts_and_impugned_order}}\n\n### II. GROUNDS OF APPEAL\nThe Appellant challenges the impugned order on the following amongst other grounds, which are taken without prejudice to one another:\n{{AI_BLOCK:grounds_of_appeal}}\n\n### III. STATEMENT OF LIMITATION (SECTION 41 CPA, 2019)\n{{AI_BLOCK:limitation_and_condonation}}\n\n### IV. STATUTORY COMPLIANCE / PRE-DEPOSIT\nThe Appellant has duly complied with the statutory mandate of pre-deposit under the Proviso to Section 41 of the Consumer Protection Act, 2019.\n\n### V. PRAYER\n{{AI_BLOCK:prayer_relief}}\n\n\n**APPELLANT**\nTHROUGH ADVOCATE\n\n---\n\n### VERIFICATION\nVerified at **{{FACT:place}}** on this **{{FACT:filing_date}}** that the contents of paragraphs 1 to V are true and correct to my knowledge derived from court records.\n\n**APPELLANT**"
+  },
+  {
+    "templateId": "written_statement_opposite_party",
+    "title": "Written Version / Written Statement on behalf of Opposite Party (Sec 38 CPA 2019 / Order VIII CPC)",
+    "category": "REPLIES_DEFENSE",
+    "primaryDomain": "CONSUMER",
+    "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+    "whenToUse": "Use when representing an Opposite Party (Merchant, Bank, Builder, or Platform) defending against a consumer complaint within the statutory 30-day period under Section 38 of the Consumer Protection Act, 2019.",
+    "variantComparisonNote": "Use for consumer commission defenses. If defending in a constitutional writ petition or civil suit, use 'counter_affidavit_general' instead.",
+    "youWillNeed": "Copy of the consumer complaint and summons, transaction records, audit trail, user agreement / contractual terms, board resolution / power of attorney.",
+    "legalBasis": "Section 38(2)(a) & 38(3)(a) of Consumer Protection Act, 2019 read with Order VIII Rule 1 of Code of Civil Procedure, 1908.",
+    "particulars": [
+      {
+        "key": "court_name",
+        "label": "Consumer Commission Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "complaint_case_number",
+        "label": "Complaint Case Number",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "complainant_name",
+        "label": "Complainant Full Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "opposite_party_name",
+        "label": "Opposite Party Full Name",
+        "required": true,
+        "ledgerSourceKey": "perspectiveClient.name"
+      },
+      {
+        "key": "authorized_representative",
+        "label": "Authorized Representative / Officer Name",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "place",
+        "label": "Place / City",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "filing_date",
+        "label": "Date of Filing",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "preliminary_objections",
+        "title": "Preliminary Objections on Maintainability & Jurisdiction",
+        "draftingInstruction": "Draft exhaustive preliminary objections covering lack of consumer standing under Section 2(7), commercial nature of transaction, absence of deficiency under Section 2(11), or non-joinder of necessary parties."
+      },
+      {
+        "blockKey": "parawise_reply",
+        "title": "Para-Wise Rebuttal of Complaint Allegations",
+        "draftingInstruction": "Draft a paragraph-by-paragraph traversal strictly responding to the Complainant's narrative, denying baseless assertions, and putting the Complainant to strict proof."
+      },
+      {
+        "blockKey": "defense_and_counter_narrative",
+        "title": "Substantive Defense & Terms of Service Compliance",
+        "draftingInstruction": "Set out the Opposite Party's affirmative defense, highlighting contractual compliance, technical server logs, customer grievance redressal steps taken, and absence of culpability."
+      },
+      {
+        "blockKey": "prayer_dismissal",
+        "title": "Prayer for Dismissal with Exemplary Costs",
+        "draftingInstruction": "Draft prayer seeking outright dismissal of the frivolous complaint with exemplary costs under Section 39(1)(h) of the Consumer Protection Act, 2019."
+      }
+    ],
+    "skeletonMarkdown": "# BEFORE THE HON'BLE {{FACT:court_name}} AT {{FACT:place}}\n\n**CONSUMER COMPLAINT NO. {{FACT:complaint_case_number}}**\n\n**IN THE MATTER OF:**\n\n**{{FACT:complainant_name}}**\n...**COMPLAINANT**\n\n**VERSUS**\n\n**{{FACT:opposite_party_name}}**\n...**OPPOSITE PARTY**\n\n---\n\n### WRITTEN VERSION / WRITTEN STATEMENT UNDER SECTION 38 OF THE CONSUMER PROTECTION ACT, 2019 ON BEHALF OF OPPOSITE PARTY\n\n**MOST RESPECTFULLY SHOWETH:**\n\nThe Opposite Party, through its Authorized Representative **{{FACT:authorized_representative}}**, respectfully submits this Written Statement to the Complaint as follows:\n\n### I. PRELIMINARY OBJECTIONS TO MAINTAINABILITY\n{{AI_BLOCK:preliminary_objections}}\n\n### II. SUBSTANTIVE DEFENSE & FACTUAL BACKGROUND\n{{AI_BLOCK:defense_and_counter_narrative}}\n\n### III. PARA-WISE REPLY ON MERITS\n{{AI_BLOCK:parawise_reply}}\n\n### IV. PRAYER\n{{AI_BLOCK:prayer_dismissal}}\n\n\n**OPPOSITE PARTY**\nTHROUGH ADVOCATE\n\n---\n\n### VERIFICATION\nI, **{{FACT:authorized_representative}}**, Authorized Representative of the Opposite Party, do hereby verify that the contents of the above Written Statement are true and correct based on the official business records maintained in ordinary course.\n\nVerified at **{{FACT:place}}** on **{{FACT:filing_date}}**.\n\n**DEPONENT**"
+  },
+  {
+    "templateId": "counter_affidavit_general",
+    "title": "Counter Affidavit on behalf of Respondent (Order XIX CPC / High Court Rules)",
+    "category": "REPLIES_DEFENSE",
+    "primaryDomain": "CONSTITUTIONAL",
+    "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+    "whenToUse": "Use when filing a formal reply / counter affidavit to a writ petition, civil application, or tribunal motion on behalf of a respondent institution, statutory body, or corporate entity.",
+    "variantComparisonNote": "Use for high court writ proceedings, tribunal answers, and general civil responses. If defending specifically before a consumer forum, use 'written_statement_opposite_party'.",
+    "youWillNeed": "Copy of the originating petition/application, authority letter or board resolution appointing deponent, and authenticated official files.",
+    "legalBasis": "Order XIX Rules 1, 2, and 3 of the Code of Civil Procedure, 1908 and governing High Court / Tribunal Practice Rules.",
+    "particulars": [
+      {
+        "key": "court_name",
+        "label": "High Court / Tribunal Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "case_number",
+        "label": "Writ Petition / Case Number & Year",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "petitioner_name",
+        "label": "Petitioner / Applicant Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "respondent_name",
+        "label": "Respondent Entity Name",
+        "required": true,
+        "ledgerSourceKey": "perspectiveClient.name"
+      },
+      {
+        "key": "deponent_name",
+        "label": "Deponent Full Name",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "deponent_designation",
+        "label": "Deponent Official Designation",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "place",
+        "label": "Place / City",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "sworn_date",
+        "label": "Date of Oath",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "deponent_authority_and_competence",
+        "title": "Deponent Competence & Official Authorization",
+        "draftingInstruction": "Draft the deponent's competence clause, stating employment position, official custody of records, and board authorization to depose on behalf of the Respondent."
+      },
+      {
+        "blockKey": "preliminary_submissions",
+        "title": "Preliminary Submissions on Non-Maintainability",
+        "draftingInstruction": "Draft foundational preliminary submissions demonstrating lack of locus standi, suppression of material facts, existence of alternate statutory remedy, and non-infringement of legal rights."
+      },
+      {
+        "blockKey": "parawise_reply",
+        "title": "Para-Wise Rebuttal of Petition Assertions",
+        "draftingInstruction": "Draft structured para-wise replies traversing each paragraph of the writ petition, denying averments not supported by official records."
+      },
+      {
+        "blockKey": "prayer",
+        "title": "Prayer for Dismissal with Costs",
+        "draftingInstruction": "Draft formal prayer praying for dismissal of the petition with costs in the interest of justice."
+      }
+    ],
+    "skeletonMarkdown": "# IN THE HON'BLE {{FACT:court_name}}\n\n**CIVIL WRIT PETITION / CASE NO. {{FACT:case_number}}**\n\n**IN THE MATTER OF:**\n\n**{{FACT:petitioner_name}}**\n...**PETITIONER**\n\n**VERSUS**\n\n**{{FACT:respondent_name}} & ORS.**\n...**RESPONDENTS**\n\n---\n\n### COUNTER AFFIDAVIT ON BEHALF OF RESPONDENT UNDER ORDER XIX CPC\n\nI, **{{FACT:deponent_name}}**, aged about _____ years, holding the office of **{{FACT:deponent_designation}}** at {{FACT:respondent_name}}, do hereby solemnly affirm and state on oath as under:\n\n### 1. AUTHORITY AND COMPETENCE OF DEPONENT\n{{AI_BLOCK:deponent_authority_and_competence}}\n\n### 2. PRELIMINARY SUBMISSIONS\n{{AI_BLOCK:preliminary_submissions}}\n\n### 3. PARA-WISE REPLY TO THE PETITION\n{{AI_BLOCK:parawise_reply}}\n\n### 4. PRAYER\n{{AI_BLOCK:prayer}}\n\n\n**DEPONENT**\n\n---\n\n### VERIFICATION\nI, the deponent above-named, do hereby verify that the contents of paragraphs 1 to 4 of the above Counter Affidavit are true and correct to my knowledge derived from official records, and nothing material has been concealed.\n\nVerified at **{{FACT:place}}** on this **{{FACT:sworn_date}}**.\n\n**DEPONENT**\n\nIdentified by me:\n\n**Advocate**"
+  },
+  {
+    "templateId": "supporting_affidavit_general",
+    "title": "General Supporting Affidavit under Order XIX CPC & Court Rules",
+    "category": "AFFIDAVITS_CERTIFICATES",
+    "primaryDomain": "CIVIL_PROPERTY",
+    "targetPerspective": "CLAIMANT_PETITIONER",
+    "whenToUse": "Use as a universal accompanying procedural affidavit for any civil plaint, interlocutory application, stay application, or execution petition across Indian courts and tribunals.",
+    "variantComparisonNote": "Universal verification affidavit. If your filing relies on printouts of emails, WhatsApp chats, or server downloads, you MUST separately attach 'bsa_sec63_electronic_evidence_cert'.",
+    "youWillNeed": "Draft of the accompanying main application/petition, identity proof of deponent, and signature before an Oath Commissioner / Notary Public.",
+    "legalBasis": "Order XIX Rules 1 & 3 of Code of Civil Procedure, 1908 and the Oaths Act, 1969.",
+    "particulars": [
+      {
+        "key": "court_name",
+        "label": "Court / Forum Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "case_number",
+        "label": "Case / Suit Number & Year",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "petitioner_name",
+        "label": "Plaintiff / Petitioner Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "respondent_name",
+        "label": "Defendant / Respondent Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "deponent_name",
+        "label": "Deponent Full Name",
+        "required": true,
+        "ledgerSourceKey": "perspectiveClient.name"
+      },
+      {
+        "key": "deponent_age",
+        "label": "Deponent Age (Years)",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "deponent_residence",
+        "label": "Deponent Complete Residence Address",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "place",
+        "label": "Place of Execution",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "sworn_date",
+        "label": "Date of Oath",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "affirmation_of_facts",
+        "title": "Affirmation of Application Facts & Interim Urgency",
+        "draftingInstruction": "Draft concise affirmation paragraphs stating that the contents of the accompanying application were drafted under deponent's instructions, and state the irreparable injury that will ensue without urgent relief."
+      },
+      {
+        "blockKey": "prayer_support",
+        "title": "Prayer for Ad-Interim Relief in Terms of Application",
+        "draftingInstruction": "Draft brief prayer praying that the accompanying application be allowed in the interest of justice."
+      }
+    ],
+    "skeletonMarkdown": "# BEFORE THE HON'BLE {{FACT:court_name}}\n\n**SUIT / APPLICATION NO. {{FACT:case_number}}**\n\n**IN THE MATTER OF:**\n\n**{{FACT:petitioner_name}}**\n...**PLAINTIFF / APPLICANT**\n\n**VERSUS**\n\n**{{FACT:respondent_name}}**\n...**DEFENDANT / RESPONDENT**\n\n---\n\n### AFFIDAVIT IN SUPPORT OF ACCOMPANYING APPLICATION\n\nI, **{{FACT:deponent_name}}**, S/o / D/o / W/o ____________, aged about **{{FACT:deponent_age}}** years, residing at **{{FACT:deponent_residence}}**, do hereby solemnly affirm and state on oath as follows:\n\n1. That I am the Plaintiff / Applicant in the above-captioned matter, conversant with the facts and circumstances of the case, and fully competent to swear this affidavit.\n2. That I have read and understood the contents of the accompanying Application filed herein. The facts stated therein are true to my knowledge and based on records.\n\n### 3. AFFIRMATION OF GROUNDS AND URGENCY\n{{AI_BLOCK:affirmation_of_facts}}\n\n### 4. PRAYER IN SUPPORT\n{{AI_BLOCK:prayer_support}}\n\n\n**DEPONENT**\n\n---\n\n### VERIFICATION\nVerified at **{{FACT:place}}** on this **{{FACT:sworn_date}}** that the contents of the above affidavit are true and correct to my knowledge. No part of it is false and nothing material has been concealed.\n\n**DEPONENT**"
+  },
+  {
+    "templateId": "bsa_sec63_electronic_evidence_cert",
+    "title": "Mandatory Electronic Evidence Certificate (Section 63 BSA 2023)",
+    "category": "AFFIDAVITS_CERTIFICATES",
+    "primaryDomain": "CYBER",
+    "targetPerspective": "CLAIMANT_PETITIONER",
+    "whenToUse": "Mandatory statutory certificate required whenever submitting computer printouts, emails, bank portal downloads, digital receipts, or chat logs into judicial evidence in Indian proceedings.",
+    "variantComparisonNote": "Statutory electronic evidence certificate under the updated 2026 Bharatiya Sakshya Adhiniyam, 2023 mandate. Required across ALL legal domains where digital printouts exist.",
+    "youWillNeed": "Computer/mobile device serial number, operating system, hash values (SHA-256 if available), printer/device details, and date of output generation.",
+    "legalBasis": "Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 (Act No. 47 of 2023).",
+    "particulars": [
+      {
+        "key": "court_name",
+        "label": "Court / Forum Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "case_number",
+        "label": "Case Number & Matter",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "certifier_name",
+        "label": "Certifier / Lawful Custodian Full Name",
+        "required": true,
+        "ledgerSourceKey": "perspectiveClient.name"
+      },
+      {
+        "key": "certifier_designation",
+        "label": "Certifier Designation / Relationship to Evidence",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "device_make_model",
+        "label": "Source Computer / Device Make & Model",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "device_os",
+        "label": "Operating System / Environment",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "place",
+        "label": "Place / City",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "cert_date",
+        "label": "Date of Certification",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "electronic_records_description",
+        "title": "Itemized Schedule of Electronic Documents & Outputs",
+        "draftingInstruction": "Draft an itemized table listing each electronic record (emails, portal screenshots, electronic ledgers), identifying the source URL/email address, generation timestamp, and attached Annexure number."
+      },
+      {
+        "blockKey": "device_integrity_and_operation",
+        "title": "Device Custody, Operational Integrity & Non-Tampering Affirmation",
+        "draftingInstruction": "Draft statutory affirmations satisfying Section 63(2) and 63(3) BSA 2023: lawful custody during ordinary course, proper device functioning without corruption, and reproduction fidelity."
+      }
+    ],
+    "skeletonMarkdown": "# BEFORE THE HON'BLE {{FACT:court_name}}\n\n**IN CASE / MATTER NO. {{FACT:case_number}}**\n\n---\n\n### CERTIFICATE UNDER SECTION 63 OF THE BHARATIYA SAKSHYA ADHINIYAM, 2023 (BSA, 2023)\n\nI, **{{FACT:certifier_name}}**, {{FACT:certifier_designation}}, having official address / residence at {{FACT:place}}, do hereby certify and affirm under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023 as follows:\n\n1. That I am the lawful custodian / user of the electronic computing device (**{{FACT:device_make_model}}**, running **{{FACT:device_os}}**) from which the accompanying electronic records have been produced and printed.\n\n### 2. SCHEDULE OF ELECTRONIC RECORDS AND PRINTOUTS\n{{AI_BLOCK:electronic_records_description}}\n\n### 3. STATUTORY CONDITIONS UNDER SECTION 63(2) & 63(3) BSA, 2023\n{{AI_BLOCK:device_integrity_and_operation}}\n\n4. I certify that the printouts / electronic outputs annexed hereto are true, unaltered reproductions of the original electronic records stored in the aforesaid computer systems in ordinary course of business.\n\nCertified at **{{FACT:place}}** on this **{{FACT:cert_date}}**.\n\n\n**SIGNATURE OF CERTIFIER**\n**{{FACT:certifier_name}}**\n{{FACT:certifier_designation}}"
+  },
+  {
+    "templateId": "civil_suit_recovery_rent_surety",
+    "title": "Plaint in Suit for Recovery of Arrears of Rent & Damages against Tenant and Surety (CPC 1908)",
+    "category": "PLEADINGS_COMPLAINTS",
+    "primaryDomain": "TENANCY",
+    "targetPerspective": "CLAIMANT_PETITIONER",
+    "whenToUse": "Use when filing a formal civil suit before the Civil Court to recover unpaid rent, maintenance arrears, and mesne profits jointly and severally against a defaulting tenant and guarantor/surety.",
+    "variantComparisonNote": "Use for civil court money decree recovery suits under CPC. If issuing a preliminary demand notice before filing the suit, use 'consumer_legal_notice_deficiency' or a legal notice.",
+    "youWillNeed": "Original or counterpart Lease Agreement, Guarantee Deed executed by surety, bank ledger showing rent defaults, electricity/utility arrears bills, and legal notice with tracking report.",
+    "legalBasis": "Order VII Rules 1-8 of Code of Civil Procedure, 1908 and Sections 73 and 128 (Co-extensive Surety Liability) of Indian Contract Act, 1872.",
+    "particulars": [
+      {
+        "key": "court_name",
+        "label": "Civil Court Name",
+        "required": true,
+        "ledgerSourceKey": "targetForum.forumName"
+      },
+      {
+        "key": "place",
+        "label": "City / District",
+        "required": true,
+        "ledgerSourceKey": "location"
+      },
+      {
+        "key": "landlord_name",
+        "label": "Plaintiff / Landlord Full Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "tenant_name",
+        "label": "Defendant No. 1 (Tenant) Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "surety_name",
+        "label": "Defendant No. 2 (Surety) Name",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "demised_premises_address",
+        "label": "Demised Rental Property Address",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "monthly_rent_amount",
+        "label": "Agreed Monthly Rent (INR)",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "arrears_amount",
+        "label": "Total Rent Arrears Claimed (INR)",
+        "required": true,
+        "ledgerSourceKey": "disputeAmount"
+      },
+      {
+        "key": "filing_date",
+        "label": "Date of Plaint",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "chronology_of_tenancy_and_default",
+        "title": "Chronology of Lease Agreement, Guarantee & Default",
+        "draftingInstruction": "Draft exhaustive numbered paragraphs covering lease execution date, monthly rent covenants, execution of personal guarantee by Defendant No. 2, default inception, and failure to vacate."
+      },
+      {
+        "blockKey": "cause_of_action",
+        "title": "Accrual and Inception of Cause of Action",
+        "draftingInstruction": "Draft specific cause of action paragraphs detailing when rent fell into arrears, demand notice dispatch date, and continuing wrongful possession."
+      },
+      {
+        "blockKey": "jurisdiction_and_court_fees",
+        "title": "Valuation, Court Fees & Territorial Jurisdiction",
+        "draftingInstruction": "Draft valuation paragraph computing pecuniary value for recovery of arrears plus damages, court fee paid under Court Fees Act, and territorial jurisdiction based on premises location."
+      },
+      {
+        "blockKey": "prayer",
+        "title": "Itemized Prayer for Recovery Decree",
+        "draftingInstruction": "Draft formal civil prayer seeking money decree for rent arrears of ₹{{FACT:arrears_amount}}, pendente lite and future interest at 18% p.a., mesne profits, and costs against Defendants jointly and severally."
+      }
+    ],
+    "skeletonMarkdown": "# IN THE COURT OF HON'BLE {{FACT:court_name}} AT {{FACT:place}}\n\n**CIVIL SUIT NO. ________ OF 2026**\n\n**IN THE MATTER OF:**\n\n**{{FACT:landlord_name}}**\n...**PLAINTIFF**\n\n**VERSUS**\n\n1. **{{FACT:tenant_name}}** (Tenant)\n2. **{{FACT:surety_name}}** (Surety / Guarantor)\n...**DEFENDANTS**\n\n---\n\n### PLAINT UNDER ORDER VII RULE 1 OF THE CODE OF CIVIL PROCEDURE, 1908 FOR RECOVERY OF ARREARS OF RENT AND DAMAGES\n\n**THE PLAINTIFF MOST RESPECTFULLY SHOWETH:**\n\n1. That the Plaintiff is the lawful absolute owner/landlord of the demised residential/commercial premises situated at **{{FACT:demised_premises_address}}**.\n2. That Defendant No. 1 is the principal tenant who entered into tenancy at an agreed monthly rent of **₹{{FACT:monthly_rent_amount}}**, with total outstanding arrears amounting to **₹{{FACT:arrears_amount}}**, and Defendant No. 2 executed a continuing personal guarantee undertaking joint and several liability under Section 128 of the Indian Contract Act, 1872.\n\n### 3. FACTUAL MATRIX & ARREARS ACCRUAL\n{{AI_BLOCK:chronology_of_tenancy_and_default}}\n\n### 4. CAUSE OF ACTION\n{{AI_BLOCK:cause_of_action}}\n\n### 5. VALUATION, COURT FEES AND JURISDICTION\n{{AI_BLOCK:jurisdiction_and_court_fees}}\n\n### 6. PRAYER\n{{AI_BLOCK:prayer}}\n\n\n**PLAINTIFF**\nTHROUGH ADVOCATE\n\n---\n\n### VERIFICATION\nI, **{{FACT:landlord_name}}**, Plaintiff above-named, verify that the contents of paragraphs 1 to 5 are true to my personal knowledge and belief based on lease records.\n\nVerified at **{{FACT:place}}** on **{{FACT:filing_date}}**.\n\n**PLAINTIFF**"
+  },
+  {
+    "templateId": "commercial_works_contractor_agreement",
+    "title": "Master Works & Contractor Agreement (Indian Contract Act 1872 / Companies Act 2013)",
+    "category": "AGREEMENTS_DEEDS",
+    "primaryDomain": "CORPORATE",
+    "targetPerspective": "NEUTRAL_EVALUATOR",
+    "whenToUse": "Use when drafting a balanced, enforceable commercial works, EPC, IT implementation, or turnkey contractor agreement between a corporate client and an executing contractor.",
+    "variantComparisonNote": "Balanced master contractor agreement for corporate contracting. If drafting a flat purchase agreement governed by RERA, use 'rera_flat_promoter_purchaser_agreement'.",
+    "youWillNeed": "Scope of work, milestone schedule, bill of quantities (BOQ), bank guarantee terms, insurance certificates, and tax compliance details (GSTIN/PAN).",
+    "legalBasis": "Indian Contract Act, 1872; Arbitration and Conciliation Act, 1996; Companies Act, 2013.",
+    "particulars": [
+      {
+        "key": "principal_company_name",
+        "label": "Principal / Employer Company Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "principal_registered_address",
+        "label": "Principal Registered Address",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "contractor_company_name",
+        "label": "Contractor Company Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "contractor_registered_address",
+        "label": "Contractor Registered Address",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "contract_value",
+        "label": "Total Contract Price (INR)",
+        "required": true,
+        "ledgerSourceKey": "disputeAmount"
+      },
+      {
+        "key": "retention_percentage",
+        "label": "Retention Percentage (%)",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "liquidated_damages_cap",
+        "label": "Liquidated Damages Cap (%)",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "agreement_date",
+        "label": "Date of Execution",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      },
+      {
+        "key": "governing_city",
+        "label": "Arbitration Seat / Governing City",
+        "required": true,
+        "ledgerSourceKey": "location"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "scope_of_works_and_specifications",
+        "title": "Detailed Scope of Works & Milestone Schedule",
+        "draftingInstruction": "Draft exhaustive clauses defining work scope, quality specifications, mobilization advance conditions, and milestone verification protocols."
+      },
+      {
+        "blockKey": "performance_and_liquidated_damages",
+        "title": "Performance Standards & Liquidated Damages",
+        "draftingInstruction": "Draft time-is-the-essence covenants, delay liquidated damages computed at 0.5% per week subject to the {{FACT:liquidated_damages_cap}}% cap under Section 74 Indian Contract Act, and defect liability terms."
+      },
+      {
+        "blockKey": "indemnification_and_liability",
+        "title": "Indemnification, Insurance & Statutory Labor Compliance",
+        "draftingInstruction": "Draft mutual indemnification clauses, Third Party General Liability Insurance mandates, and strict compliance with Indian labor and EPF/ESI statutes."
+      },
+      {
+        "blockKey": "dispute_resolution_arbitration",
+        "title": "Dispute Resolution & Sole Arbitration Clause",
+        "draftingInstruction": "Draft a multi-tier dispute escalation mechanism: 30-day senior management mediation followed by final, binding sole arbitration in {{FACT:governing_city}} under the Arbitration and Conciliation Act, 1996."
+      }
+    ],
+    "skeletonMarkdown": "# MASTER WORKS & CONTRACTOR AGREEMENT\n\nThis Master Works & Contractor Agreement (the **\"Agreement\"**) is executed on this **{{FACT:agreement_date}}** at **{{FACT:governing_city}}**, India:\n\n**BETWEEN:**\n\n**{{FACT:principal_company_name}}**, a company incorporated under the laws of India, having its registered office at {{FACT:principal_registered_address}} (hereinafter referred to as the **\"Principal\"**, which expression shall unless repugnant to the context include its successors and permitted assigns) of the **FIRST PART**;\n\n**AND**\n\n**{{FACT:contractor_company_name}}**, a company incorporated under the laws of India, having its registered office at {{FACT:contractor_registered_address}} (hereinafter referred to as the **\"Contractor\"**, which expression shall unless repugnant to the context include its successors and permitted assigns) of the **SECOND PART**.\n\n### RECITALS:\nA. The Principal is desirous of engaging an expert contractor for the execution of commercial works.\nB. The Contractor has represented that it possesses the requisite expertise, labor, and plant to execute the works within the agreed Total Contract Price of **₹{{FACT:contract_value}}**.\n\n**NOW THEREFORE IT IS AGREED AS FOLLOWS:**\n\n### 1. SCOPE OF WORKS & PERFORMANCE OBLIGATIONS\n{{AI_BLOCK:scope_of_works_and_specifications}}\n\n### 2. CONTRACT PRICE, RETENTION & LIQUIDATED DAMAGES\nTotal contract price is ₹{{FACT:contract_value}}. The Principal shall retain **{{FACT:retention_percentage}}%** from each running bill as retention money, subject to liquidated damages capped at **{{FACT:liquidated_damages_cap}}%**, refundable upon expiry of the Defect Liability Period.\n{{AI_BLOCK:performance_and_liquidated_damages}}\n\n### 3. INDEMNITY, INSURANCE & COMPLIANCE\n{{AI_BLOCK:indemnification_and_liability}}\n\n### 4. GOVERNING LAW & ARBITRATION\n{{AI_BLOCK:dispute_resolution_arbitration}}\n\nIN WITNESS WHEREOF, the Parties have executed this Agreement by their duly authorized signatories on the date first written above.\n\n**For {{FACT:principal_company_name}}**\n\n___________________________\nAuthorized Signatory\n\n**For {{FACT:contractor_company_name}}**\n\n___________________________\nAuthorized Signatory"
+  },
+  {
+    "templateId": "rera_flat_promoter_purchaser_agreement",
+    "title": "RERA-Compliant Model Agreement for Sale of Apartment / Flat (RERA 2016)",
+    "category": "AGREEMENTS_DEEDS",
+    "primaryDomain": "CIVIL_PROPERTY",
+    "targetPerspective": "NEUTRAL_EVALUATOR",
+    "whenToUse": "Use when preparing or auditing a statutory, non-one-sided Agreement for Sale between a real estate developer/promoter and an apartment buyer compliant with RERA, 2016.",
+    "variantComparisonNote": "Strictly mandated under Section 13(2) of Real Estate (Regulation and Development) Act, 2016. Nullifies builder-skewed forfeiture and indefinite delay clauses.",
+    "youWillNeed": "RERA project registration certificate, sanctioned architectural plans, carpet area certificate, payment schedule, and car parking allotment schedule.",
+    "legalBasis": "Sections 13(2), 14, 18, and 19 of Real Estate (Regulation and Development) Act, 2016 (RERA, 2016).",
+    "particulars": [
+      {
+        "key": "promoter_name",
+        "label": "Promoter / Developer Company Name",
+        "required": true,
+        "ledgerSourceKey": "oppositeParties.primary"
+      },
+      {
+        "key": "rera_registration_number",
+        "label": "RERA Project Registration Number",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "allottee_name",
+        "label": "Allottee / Purchaser Full Name",
+        "required": true,
+        "ledgerSourceKey": "claimant.name"
+      },
+      {
+        "key": "project_name",
+        "label": "Real Estate Project Name",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "flat_number",
+        "label": "Apartment / Unit Number & Floor",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "carpet_area_sqm",
+        "label": "RERA Carpet Area (Sq. Meters)",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "total_sale_consideration",
+        "label": "Total Sale Consideration (INR)",
+        "required": true,
+        "ledgerSourceKey": "disputeAmount"
+      },
+      {
+        "key": "scheduled_possession_date",
+        "label": "Scheduled Date of Possession",
+        "required": true,
+        "ledgerSourceKey": "MANUAL"
+      },
+      {
+        "key": "agreement_date",
+        "label": "Date of Execution",
+        "required": true,
+        "ledgerSourceKey": "currentDate"
+      }
+    ],
+    "aiBlocks": [
+      {
+        "blockKey": "project_title_and_statutory_approvals",
+        "title": "Title Investigation & Sanctioned Project Approvals",
+        "draftingInstruction": "Draft recitals outlining the clear marketable title of the promoter to the project land, sanctioned layout approvals, encumbrance disclosure, and RERA registration validity."
+      },
+      {
+        "blockKey": "possession_and_delay_compensation",
+        "title": "Possession Timeline & Statutory Delay Compensation (Sec 18 RERA)",
+        "draftingInstruction": "Draft covenants mandating possession on or before {{FACT:scheduled_possession_date}} and compulsory monthly delay interest equal to SBI MCLR + 2% under Section 18 RERA without unilateral builder grace period extensions."
+      },
+      {
+        "blockKey": "defect_liability_and_maintenance",
+        "title": "5-Year Structural Defect Liability & Conveyance Handover",
+        "draftingInstruction": "Draft promoter's mandatory 5-year structural defect rectification covenant under Section 14(3) RERA and execution of conveyance deed within 3 months of Occupancy Certificate."
+      },
+      {
+        "blockKey": "covenants_and_statutory_rights",
+        "title": "Allottee Statutory Rights & Cancellation Terms",
+        "draftingInstruction": "Draft statutory allottee rights under Section 19 RERA, refund upon cancellation with statutory interest, and bar on unauthorized modifications."
+      }
+    ],
+    "skeletonMarkdown": "# AGREEMENT FOR SALE (RERA COMPLIANT)\n\nThis Agreement for Sale is executed on this **{{FACT:agreement_date}}** at ____________, India:\n\n**BETWEEN:**\n\n**{{FACT:promoter_name}}**, the Promoter (RERA Regn. No. **{{FACT:rera_registration_number}}**), having its office at ___________________________ (hereinafter referred to as the **\"Promoter\"**);\n\n**AND**\n\n**{{FACT:allottee_name}}**, residing at ___________________________ (hereinafter referred to as the **\"Allottee\"**).\n\n### RECITALS & TITLE VERIFICATION\n{{AI_BLOCK:project_title_and_statutory_approvals}}\n\n**TERMS OF AGREEMENT:**\n\n1. **SALE OF APARTMENT:** The Promoter agrees to sell and the Allottee agrees to purchase Apartment No. **{{FACT:flat_number}}** having RERA Carpet Area of **{{FACT:carpet_area_sqm}} Sq. Mtrs.** in project **{{FACT:project_name}}** for total consideration of **₹{{FACT:total_sale_consideration}}**.\n\n### 2. POSSESSION AND DELAY COMPENSATION\nThe Promoter covenants to hand over vacant and peaceful possession of the said Apartment on or before **{{FACT:scheduled_possession_date}}**.\n{{AI_BLOCK:possession_and_delay_compensation}}\n\n### 3. DEFECT LIABILITY (5 YEARS) & COMMON AREAS\n{{AI_BLOCK:defect_liability_and_maintenance}}\n\n### 4. ALLOTTEE RIGHTS & GOVERNING LAW\n{{AI_BLOCK:covenants_and_statutory_rights}}\n\nIN WITNESS WHEREOF the Parties have executed this Agreement on the date first above written.\n\n**PROMOTER:** {{FACT:promoter_name}}\n\n___________________________\n\n**ALLOTTEE:** {{FACT:allottee_name}}\n\n___________________________"
+  }
+]

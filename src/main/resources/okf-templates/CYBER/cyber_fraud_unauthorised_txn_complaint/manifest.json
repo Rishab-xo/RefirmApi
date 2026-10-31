@@ -1,0 +1,95 @@
+{
+  "templateId": "cyber_fraud_unauthorised_txn_complaint",
+  "title": "Cyber Crime Complaint under Sections 43, 66C, 66D IT Act, 2000 & Section 318(4) BNS, 2023 for Financial Fraud",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CYBER",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when reporting digital financial fraud, identity theft, phishing, unauthorized fund diversion, or crypto scam to the Cyber Crime Police Cell / 1930 portal.",
+  "variantComparisonNote": "Originating cyber crime criminal complaint. Distinct from evidence certificates under Section 63 BSA, 2023.",
+  "youWillNeed": "Bank statements highlighting debits, transaction UTR numbers, suspect beneficiary bank account/IFSC/UPI ID details, phishing SMS/chat screenshots, Section 63 BSA certificate.",
+  "legalBasis": "Sections 43, 66C, 66D Information Technology Act, 2000; Section 318(4) Bharatiya Nyaya Sanhita, 2023 (BNS); Section 173 BNSS, 2023; Section 63 BSA, 2023.",
+  "triggerKeywords": [
+    "cyber fraud",
+    "unauthorized debit",
+    "phishing",
+    "66d it act",
+    "identity theft",
+    "cyber cell complaint",
+    "bns 318"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Chronological details of fraudulent digital inducement and unauthorized debit",
+    "Suspect digital identifiers (phone numbers, UPI IDs, beneficiary bank account numbers, IP logs)",
+    "Invocation of Section 66C/66D IT Act, 2000 and Section 318(4) BNS, 2023",
+    "Urgent statutory prayer for freeze of beneficiary mule accounts under Section 106 BNSS, 2023"
+  ],
+  "particulars": [
+    {
+      "key": "cyber_cell_designation",
+      "label": "Cyber Crime Authority",
+      "description": "Designation of Cyber Crime Police Station / Cell",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "complainant_name",
+      "label": "Complainant Name",
+      "description": "Full name of defrauded victim",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "fraudulent_entity_unknown",
+      "label": "Suspect / Accused Persons",
+      "description": "Unknown fraudsters or named syndicate",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "fraud_amount",
+      "label": "Total Defrauded Sum (INR)",
+      "description": "Aggregated unauthorized financial loss",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "place",
+      "label": "Victim Location / City",
+      "description": "City where complainant resides",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "complaint_date",
+      "label": "Complaint Date",
+      "description": "Date of lodging complaint",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "bank_account_affected",
+      "label": "Affected Bank Account No.",
+      "description": "Account number from which funds were debited",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "chronology_of_cyber_heist_and_modus_operandi",
+      "title": "Modus Operandi & Timeline of Fraud",
+      "draftingInstruction": "Narrate chronological facts of fraudulent communication, deceptive phishing inducement, unauthorized debits from account {{FACT:bank_account_affected}}, and total loss of ₹{{FACT:fraud_amount}}/-."
+    },
+    {
+      "blockKey": "statutory_penal_and_it_act_infractions",
+      "title": "Statutory Infractions under IT Act & BNS 2023",
+      "draftingInstruction": "Invoke Sections 43, 66C, 66D IT Act, 2000 and Section 318(4) Bharatiya Nyaya Sanhita, 2023, citing digital forensics and Section 63 BSA, 2023 certification."
+    },
+    {
+      "blockKey": "urgent_prayers_for_account_freeze_and_cdr_tracking",
+      "title": "Urgent Prayers for Mule Account Freeze & FIR",
+      "draftingInstruction": "Demand immediate registration of FIR under Section 173 BNSS, 2023, freezing of beneficiary accounts under Section 106 BNSS, and requisition of IP/CDR logs."
+    }
+  ]
+}

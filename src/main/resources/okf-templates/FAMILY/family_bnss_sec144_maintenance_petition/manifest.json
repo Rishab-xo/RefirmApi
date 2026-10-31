@@ -1,0 +1,87 @@
+{
+  "templateId": "family_bnss_sec144_maintenance_petition",
+  "title": "Application for Maintenance under Section 144 of the Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "FAMILY",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when wife, minor child, or infirm parents seek monthly statutory maintenance from a spouse/child who has neglected or refused to maintain them despite having sufficient means.",
+  "variantComparisonNote": "Summary maintenance petition under Section 144 BNSS, 2023. Modern statutory successor to Section 125 CrPC petitions.",
+  "youWillNeed": "Proof of marriage, birth certificates of children, income affidavit as per Rajnesh v. Neha guidelines, proof of respondent's income/lifestyle.",
+  "legalBasis": "Section 144 Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS); Rajnesh v. Neha (2020); Aditi alias Mithi v. Jitesh Sharma (2023).",
+  "triggerKeywords": [
+    "maintenance",
+    "bnss 144",
+    "interim maintenance",
+    "wife maintenance",
+    "child support",
+    "neglect"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Applicant is unable to maintain herself / minor children",
+    "Respondent has sufficient means and earning capacity",
+    "Respondent has neglected or refused to maintain the applicant without reasonable cause",
+    "Comprehensive disclosure affidavit of assets and liabilities filed as per Supreme Court mandate"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Court Designation",
+      "description": "Principal Judge Family Court or Judicial Magistrate",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Court Jurisdiction Seat",
+      "description": "City where court is located",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "applicant_name",
+      "label": "Applicant Name",
+      "description": "Full name of wife / dependent applicant",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "respondent_spouse_name",
+      "label": "Respondent Name",
+      "description": "Full name of husband / earning spouse",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "monthly_maintenance_claimed",
+      "label": "Monthly Maintenance Sum (INR)",
+      "description": "Amount claimed per month for subsistence",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "application_date",
+      "label": "Date of Filing",
+      "description": "Filing date of maintenance petition",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "matrimonial_status_and_desertion_neglect",
+      "title": "Matrimonial History & Neglect by Respondent",
+      "draftingInstruction": "Narrate marriage solemnization, domestic abuse/desertion, eviction from matrimonial home, and respondent's deliberate refusal to maintain."
+    },
+    {
+      "blockKey": "financial_status_and_income_disparity",
+      "title": "Financial Status & Standard of Living Disparity",
+      "draftingInstruction": "Detail applicant's lack of independent income, cost of living/schooling, and respondent's lucrative occupation, business assets, and opulent lifestyle."
+    },
+    {
+      "blockKey": "prayer_for_interim_and_final_maintenance",
+      "title": "Prayer for Interim & Final Maintenance",
+      "draftingInstruction": "Draft specific prayer for monthly maintenance of ₹{{FACT:monthly_maintenance_claimed}}/- per month, litigation expenses, and urgent ad-interim maintenance pending trial."
+    }
+  ]
+}

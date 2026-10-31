@@ -1,0 +1,102 @@
+{
+  "templateId": "bnss_sec480_regular_bail",
+  "title": "Application for Regular Bail under Section 480 read with Section 483 of the Bharatiya Nagarik Suraksha Sanhita, 2023",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CRIMINAL",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when an accused has been arrested and remanded to judicial custody, seeking regular bail under Section 480 or Section 483 BNSS, 2023 before Magistrate, Sessions or High Court.",
+  "variantComparisonNote": "Post-arrest regular bail petition. Distinct from pre-arrest anticipatory bail under Section 482 BNSS and default bail under Section 187 BNSS.",
+  "youWillNeed": "Copy of FIR, remand orders, arrest memo, proof of medical ailments/age, local solvent surety documents.",
+  "legalBasis": "Sections 480, 483 Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS); P. Chidambaram v. CBI (2019); Sanjay Chandra v. CBI (2012).",
+  "triggerKeywords": [
+    "regular bail",
+    "custody",
+    "bnss 480",
+    "bnss 483",
+    "remand",
+    "judicial custody",
+    "bail application"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Accused is in actual custody and remanded under Section 187 BNSS",
+    "Investigation substantially completed or custodial interrogation no longer warranted",
+    "Principle of 'Bail is the rule, jail is the exception' established",
+    "No risk of flight, witness intimidation, or evidence tampering"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Court Designation",
+      "description": "Trial Court or Sessions Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Place / Bench Seat",
+      "description": "City of court jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "applicant_accused_name",
+      "label": "Accused / Applicant Name",
+      "description": "Full name of undertrial in custody",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "respondent_state",
+      "label": "Prosecuting State",
+      "description": "State / Prosecution Authority",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "fir_number",
+      "label": "FIR Number",
+      "description": "Registered FIR number",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "police_station",
+      "label": "Police Station",
+      "description": "Jurisdictional police station",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "arrest_date",
+      "label": "Date of Arrest",
+      "description": "Date when accused was taken into custody",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "application_date",
+      "label": "Filing Date",
+      "description": "Date of bail presentation",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "custody_details_and_charge_background",
+      "title": "Custodial History & Nature of Allegations",
+      "draftingInstruction": "Narrate date of arrest, duration of incarceration since {{FACT:arrest_date}}, completion of police remand, and absence of necessity for further detention."
+    },
+    {
+      "blockKey": "substantive_grounds_for_bail",
+      "title": "Grounds for Enlargement on Regular Bail",
+      "draftingInstruction": "Establish lack of prima facie case, parity with co-accused, roots in society, no flight risk, and trial unlikely to conclude expeditiously."
+    },
+    {
+      "blockKey": "undertaking_and_bail_prayer",
+      "title": "Undertaking & Final Bail Prayer",
+      "draftingInstruction": "Offer solvent local sureties, undertaking to surrender passport, attend trial hearings, and pray for release on regular bail."
+    }
+  ]
+}

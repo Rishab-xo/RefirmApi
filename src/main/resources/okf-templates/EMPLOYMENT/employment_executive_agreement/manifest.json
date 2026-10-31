@@ -1,0 +1,81 @@
+{
+  "templateId": "employment_executive_agreement",
+  "title": "Executive Employment Agreement with IP Assignment, Confidentiality, and Restrictive Covenants",
+  "category": "AGREEMENTS_DEEDS",
+  "primaryDomain": "EMPLOYMENT",
+  "targetPerspective": "NEUTRAL_EVALUATOR",
+  "stage": "TRANSACTIONAL_AGREEMENT",
+  "whenToUse": "Use when onboarding C-suite, senior leadership, or tech key personnel requiring comprehensive IP assignment, non-solicitation, and garden leave clauses.",
+  "variantComparisonNote": "Comprehensive executive contract. Distinct from basic junior offer letter or transactional independent contractor agreement.",
+  "youWillNeed": "Compensation structure, job roles and scope, reporting hierarchy, stock option / ESOP schedule.",
+  "legalBasis": "Indian Contract Act, 1872 (Sections 27 & 73); Copyright Act, 1957 (Section 17 - Work for Hire); Specific Relief Act, 1963.",
+  "triggerKeywords": [
+    "executive employment",
+    "c-suite contract",
+    "ip assignment",
+    "non-compete",
+    "non-solicitation",
+    "employment agreement"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Clear appointment, reporting structure, and probationary terms",
+    "Compensation, variable pay, and statutory deductions clause",
+    "Strict Work-For-Hire Intellectual Property Assignment under Copyright Act, 1957",
+    "Reasonable non-solicitation and confidentiality covenants under Section 27 Contract Act",
+    "Dispute resolution clause specifying governing law and arbitration"
+  ],
+  "particulars": [
+    {
+      "key": "agreement_date",
+      "label": "Agreement Execution Date",
+      "description": "Date of executing agreement",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "company_name",
+      "label": "Employer Company Name",
+      "description": "Legal corporate name of company",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "executive_name",
+      "label": "Executive Appointee Name",
+      "description": "Full legal name of executive",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "annual_compensation",
+      "label": "Annual CTC Compensation (INR)",
+      "description": "Gross annual remuneration package",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "governing_city",
+      "label": "Governing Jurisdiction City",
+      "description": "Seat of jurisdiction and company office",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "appointment_duties_and_remuneration",
+      "title": "Appointment Scope, Duties & Compensation",
+      "draftingInstruction": "Draft appointment clause detailing fiduciary obligations, reporting lines, fixed and variable CTC of ₹{{FACT:annual_compensation}}/- per annum."
+    },
+    {
+      "blockKey": "intellectual_property_and_confidentiality",
+      "title": "Comprehensive IP Assignment & Trade Secrets",
+      "draftingInstruction": "Draft strict work-for-hire IP assignment assigning all software, patents, and copyright to {{FACT:company_name}}, with perpetual confidentiality."
+    },
+    {
+      "blockKey": "termination_notice_and_post_termination_covenants",
+      "title": "Termination, Garden Leave & Non-Solicitation",
+      "draftingInstruction": "Draft termination for cause and convenience, 90-day notice, garden leave provision, and 24-month non-solicitation of clients/employees."
+    }
+  ]
+}

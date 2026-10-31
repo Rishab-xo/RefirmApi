@@ -1,0 +1,87 @@
+{
+  "templateId": "env_pollution_board_legal_notice",
+  "title": "Statutory Notice under Section 43 of Air Act, 1981 / Section 49 of Water Act, 1974 of Intention to File Complaint",
+  "category": "NOTICES",
+  "primaryDomain": "ENVIRONMENTAL",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when serving the mandatory 60-day statutory notice on the State Pollution Control Board and polluting industry prior to filing a private criminal complaint under environmental acts.",
+  "variantComparisonNote": "Mandatory 60-day statutory condition precedent under Section 49 Water Act and Section 43 Air Act. Distinct from civil NGT application.",
+  "youWillNeed": "Photographic proof of emission/effluent discharge, date-time stamp records, medical certificates of affected residents.",
+  "legalBasis": "Section 49 Water (Prevention and Control of Pollution) Act, 1974; Section 43 Air (Prevention and Control of Pollution) Act, 1981.",
+  "triggerKeywords": [
+    "statutory 60 day notice",
+    "spcb notice",
+    "water act 49",
+    "air act 43",
+    "pollution notice",
+    "effluent discharge"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Clear 60 days notice of intention to file criminal complaint",
+    "Precise description of offenses, location, and parameters of air/water contamination",
+    "Call upon State Board to disclose relevant reports and action taken under statutory rules",
+    "Warning of direct criminal prosecution of company directors upon expiry of 60 days"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "description": "Date of issuing 60-day statutory notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "complainant_name",
+      "label": "Complainant Citizen Name",
+      "description": "Full name of citizen giving notice",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "polluting_industrial_unit",
+      "label": "Polluting Industrial Unit",
+      "description": "Name of factory or manufacturing unit",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "spcb_member_secretary",
+      "label": "SPCB Member Secretary",
+      "description": "Designation of State Pollution Board official",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.second"
+    },
+    {
+      "key": "industry_location",
+      "label": "Factory / Unit Location",
+      "description": "Address of polluting premises",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing statutory notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "nature_and_evidence_of_pollution",
+      "title": "Nature of Polluting Emissions & Discharge",
+      "draftingInstruction": "Detail recurring discharge of untreated noxious emissions/toxic trade effluents by {{FACT:polluting_industrial_unit}} situated at {{FACT:industry_location}}."
+    },
+    {
+      "blockKey": "statutory_mandates_and_adverse_public_health_impact",
+      "title": "Breach of Statutory Norms & Health Hazard",
+      "draftingInstruction": "Narrate severe public health hazards, respiratory distress, contamination of groundwater, and violation of CTO and NAAQS standards."
+    },
+    {
+      "blockKey": "statutory_60_day_notice_and_legal_consequences",
+      "title": "60-Day Notice of Intention to File Complaint",
+      "draftingInstruction": "Issue formal 60-day statutory notice under Section 49 Water Act / Section 43 Air Act to take immediate closure action, failing which criminal complaint will be filed."
+    }
+  ]
+}

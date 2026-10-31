@@ -1,0 +1,79 @@
+{
+  "templateId": "corporate_mutual_nda_agreement",
+  "title": "Mutual Non-Disclosure and Confidentiality Agreement under the Indian Contract Act, 1872",
+  "category": "AGREEMENTS_DEEDS",
+  "primaryDomain": "CORPORATE",
+  "targetPerspective": "NEUTRAL_EVALUATOR",
+  "stage": "TRANSACTIONAL_AGREEMENT",
+  "whenToUse": "Use when two commercial corporations, startups, or business entities evaluate a joint venture, investment, M&A, or commercial partnership requiring mutual exchange of proprietary confidential information.",
+  "variantComparisonNote": "Comprehensive mutual confidentiality agreement under Indian Contract Act, 1872. Distinct from employment executive agreements and unilateral notices.",
+  "youWillNeed": "Party corporate details, CIN, definition of proposed business purpose, term of disclosure.",
+  "legalBasis": "Indian Contract Act, 1872 (Sections 10, 27 & 73); Specific Relief Act, 1963; Zee Telefilms Ltd. v. Sundial Communications (2003).",
+  "triggerKeywords": [
+    "mutual nda",
+    "confidentiality agreement",
+    "trade secrets",
+    "non disclosure",
+    "proprietary information"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Clear definition and demarcation of Confidential Information",
+    "Specific enumeration of Permitted Purpose and standard of care",
+    "Exclusions from confidentiality (prior public knowledge, independent discovery, court order)",
+    "Remedies acknowledging monetary damages inadequate and entitling injunctive relief"
+  ],
+  "particulars": [
+    {
+      "key": "agreement_date",
+      "label": "Agreement Execution Date",
+      "description": "Date of executing NDA",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "disclosing_party_name",
+      "label": "Party A Corporate Name",
+      "description": "Full legal name of First Party",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "receiving_party_name",
+      "label": "Party B Corporate Name",
+      "description": "Full legal name of Second Party",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "authorized_business_purpose",
+      "label": "Authorized Business Purpose",
+      "description": "Specific business evaluation purpose",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "governing_city",
+      "label": "Governing Jurisdiction City",
+      "description": "City of governing courts",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "definition_and_handling_of_confidential_information",
+      "title": "Definition & Protection of Confidential Information",
+      "draftingInstruction": "Define confidential information broadly covering technical, algorithmic, financial, customer, and strategic data disclosed for {{FACT:authorized_business_purpose}}."
+    },
+    {
+      "blockKey": "non_disclosure_obligations_and_standard_of_care",
+      "title": "Non-Disclosure Covenants & Exclusions",
+      "draftingInstruction": "Draft strict degree of care obligations, need-to-know restrictions, and customary exclusions (public domain, independent creation, compelled legal disclosure)."
+    },
+    {
+      "blockKey": "term_return_of_materials_and_injunctive_relief",
+      "title": "Term, Surrender of Records & Injunctive Remedies",
+      "draftingInstruction": "Draft 3-year survival term, mandatory return/destruction of data upon demand, and explicit stipulation entitling injunctive relief under Specific Relief Act."
+    }
+  ]
+}

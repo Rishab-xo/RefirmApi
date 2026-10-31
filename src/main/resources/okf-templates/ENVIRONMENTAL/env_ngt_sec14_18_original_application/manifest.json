@@ -1,0 +1,95 @@
+{
+  "templateId": "env_ngt_sec14_18_original_application",
+  "title": "Original Application before the National Green Tribunal under Sections 14, 15 and 18 of the National Green Tribunal Act, 2010",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "ENVIRONMENTAL",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when an individual, resident welfare association, or environmental NGO files an original application before the NGT for substantial environmental damage, illegal industrial discharge, or forest degradation.",
+  "variantComparisonNote": "Originating application before National Green Tribunal. Distinct from pre-litigation pollution board notice.",
+  "youWillNeed": "Photographic evidence of environmental degradation, water/soil sample test reports, RTI responses, maps of ecological site, Section 63 BSA certificate.",
+  "legalBasis": "Sections 14, 15, 18 National Green Tribunal Act, 2010; Water Act, 1974; Air Act, 1981; Environment (Protection) Act, 1986; Precautionary & Polluter Pays Principles.",
+  "triggerKeywords": [
+    "ngt",
+    "green tribunal",
+    "environmental compensation",
+    "polluter pays",
+    "untreated effluent",
+    "water pollution",
+    "original application"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Substantial question relating to environment arising out of scheduled enactments",
+    "Application filed within 6 months of cause of action first arising under Section 14(3)",
+    "Invocation of Precautionary Principle and Polluter Pays Principle under Section 20",
+    "Specific prayer for environmental restitution and compensation under Section 15"
+  ],
+  "particulars": [
+    {
+      "key": "tribunal_bench_name",
+      "label": "NGT Bench Name",
+      "description": "Principal Bench New Delhi or Zonal Bench",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Seat of Tribunal",
+      "description": "City where Tribunal Bench sits",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "applicant_name",
+      "label": "Applicant Name",
+      "description": "Full name of aggrieved applicant / citizen",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "polluting_entity_respondent",
+      "label": "Polluting Entity (R-1)",
+      "description": "Industrial company or project proponent",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "state_pollution_board",
+      "label": "State Pollution Board (R-2)",
+      "description": "State Pollution Control Board",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.second"
+    },
+    {
+      "key": "restitution_damages_amount",
+      "label": "Restitution / Compensation Sum (INR)",
+      "description": "Estimated ecological restoration costs",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "filing_date",
+      "label": "Filing Date",
+      "description": "Date of presentation before NGT",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "environmental_question_and_locus_standi",
+      "title": "Substantial Question & Locus Standi",
+      "draftingInstruction": "Establish Applicant's locus standi as affected resident, proximity to ecological damage, and substantial question relating to environment under Section 14."
+    },
+    {
+      "blockKey": "violations_of_environmental_statutes",
+      "title": "Violations of Environmental Statutes & Damage",
+      "draftingInstruction": "Narrate untreated discharge of toxic effluents/emissions by {{FACT:polluting_entity_respondent}}, breach of CTO norms, and inaction by {{FACT:state_pollution_board}}."
+    },
+    {
+      "blockKey": "prayers_for_injunction_remediation_and_compensation",
+      "title": "Prayers for Remediation & Environmental Compensation",
+      "draftingInstruction": "Draft prayers for immediate restraining orders, constitution of joint expert committee, and imposition of environmental compensation of ₹{{FACT:restitution_damages_amount}}/-."
+    }
+  ]
+}

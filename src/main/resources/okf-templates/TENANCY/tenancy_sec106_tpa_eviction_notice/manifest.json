@@ -1,0 +1,94 @@
+{
+  "templateId": "tenancy_sec106_tpa_eviction_notice",
+  "title": "Statutory Notice to Quit and Termination of Tenancy under Section 106 of the Transfer of Property Act, 1882",
+  "category": "NOTICES",
+  "primaryDomain": "TENANCY",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when terminating a monthly tenancy of immovable property by giving the mandatory 15-day notice to quit under Section 106 Transfer of Property Act, 1882 prior to instituting an eviction suit.",
+  "variantComparisonNote": "Statutory notice to quit under Section 106 TPA. Distinct from civil suit for recovery of rent arrears and surety under Order VII CPC.",
+  "youWillNeed": "Lease deed / rent agreement, rent payment counterfoils / bank receipts, property tax receipts proving landlord ownership.",
+  "legalBasis": "Section 106, Section 111(h) Transfer of Property Act, 1882; Payal Vision Ltd. v. Radhika Choudhary (2012).",
+  "triggerKeywords": [
+    "notice to quit",
+    "eviction notice",
+    "section 106 tpa",
+    "tenancy termination",
+    "vacant possession",
+    "mesne profits"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Clear 15-day notice expiring with the end of the tenancy month",
+    "Clear identification of the demised premises under lease",
+    "Explicit determination of tenancy under Section 111(h) TPA, 1882",
+    "Demand for delivery of vacant physical possession and warning of mesne profits"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "description": "Date of issuing notice to quit",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "landlord_client_name",
+      "label": "Landlord / Owner Name",
+      "description": "Full name of property owner / landlord",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "tenant_name",
+      "label": "Tenant Name",
+      "description": "Full name of occupying tenant",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "demised_property_address",
+      "label": "Demised Premises Address",
+      "description": "Complete postal address of leased property",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "monthly_rent",
+      "label": "Agreed Monthly Rent (INR)",
+      "description": "Agreed monthly rental amount",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing eviction notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_office_city",
+      "label": "Advocate Office City",
+      "description": "City of advocate chambers",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "tenancy_history_and_terms_of_lease",
+      "title": "Tenancy History & Monthly Rent",
+      "draftingInstruction": "Narrate creation of monthly tenancy of premises {{FACT:demised_property_address}} at agreed rent of ₹{{FACT:monthly_rent}}/- per month, and history of rental default or expiry of term."
+    },
+    {
+      "blockKey": "termination_of_tenancy_and_notice_to_quit",
+      "title": "Termination of Tenancy under Section 106 TPA",
+      "draftingInstruction": "Formally determine and terminate the tenancy under Section 111(h) read with Section 106 of Transfer of Property Act, 1882, providing clear 15 days notice expiring with the end of the tenancy month."
+    },
+    {
+      "blockKey": "demand_for_vacant_possession_and_mesne_profits",
+      "title": "Demand for Vacant Possession & Mesne Profits",
+      "draftingInstruction": "Call upon {{FACT:tenant_name}} to hand over peaceful vacant possession on or before the expiry date, warning of damages/mesne profits and civil eviction suit."
+    }
+  ]
+}

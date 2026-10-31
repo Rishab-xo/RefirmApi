@@ -1,0 +1,94 @@
+{
+  "templateId": "employment_labour_commissioner_claim",
+  "title": "Claim Petition before the Controlling Authority / Labour Commissioner under the Payment of Gratuity Act, 1972 and Payment of Wages Act, 1936",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "EMPLOYMENT",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when filing a formal claim petition before the Controlling Authority / Labour Commissioner for recovery of unpaid gratuity, wages, or statutory retrenchment compensation.",
+  "variantComparisonNote": "Statutory claim petition before Labour Authority. Distinct from pre-litigation advocate notice.",
+  "youWillNeed": "Service certificate, appointment letter, Form I gratuity demand copy with postal proof, pay slips.",
+  "legalBasis": "Sections 4, 7 & 8 Payment of Gratuity Act, 1972; Section 15 Payment of Wages Act, 1936; Payment of Gratuity (Central) Rules, 1972.",
+  "triggerKeywords": [
+    "labour commissioner",
+    "controlling authority",
+    "gratuity claim",
+    "form n",
+    "payment of wages",
+    "unpaid salary"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Proof of continuous service of 5 years or qualifying tenure",
+    "Prior service of Form I notice of gratuity demand on employer",
+    "Failure of employer to pay within 30 days of termination",
+    "Statutory prayer for compound interest under Section 7(3A) of Gratuity Act"
+  ],
+  "particulars": [
+    {
+      "key": "authority_name",
+      "label": "Labour Authority Designation",
+      "description": "Controlling Authority / Labour Commissioner",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Jurisdiction Seat",
+      "description": "City of Labour Authority",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "claimant_employee_name",
+      "label": "Claimant Employee Name",
+      "description": "Full name of applicant employee",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "respondent_employer_name",
+      "label": "Respondent Employer",
+      "description": "Name of employer establishment",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "total_claim_amount",
+      "label": "Total Claim Sum (INR)",
+      "description": "Aggregated gratuity and wage claim",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "filing_date",
+      "label": "Date of Filing",
+      "description": "Date of presentation of claim",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "service_tenure_years",
+      "label": "Completed Service Tenure",
+      "description": "Number of completed years of service",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "employment_service_record",
+      "title": "Service Record & Cessation of Employment",
+      "draftingInstruction": "Narrate employment tenure of {{FACT:service_tenure_years}} years by {{FACT:claimant_employee_name}}, qualifying continuous service, last drawn wages, and cessation date."
+    },
+    {
+      "blockKey": "statutory_entitlement_and_employer_default",
+      "title": "Statutory Entitlement & Employer Non-Compliance",
+      "draftingInstruction": "Calculate statutory gratuity and wage liability, service of Form I demand, and respondent's unlawful withholding violating Section 7 of Gratuity Act."
+    },
+    {
+      "blockKey": "prayer_for_recovery_and_penal_interest",
+      "title": "Prayer for Recovery Certificate & Penal Interest",
+      "draftingInstruction": "Draft statutory prayer for recovery certificate under Section 8, 10% compound interest under Section 7(3A), and recovery through District Collector as land revenue."
+    }
+  ]
+}

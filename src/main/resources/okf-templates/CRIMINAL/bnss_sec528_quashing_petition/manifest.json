@@ -1,0 +1,95 @@
+{
+  "templateId": "bnss_sec528_quashing_petition",
+  "title": "Criminal Miscellaneous Petition under Section 528 of the Bharatiya Nagarik Suraksha Sanhita, 2023 for Quashing of FIR / Proceedings",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CRIMINAL",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when invoking inherent powers of High Court under Section 528 BNSS, 2023 to quash an FIR, chargesheet, or criminal complaint where allegations disclose a purely civil dispute or manifest abuse of law.",
+  "variantComparisonNote": "Inherent jurisdiction petition before High Court under Section 528 BNSS. Replaces erstwhile Section 482 CrPC petitions.",
+  "youWillNeed": "Certified copy of FIR, chargesheet / summoning order, commercial agreements establishing civil nature, correspondence proving compromise or mala fides.",
+  "legalBasis": "Section 528 Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS); State of Haryana v. Bhajan Lal (1992); Gian Singh v. State of Punjab (2012).",
+  "triggerKeywords": [
+    "quashing",
+    "bnss 528",
+    "inherent powers",
+    "high court",
+    "abuse of process",
+    "bhajan lal",
+    "fir quash"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Allegations even if taken at face value do not disclose any cognizable offense",
+    "Dispute is predominantly of a civil or commercial flavor",
+    "Proceeding manifestly instituted with mala fide or oblique intention",
+    "Interim stay on trial court coercive proceedings justified"
+  ],
+  "particulars": [
+    {
+      "key": "high_court_name",
+      "label": "High Court Designation",
+      "description": "High Court of Judicature",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "seat_city",
+      "label": "Seat of High Court",
+      "description": "Principal Bench or Circuit Bench city",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "petitioner_name",
+      "label": "Petitioner Name",
+      "description": "Name of accused seeking quashing",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "state_respondent",
+      "label": "State Respondent (R-1)",
+      "description": "Prosecuting State Authority",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "complainant_respondent",
+      "label": "Complainant Respondent (R-2)",
+      "description": "Original Informant / Complainant",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.second"
+    },
+    {
+      "key": "fir_case_number",
+      "label": "FIR / Criminal Case Number",
+      "description": "Impugned FIR or Case number",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "petition_date",
+      "label": "Filing Date",
+      "description": "Date of presentation before High Court",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "procedural_history_and_impugned_proceedings",
+      "title": "Procedural History & Impugned FIR",
+      "draftingInstruction": "Set out procedural genesis, registration of impugned FIR No. {{FACT:fir_case_number}}, and nature of baseless criminal proceedings instituted by Respondent No. 2."
+    },
+    {
+      "blockKey": "grounds_of_manifest_abuse_and_civil_nature",
+      "title": "Substantive Grounds under Bhajan Lal Principles",
+      "draftingInstruction": "Apply Bhajan Lal benchmarks demonstrating absence of ingredients of penal offenses under BNS, 2023, commercial transaction cloaked as crime, and abuse of process."
+    },
+    {
+      "blockKey": "quashing_prayer_and_interim_stay",
+      "title": "Prayer for Quashing & Interim Relief",
+      "draftingInstruction": "Draft exhaustive prayer for quashing FIR No. {{FACT:fir_case_number}} and all consequential proceedings, with prayer for interim stay on coercive steps."
+    }
+  ]
+}

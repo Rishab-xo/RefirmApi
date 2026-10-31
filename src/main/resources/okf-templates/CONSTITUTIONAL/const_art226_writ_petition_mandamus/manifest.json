@@ -1,0 +1,88 @@
+{
+  "templateId": "const_art226_writ_petition_mandamus",
+  "title": "Writ Petition under Article 226 of the Constitution of India for Issuance of Writ of Mandamus / Certiorari",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CONSTITUTIONAL",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when an individual or corporate citizen seeks judicial review before the High Court against arbitrary executive action, administrative inaction, or violation of Articles 14, 19, or 21.",
+  "variantComparisonNote": "Originating constitutional writ petition under Article 226. Distinct from civil suit under Section 9 CPC and counter-affidavits.",
+  "youWillNeed": "Impugned government order / rejection letter, representations submitted to authority, proof of postal dispatch, identity proof.",
+  "legalBasis": "Article 226 of the Constitution of India; Whirlpool Corporation v. Registrar of Trade Marks (1998); Radha Krishan Industries v. State of H.P. (2021).",
+  "triggerKeywords": [
+    "writ petition",
+    "article 226",
+    "mandamus",
+    "certiorari",
+    "high court",
+    "arbitrary state action",
+    "fundamental rights"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Demonstration of Respondent as 'State' under Article 12 of the Constitution",
+    "Clear infringement of Fundamental Rights or statutory public duties",
+    "Averment of absence of an efficacious and speedy alternative remedy",
+    "Prior demand for justice / representation made to competent authority without result"
+  ],
+  "particulars": [
+    {
+      "key": "high_court_name",
+      "label": "High Court Designation",
+      "description": "High Court of Judicature",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Seat of High Court",
+      "description": "Principal Bench or Circuit Bench city",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "petitioner_name",
+      "label": "Petitioner Name",
+      "description": "Full name of aggrieved petitioner",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "state_respondent",
+      "label": "State Respondent (R-1)",
+      "description": "State Government / Union of India",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "authority_respondent",
+      "label": "Instrumentality / Authority (R-2)",
+      "description": "Public authority or municipal corporation",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.second"
+    },
+    {
+      "key": "petition_date",
+      "label": "Filing Date",
+      "description": "Date of presentation before High Court",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "facts_giving_rise_to_fundamental_rights_infringement",
+      "title": "Factual Narrative & Arbitrary Executive Action",
+      "draftingInstruction": "Narrate Petitioner's entitlement, arbitrary rejection/inaction by {{FACT:authority_respondent}}, breach of legitimate expectation, and violation of Articles 14 and 19(1)(g)."
+    },
+    {
+      "blockKey": "grounds_for_issuance_of_prerogative_writ",
+      "title": "Substantive Constitutional Grounds",
+      "draftingInstruction": "Formulate concise constitutional grounds demonstrating Wednesbury unreasonableness, breach of natural justice, discrimination, and absence of alternative remedy."
+    },
+    {
+      "blockKey": "prayer_for_mandamus_and_interim_stay",
+      "title": "Prayer for Prerogative Writ & Interim Stay",
+      "draftingInstruction": "Draft prayer for Writ of Certiorari quashing impugned decision, Writ of Mandamus directing statutory action, and ad-interim stay on adverse proceedings."
+    }
+  ]
+}

@@ -23,6 +23,7 @@ public class UserCredits {
     @Column(name = "clerk_user_id", unique = true, nullable = false)
     private String clerkUserId;
 
+    @Builder.Default
     @Column(name = "credits")
     private Integer credits = 0;
 

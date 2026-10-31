@@ -1,0 +1,79 @@
+{
+  "templateId": "const_rejoinder_affidavit_writ",
+  "title": "Rejoinder Affidavit on Behalf of Petitioner in Response to Counter Affidavit of State / Respondent",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CONSTITUTIONAL",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when filing a rejoinder affidavit on behalf of a writ petitioner to refute factual inaccuracies, misrepresentations, and preliminary objections raised in the state's counter affidavit.",
+  "variantComparisonNote": "Petitioner's rejoinder affidavit in writ proceedings. Complements the existing 'counter_affidavit_general' template used by respondents.",
+  "youWillNeed": "Copy of writ petition, respondent's counter affidavit, rebuttal government circulars, RTI records.",
+  "legalBasis": "Article 226 of the Constitution of India; High Court Writ Rules; Bharat Singh v. State of Haryana (1988).",
+  "triggerKeywords": [
+    "rejoinder affidavit",
+    "writ rejoinder",
+    "counter affidavit reply",
+    "article 226",
+    "high court rejoinder"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Specific rebuttal to preliminary objections raised in counter affidavit",
+    "Demonstration of factual evasions and unsupported assertions by the State",
+    "Reiteration of constitutional infringements of Articles 14 and 21",
+    "Deponent verification complying with High Court oath rules"
+  ],
+  "particulars": [
+    {
+      "key": "high_court_name",
+      "label": "High Court Designation",
+      "description": "High Court of Judicature",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Seat of High Court",
+      "description": "City of High Court Bench",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "deponent_petitioner_name",
+      "label": "Deponent / Petitioner Name",
+      "description": "Name of petitioner swearing rejoinder",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "state_respondent",
+      "label": "Respondent State / Authority",
+      "description": "Name of contesting state respondent",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "affidavit_date",
+      "label": "Affidavit Date",
+      "description": "Date of swearing rejoinder affidavit",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_rejoinder_to_counter_affidavit",
+      "title": "Preliminary Rebuttal of Counter Affidavit",
+      "draftingInstruction": "Draft preliminary rejoinder exposing respondent's suppression of true facts, untenable maintainability objections, and evasive answers."
+    },
+    {
+      "blockKey": "para_wise_rebuttal_of_state_averments",
+      "title": "Para-Wise Rebuttal of State Contentions",
+      "draftingInstruction": "Provide specific point-by-point rebuttal to each paragraph of {{FACT:state_respondent}}'s counter affidavit, reaffirming petitioner's constitutional entitlement."
+    },
+    {
+      "blockKey": "verification_and_affirmation",
+      "title": "Affirmation & Prayer for Grant of Writ",
+      "draftingInstruction": "Draft concluding affirmation reiterating prayers of main writ petition and praying for dismissal of objections raised by respondent."
+    }
+  ]
+}

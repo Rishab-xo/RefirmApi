@@ -1,0 +1,80 @@
+{
+  "templateId": "env_spcb_show_cause_reply",
+  "title": "Reply to State Pollution Control Board Show Cause / Closure Notice under Water Act, Air Act & EP Act",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "ENVIRONMENTAL",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when an industrial manufacturing plant receives a proposed closure notice or show cause notice under Section 33A Water Act or Section 31A Air Act from the State Pollution Board.",
+  "variantComparisonNote": "Administrative defense reply and corrective action plan before Pollution Control Board. Distinct from original application before NGT.",
+  "youWillNeed": "Valid Consent to Operate (CTO), ETP/STP logbooks, third-party NABL lab test results, continuous emission monitoring system (CEMS) data logs.",
+  "legalBasis": "Section 33A Water Act, 1974; Section 31A Air Act, 1981; Environment (Protection) Act, 1986.",
+  "triggerKeywords": [
+    "spcb reply",
+    "closure notice reply",
+    "section 33a",
+    "section 31a",
+    "etp compliance",
+    "environmental show cause"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Subsisting Consent to Operate (CTO) valid and operational",
+    "Point-by-point rebuttal of inspection team observations with NABL laboratory test certificates",
+    "Comprehensive Corrective Action Plan (CAP) with time-bound milestones",
+    "Statutory prayer for personal hearing before Technical Committee prior to adverse closure order"
+  ],
+  "particulars": [
+    {
+      "key": "spcb_office_name",
+      "label": "Pollution Board Regional Office",
+      "description": "Designation of Regional Officer / Member Secretary",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "industrial_unit_name",
+      "label": "Industrial Unit Name",
+      "description": "Full corporate name of industrial plant",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "spcb_scn_number",
+      "label": "SPCB SCN / Notice Reference",
+      "description": "Reference number of show cause notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "place",
+      "label": "Factory Location / City",
+      "description": "City or industrial area where plant operates",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "reply_date",
+      "label": "Date of Reply",
+      "description": "Date of presenting reply",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_submissions_and_compliance_status",
+      "title": "Preliminary Submissions & Existing Consents",
+      "draftingInstruction": "Narrate compliance history of {{FACT:industrial_unit_name}}, valid CTO, investment in advanced pollution control devices, and green belt development."
+    },
+    {
+      "blockKey": "point_wise_rebuttal_and_corrective_action_report",
+      "title": "Technical Rebuttal & Corrective Action Plan",
+      "draftingInstruction": "Provide point-wise technical reply to SCN No. {{FACT:spcb_scn_number}}, attach NABL lab reports showing parameters within limits, and detail operational ETP/STP protocols."
+    },
+    {
+      "blockKey": "prayer_for_revocation_of_notice",
+      "title": "Prayer for Withdrawal of Notice & Personal Hearing",
+      "draftingInstruction": "Draft prayer to drop proposed closure / revocation of CTO, confirm continued operation, and grant personal hearing before the Technical Advisory Committee."
+    }
+  ]
+}

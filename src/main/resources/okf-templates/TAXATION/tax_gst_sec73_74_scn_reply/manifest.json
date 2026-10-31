@@ -1,0 +1,95 @@
+{
+  "templateId": "tax_gst_sec73_74_scn_reply",
+  "title": "Detailed Written Reply to GST Show Cause Notice under Section 73 / 74 of the CGST Act, 2017",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "TAXATION",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when a registered taxpayer receives a Show Cause Notice (Form GST DRC-01) proposing tax demand, interest, and penalty for alleged ITC mismatches or non-payment under Section 73 or 74 of the CGST Act, 2017.",
+  "variantComparisonNote": "Adjudication reply in Form GST DRC-06. Distinct from appellate memo under Section 107 CGST Act.",
+  "youWillNeed": "Copy of SCN (DRC-01), GSTR-1, GSTR-2B, GSTR-3B filings, purchase invoices, e-way bills, bank payment vouchers.",
+  "legalBasis": "Sections 16, 73, 74, 75 Central Goods and Services Tax Act, 2017; CBIC Circular No. 183/15/2022-GST; State of Karnataka v. Ecom Gill Coffee Trading (2023).",
+  "triggerKeywords": [
+    "gst scn",
+    "drc-01",
+    "section 73",
+    "section 74",
+    "itc mismatch",
+    "cgst reply",
+    "gst demand"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Check Document Identification Number (DIN) compliance",
+    "Establish genuine receipt of goods and tax payment under Section 16(2) CGST Act",
+    "Rebut allegations of fraud, willful misstatement, or suppression under Section 74",
+    "Mandatory statutory request for personal hearing under Section 75(4) of CGST Act"
+  ],
+  "particulars": [
+    {
+      "key": "adjudicating_authority_designation",
+      "label": "Adjudicating Authority",
+      "description": "Designation of GST Adjudicating Officer",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "taxpayer_legal_name",
+      "label": "Taxpayer Legal Name",
+      "description": "Full legal name of registered entity",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "gstin",
+      "label": "GSTIN",
+      "description": "15-digit Goods and Services Tax Identification Number",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "scn_reference_number",
+      "label": "SCN Reference No. / DRC-01",
+      "description": "Show cause notice reference number",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "disputed_tax_demand",
+      "label": "Disputed Tax Amount (INR)",
+      "description": "Proposed tax demand excluding interest and penalty",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "place",
+      "label": "Place / Jurisdiction",
+      "description": "City or jurisdiction circle",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "reply_date",
+      "label": "Date of Reply",
+      "description": "Date of submitting reply",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_objections_and_jurisdiction",
+      "title": "Preliminary Objections & Invalidation of Notice",
+      "draftingInstruction": "Draft preliminary objections on DIN non-generation, vague computation, invocation of Section 74 without ingredients of fraud, and limitation bar."
+    },
+    {
+      "blockKey": "substantive_defense_on_itc_and_taxability",
+      "title": "Substantive Defense & Reconciliation of ITC",
+      "draftingInstruction": "Provide itemized reconciliation of GSTR-2B vs 3B, compliance with Section 16(2), supplier payment proof, and reliance on CBIC Circular No. 183/15/2022-GST."
+    },
+    {
+      "blockKey": "prayer_for_dropping_demand_and_personal_hearing",
+      "title": "Prayer for Dropping Demand & Personal Hearing",
+      "draftingInstruction": "Draft formal prayer to drop proposed demand of ₹{{FACT:disputed_tax_demand}}/- and interest/penalties, with explicit prayer for personal hearing under Section 75(4)."
+    }
+  ]
+}

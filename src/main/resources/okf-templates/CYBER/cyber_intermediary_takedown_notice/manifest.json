@@ -1,0 +1,87 @@
+{
+  "templateId": "cyber_intermediary_takedown_notice",
+  "title": "Statutory Grievance & Takedown Notice to Intermediary under Information Technology Act, 2000 & IT Rules, 2021",
+  "category": "NOTICES",
+  "primaryDomain": "CYBER",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when serving a mandatory statutory notice to an intermediary (social media platform, search engine, web host) demanding takedown of defamatory, infringing, or voyeuristic content within statutory timelines.",
+  "variantComparisonNote": "Statutory takedown notice to trigger loss of intermediary safe harbour under Section 79. Distinct from criminal police complaint.",
+  "youWillNeed": "Specific URLs of infringing content, screenshots with timestamp, proof of identity / copyright ownership, Section 63 BSA certificate.",
+  "legalBasis": "Section 79(3)(b) Information Technology Act, 2000; Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021 (Rules 3(1)(b) & 3(2)); Shreya Singhal v. UOI (2015).",
+  "triggerKeywords": [
+    "takedown notice",
+    "intermediary safe harbour",
+    "it rules 2021",
+    "grievance officer",
+    "defamatory url",
+    "cyber removal"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Exact URL links and precise location of the offensive/unlawful content",
+    "Clear demonstration that content violates Rule 3(1)(b) of IT Rules, 2021",
+    "Statutory timeline demand: 24 hours for voyeuristic/impersonation content, 36 hours for other violations",
+    "Warning of loss of safe harbour immunity under Section 79(1) upon failure to expeditiously remove"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "description": "Date of dispatching takedown notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "grievance_officer_company",
+      "label": "Intermediary / Grievance Officer",
+      "description": "Designation of Resident Grievance Officer of Intermediary",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "aggrieved_party_name",
+      "label": "Aggrieved Party / Complainant",
+      "description": "Full name of aggrieved individual / corporate",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "infringing_content_url",
+      "label": "Infringing URL / Web Link",
+      "description": "Direct web address hosting unlawful material",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing grievance notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "place",
+      "label": "City / Location",
+      "description": "City of advocate chambers",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "unlawful_content_and_prima_facie_infringement",
+      "title": "Description of Unlawful Content & Injury",
+      "draftingInstruction": "Describe precise unlawful material hosted on {{FACT:infringing_content_url}}, violation of privacy, defamatory nature, and irreparable damage to {{FACT:aggrieved_party_name}}."
+    },
+    {
+      "blockKey": "intermediary_due_diligence_under_it_rules_2021",
+      "title": "Statutory Due Diligence Obligations under IT Rules",
+      "draftingInstruction": "Demonstrate strict statutory obligations under Rule 3(1)(b) and 3(2) of IT Rules, 2021 requiring proactive disabled access within statutory timeframes."
+    },
+    {
+      "blockKey": "demand_for_immediate_takedown_and_loss_of_safe_harbor",
+      "title": "Demand for Takedown & Forfeiture of Safe Harbour",
+      "draftingInstruction": "Demand removal within 24/36 hours, preservation of computer records under Rule 3(1)(h), and warning of civil and criminal liability with forfeiture of Section 79 safe harbour."
+    }
+  ]
+}

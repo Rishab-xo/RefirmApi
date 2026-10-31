@@ -1,0 +1,110 @@
+{
+  "templateId": "ni_act_sec138_dishonour_notice",
+  "title": "Statutory Demand Notice under Section 138 Negotiable Instruments Act, 1881",
+  "category": "NOTICES",
+  "primaryDomain": "BANKING",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Mandatory 15-day statutory demand notice issued within 30 days of receipt of cheque dishonour memo (insufficient funds/stop payment) under Section 138 Proviso (b) of the NI Act, 1881.",
+  "variantComparisonNote": "Statutory pre-condition before filing criminal complaint under Section 138/142 NI Act. Distinct from civil money recovery notice under Order XXXVII CPC.",
+  "youWillNeed": "Original dishonoured cheque, Bank Return Memo with return reason, proof of debt/liability (invoice/promissory note/contract), proof of postal dispatch (Speed Post/AD receipt).",
+  "legalBasis": "Section 138 Proviso (b), Section 142(2) Negotiable Instruments Act, 1881; Dashrath Rupsingh Rathod v. State of Maharashtra (2014); Bir Singh v. Mukesh Kumar (2019).",
+  "triggerKeywords": ["138", "cheque", "dishonour", "bounce", "memo", "insufficient funds", "drawer", "payee", "return memo"],
+  "mandatoryStatutoryIngredients": [
+    "Issuance of cheque towards discharge in whole or in part of any legally enforceable debt or liability",
+    "Presentation of cheque to the bank within its validity period of 3 months",
+    "Dishonour of cheque by drawee bank with cheque return memo stating reason",
+    "Demand for payment made within 30 days of receipt of information of dishonour",
+    "Failure of drawer to make payment of said amount within 15 days of receipt of notice",
+    "Jurisdiction determined under Section 142(2) by location of payee's account maintaining bank branch"
+  ],
+  "particulars": [
+    {
+      "key": "date_of_notice",
+      "label": "Notice Date",
+      "description": "Date of drafting and dispatching notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "drawer_name",
+      "label": "Drawer Name (Opposite Party)",
+      "description": "Name of person or entity who signed and issued the cheque",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "payee_name",
+      "label": "Payee Name (Client)",
+      "description": "Name of holder in due course / payee entitled to receive cheque amount",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "cheque_number",
+      "label": "Cheque Number",
+      "description": "6-digit leaf number of the dishonoured cheque",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "cheque_date",
+      "label": "Date on Cheque",
+      "description": "Date recorded on the cheque leaf",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "cheque_amount",
+      "label": "Cheque Amount (Rs.)",
+      "description": "Dishonoured monetary sum",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "drawee_bank_branch",
+      "label": "Drawee Bank & Branch",
+      "description": "Bank branch on which cheque was drawn",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "return_memo_date",
+      "label": "Cheque Return Memo Date",
+      "description": "Date recorded on bank return memo communicating dishonour",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "dishonour_reason",
+      "label": "Reason for Dishonour",
+      "description": "e.g. Funds Insufficient, Account Closed, Exceeds Arrangement",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "payee_bank_branch",
+      "label": "Payee Bank Branch (Sec 142(2) Jurisdiction)",
+      "description": "Location of branch where payee maintains account delivering jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "transaction_and_liability_background",
+      "title": "Legally Enforceable Debt & Transaction Background",
+      "draftingInstruction": "Draft the precise factual background detailing the commercial/personal transaction giving rise to the legally enforceable debt or liability in discharge of which the cheque was issued."
+    },
+    {
+      "blockKey": "presentation_and_dishonour_facts",
+      "title": "Presentation, Dishonour & Memo Details",
+      "draftingInstruction": "Narrate the presentation of the cheque within its 3-month statutory validity, its subsequent dishonour by the drawee bank, and receipt of the Bank Return Memo."
+    },
+    {
+      "blockKey": "statutory_15day_demand_and_consequences",
+      "title": "Statutory 15-Day Demand & Criminal Prosecution Warning",
+      "draftingInstruction": "Issue the strict statutory 15-day demand under Section 138 Proviso (b) calling upon the drawer to liquidate the full cheque amount within 15 days, warning of criminal complaint under Section 138 read with Section 141/142 NI Act and Section 318(4) BNS, 2023 provisions."
+    }
+  ]
+}

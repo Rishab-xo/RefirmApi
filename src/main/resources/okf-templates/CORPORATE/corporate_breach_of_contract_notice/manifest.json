@@ -1,0 +1,87 @@
+{
+  "templateId": "corporate_breach_of_contract_notice",
+  "title": "Legal Notice for Material Breach of Commercial Contract, Specific Performance, and Damages",
+  "category": "NOTICES",
+  "primaryDomain": "CORPORATE",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when an enterprise or vendor suffers a material commercial breach of contract, non-payment, milestone default, or failure of service level agreement (SLA) from a corporate partner.",
+  "variantComparisonNote": "Pre-litigation commercial breach notice under Indian Contract Act, 1872. Distinct from works agreements and summary suits.",
+  "youWillNeed": "Executed commercial contract / SLA, purchase orders, email correspondence confirming breach, statement of financial losses.",
+  "legalBasis": "Sections 39, 73, 74 Indian Contract Act, 1872; Specific Relief Act, 1963; Section 12A Commercial Courts Act, 2015.",
+  "triggerKeywords": [
+    "breach of contract",
+    "commercial notice",
+    "specific performance",
+    "liquidated damages",
+    "cure notice",
+    "sla breach"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Details of contractual promises and client's complete readiness and willingness (Section 16(c) SRA)",
+    "Specific particulars of default, milestone delays, and breach of essential conditions",
+    "Quantification of direct, incidental, and consequential damages under Section 73 Contract Act",
+    "Mandatory 15-day cure period notice prior to instituting commercial suit / arbitration"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "description": "Date of dispatching legal notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "aggrieved_company_name",
+      "label": "Aggrieved Company / Client Name",
+      "description": "Corporate name of client suffering breach",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "defaulting_company_name",
+      "label": "Defaulting Company Name",
+      "description": "Corporate name of defaulting partner / vendor",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "disputed_contract_value",
+      "label": "Disputed Amount / Damages (INR)",
+      "description": "Aggregated contractual claim and loss sum",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing commercial notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "place",
+      "label": "Place / City",
+      "description": "City of advocate chambers",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "commercial_contract_and_contractual_obligations",
+      "title": "Contractual Framework & Client's Performance",
+      "draftingInstruction": "Narrate commercial agreement, agreed scopes, client's readiness and willingness, and fulfillment of reciprocal promises by {{FACT:aggrieved_company_name}}."
+    },
+    {
+      "blockKey": "material_breach_and_financial_losses_incurred",
+      "title": "Material Breaches & Quantification of Damages",
+      "draftingInstruction": "Detail specific material defaults committed by {{FACT:defaulting_company_name}}, failure of milestones, and direct damages totaling ₹{{FACT:disputed_contract_value}}/- under Section 73 Contract Act."
+    },
+    {
+      "blockKey": "cure_period_demand_and_litigation_notice",
+      "title": "Peremptory Cure Demand & Dispute Resolution Repercussions",
+      "draftingInstruction": "Call upon defaulting company to cure breaches and remit ₹{{FACT:disputed_contract_value}}/- within 15 days, failing which commercial arbitration or civil suit under SRA will be initiated."
+    }
+  ]
+}

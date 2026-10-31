@@ -1,0 +1,87 @@
+{
+  "templateId": "tenancy_leave_and_licence_agreement",
+  "title": "Residential Leave and Licence Agreement (11 Months) with Security Deposit & Revocation Clauses",
+  "category": "AGREEMENTS_DEEDS",
+  "primaryDomain": "TENANCY",
+  "targetPerspective": "NEUTRAL_EVALUATOR",
+  "stage": "TRANSACTIONAL_AGREEMENT",
+  "whenToUse": "Use when executing a standard 11-month residential leave and licence agreement, ensuring that only a personal permissive licence is granted without creating any tenancy rights.",
+  "variantComparisonNote": "Standard 11-month transactional licence deed under Section 52 Easements Act. Distinct from statutory tenancy lease deeds and eviction notices.",
+  "youWillNeed": "Property title documents, electricity meter numbers, PAN and Aadhaar of Licensor and Licensee, police verification forms.",
+  "legalBasis": "Section 52 Indian Easements Act, 1882; Indian Contract Act, 1872; Associated Hotels of India Ltd. v. R.N. Kapoor (1959).",
+  "triggerKeywords": [
+    "leave and licence",
+    "11 month agreement",
+    "security deposit",
+    "licence fee",
+    "lock in period",
+    "rental agreement"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Strict grant of permissive personal licence under Section 52 Easements Act without creating estate/tenancy",
+    "Explicit 11-month term with lock-in period and notice of termination",
+    "Interest-free refundable security deposit terms and deductions clause",
+    "Licensor's absolute right of inspection, revocation, and re-entry"
+  ],
+  "particulars": [
+    {
+      "key": "agreement_date",
+      "label": "Agreement Execution Date",
+      "description": "Date of signing agreement",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "licensor_owner_name",
+      "label": "Licensor / Owner Name",
+      "description": "Full name of legal owner / licensor",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "licensee_occupant_name",
+      "label": "Licensee / Occupant Name",
+      "description": "Full name of occupant / licensee",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "licensed_premises_address",
+      "label": "Licensed Premises Address",
+      "description": "Complete residential address of flat/house",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "monthly_licence_fee",
+      "label": "Monthly Licence Fee (INR)",
+      "description": "Monthly fee payable by licensee",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "place",
+      "label": "Execution City",
+      "description": "City where agreement is executed",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "licence_grant_tenure_and_licence_fee",
+      "title": "Grant of Licence, 11-Month Term & Monthly Fee",
+      "draftingInstruction": "Draft clause granting purely personal permissive licence for 11 months for premises {{FACT:licensed_premises_address}} at ₹{{FACT:monthly_licence_fee}}/- per month, expressly disclaiming tenancy."
+    },
+    {
+      "blockKey": "security_deposit_maintenance_and_utility_charges",
+      "title": "Security Deposit & Utility Responsibilities",
+      "draftingInstruction": "Draft interest-free refundable security deposit clause, electricity/water payment duties, society maintenance fees, and inspection rights."
+    },
+    {
+      "blockKey": "covenants_termination_and_peaceful_handover",
+      "title": "Termination, Lock-In & Handover Covenants",
+      "draftingInstruction": "Draft 1-month termination notice, lock-in period, automatic termination on expiry, and liquidated damages of ₹2,000/- per day for unlawful overstay."
+    }
+  ]
+}

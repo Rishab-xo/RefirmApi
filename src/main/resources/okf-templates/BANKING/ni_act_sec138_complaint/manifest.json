@@ -1,0 +1,105 @@
+{
+  "templateId": "ni_act_sec138_complaint",
+  "title": "Criminal Complaint under Section 138 read with Section 142 NI Act, 1881 & Section 223 BNSS, 2023",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "BANKING",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when filing formal criminal complaint before Metropolitan Magistrate or Judicial Magistrate First Class following non-compliance with Section 138 15-day statutory demand notice.",
+  "variantComparisonNote": "Originating criminal complaint following dishonour notice. Distinct from pre-litigation notice 'ni_act_sec138_dishonour_notice' and civil summary suit under Order XXXVII CPC.",
+  "youWillNeed": "Original dishonoured cheque, bank return memo, copy of statutory notice, speed post receipt & tracking report, Section 63 BSA certificate.",
+  "legalBasis": "Sections 138, 141, 142 Negotiable Instruments Act, 1881 read with Section 223 Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS); Section 143A NI Act.",
+  "triggerKeywords": [
+    "cheque",
+    "dishonour",
+    "138",
+    "complaint",
+    "magistrate",
+    "interim compensation",
+    "drawer",
+    "payee"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Cheque drawn towards discharge of legally enforceable debt or liability",
+    "Presentation of cheque within 3 months validity period",
+    "Cheque returned unpaid with return memo",
+    "Statutory notice issued within 30 days of memo receipt",
+    "Failure of accused to pay within 15 days of notice receipt",
+    "Complaint filed within 1 month of cause of action under Section 142(1)(b)"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Court Name & Jurisdiction",
+      "description": "Designation of Competent Magistrate Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Seat of Magistrate Court",
+      "description": "City or District seat of jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "complainant_name",
+      "label": "Complainant Name",
+      "description": "Full legal name of Payee / Complainant",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "accused_name",
+      "label": "Accused Name",
+      "description": "Full name of Drawer / Accused",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "cheque_number",
+      "label": "Cheque Number",
+      "description": "6-digit leaf number of the cheque",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "cheque_date",
+      "label": "Cheque Date",
+      "description": "Date stated on the instrument",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "cheque_amount",
+      "label": "Cheque Amount (INR)",
+      "description": "Dishonoured monetary sum",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "filing_date",
+      "label": "Date of Filing",
+      "description": "Date of presenting complaint",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "facts_and_liability",
+      "title": "Commercial Transaction & Debt Incurrence",
+      "draftingInstruction": "Draft exhaustive factual background describing commercial dealing, consideration, issuance of cheque and subsisting legally enforceable liability."
+    },
+    {
+      "blockKey": "dishonour_and_statutory_notice",
+      "title": "Presentation, Dishonour & Statutory Notice",
+      "draftingInstruction": "Detail statutory dates of presentation, return memo with dishonour reason, dispatch and service of 15-day statutory demand notice."
+    },
+    {
+      "blockKey": "cause_of_action_and_prayer",
+      "title": "Cause of Action, Limitation & Prayer",
+      "draftingInstruction": "Detail cause of action accrual under Section 138(c), compliance with Section 142 limitation, and prayer for process issuance, maximum penalty and 20% interim compensation under Section 143A."
+    }
+  ]
+}

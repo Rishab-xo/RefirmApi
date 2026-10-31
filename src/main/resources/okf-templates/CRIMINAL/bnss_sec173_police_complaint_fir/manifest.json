@@ -1,0 +1,96 @@
+{
+  "templateId": "bnss_sec173_police_complaint_fir",
+  "title": "Written Complaint to Station House Officer / SP under Section 173(1) and 173(4) BNSS, 2023 for Registration of FIR",
+  "category": "NOTICES",
+  "primaryDomain": "CRIMINAL",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when reporting cognizable criminal offenses (cheating, criminal breach of trust, forgery, intimidation) to the Police for registration of FIR under Section 173 BNSS, 2023.",
+  "variantComparisonNote": "Primary police complaint under Section 173(1) BNSS. If refused, escalate to SP under 173(4) BNSS, or file Section 175(3) BNSS application before Magistrate.",
+  "youWillNeed": "Identity proof of complainant, documentary evidence of financial transaction/contract, communication screenshots, call records, Section 63 BSA certificate.",
+  "legalBasis": "Section 173(1) & 173(4) Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS); Lalita Kumari v. Govt of UP (2014); Sections 316, 318, 336, 351 Bharatiya Nyaya Sanhita, 2023 (BNS).",
+  "triggerKeywords": [
+    "fir",
+    "police complaint",
+    "sho",
+    "bnss 173",
+    "cognizable",
+    "cheating",
+    "fraud",
+    "bns"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Disclosure of cognizable offense under Bharatiya Nyaya Sanhita, 2023",
+    "Clear identity, address, and overt acts of named accused persons",
+    "Date, time, and specific location of incident within territorial jurisdiction",
+    "Preservation of digital evidence under Section 63 of Bharatiya Sakshya Adhiniyam, 2023"
+  ],
+  "particulars": [
+    {
+      "key": "police_station_name",
+      "label": "Police Station & Officer",
+      "description": "Designation of SHO and Police Station",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "jurisdiction_city",
+      "label": "Jurisdiction City / District",
+      "description": "District or Commissionerate area",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "complainant_name",
+      "label": "Complainant Name",
+      "description": "Full name of informant / complainant",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "accused_names",
+      "label": "Accused Names & Particulars",
+      "description": "Names and descriptions of accused",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.allFormatted"
+    },
+    {
+      "key": "incident_date",
+      "label": "Date of Incident / Offense",
+      "description": "Date or period during which crime occurred",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "complaint_date",
+      "label": "Complaint Date",
+      "description": "Date of presenting written report",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "disputed_financial_loss",
+      "label": "Financial Loss / Siphoned Sum",
+      "description": "Amount defrauded or misappropriated",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "cognizable_incident_narration",
+      "title": "Narrative of Cognizable Incident",
+      "draftingInstruction": "Narrate chronological facts establishing deceptive inducement, dishonest misappropriation, and specific overt acts of each accused."
+    },
+    {
+      "blockKey": "statutory_penal_provisions_invoked",
+      "title": "Applicable Penal Provisions under BNS 2023",
+      "draftingInstruction": "Invoke specific penal sections of Bharatiya Nyaya Sanhita, 2023 (e.g. Sec 316 criminal breach of trust, Sec 318 cheating, Sec 61 criminal conspiracy) and demonstrate ingredients."
+    },
+    {
+      "blockKey": "investigation_prayer_and_demands",
+      "title": "Prayer for Immediate FIR & Investigation",
+      "draftingInstruction": "Demand immediate registration of FIR under Section 173(1) BNSS, seizure of incriminating material, arrest of accused, and issuance of free copy of FIR."
+    }
+  ]
+}

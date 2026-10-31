@@ -1,0 +1,1086 @@
+[
+  {
+    "authorityId": "arun_bhatiya_2022",
+    "primaryDomain": "BANKING",
+    "secondaryDomains": ["CONSUMER"],
+    "triggerKeywords": ["banking", "bank", "service", "section 2(42)", "drt", "sarfaesi", "deficiency", "concurrent jurisdiction", "deposit"],
+    "caseTitle": "Arun Bhatiya v. HDFC Bank & Ors.",
+    "courtName": "Supreme Court of India", 
+    "judgmentDate": "2022-08-08",
+    "primaryCitation": "2022 INSC 804",
+    "equivalentCitations": ["2022 INSC 804", "[2022] 7 S.C.R. 91", "(2022) 4 SCC (Civ) 1"],
+    "summary": "Held that banking services rendered by commercial scheduled banks fall within the statutory definition of 'service' under Section 2(42) of the Consumer Protection Act, 2019, and consumer commissions possess concurrent jurisdiction alongside DRT and SARFAESI proceedings.",
+    "keyPropositions": [
+      "Consumer Protection Act 2019 Section 2(42) wide ambit of service explicitly encompasses banking facilities",
+      "Concurrent jurisdiction of consumer fora operates alongside SARFAESI and RDDBFI tribunals",
+      "Summary adjudication of banking deficiency without remitting consumer to civil court"
+    ],
+    "iracBrief": {
+      "facts": "The appellant, Arun Bhatiya, held a savings account with HDFC Bank. Unauthorized debits were made from his account. When he approached the Consumer Disputes Redressal Commission, the bank argued that proceedings under the SARFAESI Act or RDDBFI Act barred the jurisdiction of consumer commissions.",
+      "issuesFramed": [
+        "Whether banking services rendered to an individual constitute 'service' under Section 2(42) of the Consumer Protection Act, 2019?",
+        "Whether the existence of remedies under specialized debt recovery statutes ousts the jurisdiction of Consumer Fora?"
+      ],
+      "provisionsCited": [
+        "Section 2(42), Consumer Protection Act, 2019",
+        "Section 34, SARFAESI Act, 2002",
+        "Section 18, Recovery of Debts and Bankruptcy Act, 1993"
+      ],
+      "ratioDecidendi": "The Supreme Court held that the definition of 'service' under Section 2(42) of the Consumer Protection Act, 2019 is inclusive and explicitly encompasses banking. The remedy under the Consumer Protection Act is an additional remedy, not in derogation of any other law, unless there is a clear and direct statutory exclusion.",
+      "finalOrderHeld": "Appeal allowed. The order of the National Commission dismissing the consumer complaint was set aside, and the complaint was remitted for adjudication on merits."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n### CIVIL APPELLATE JURISDICTION\n**CIVIL APPEAL NO. 5208 OF 2022**\n\n**ARUN BHATIYA ...APPELLANT(S)**\n\n**VERSUS**\n\n**HDFC BANK & ORS. ...RESPONDENT(S)**\n\n### JUDGMENT\n**Dr. Dhananjaya Y. Chandrachud, J.**\n\n1. This appeal arises from a judgment dated 8 August 2022 of the National Consumer Disputes Redressal Commission dismissing the consumer complaint filed by the appellant on the ground that banking disputes involving loan accounts must be relegated to civil court or specialized tribunals.\n\n2. The primary question before this Court is whether the consumer forum possesses jurisdiction to adjudicate allegations of deficiency in banking services.",
+        "highlightedRatioPassages": ["whether the consumer forum possesses jurisdiction to adjudicate allegations of deficiency in banking services"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### ANALYSIS & RATIO DECIDENDI\n\n14. Section 2(42) of the Consumer Protection Act, 2019 defines 'service' in expansive terms:\n\n> 'service' means service of any description which is made available to potential users and includes, but is not limited to, the provision of facilities in connection with banking, financing, insurance, transport, processing, supply of electrical or other energy, telecom, boarding or lodging...\n\n15. The legislative intent to retain banking within the consumer fold is unequivocal. The remedies under the Act are compensatory in nature and operate alongside special remedies under the SARFAESI Act.\n\n16. Consequently, we hold that the consumer commission fell into patent error in declining to exercise jurisdiction.",
+        "highlightedRatioPassages": ["The legislative intent to retain banking within the consumer fold is unequivocal", "remedies under the Act are compensatory in nature and operate alongside special remedies"]
+      }
+    ]
+  },
+  {
+    "authorityId": "icici_bank_prakash_kaur_2007",
+    "primaryDomain": "BANKING",
+    "secondaryDomains": ["CONSUMER", "CRIMINAL"],
+    "triggerKeywords": ["recovery agent", "muscle men", "forceful repossession", "hypothecated vehicle", "rbi guidelines", "due process", "banking"],
+    "caseTitle": "ICICI Bank Ltd. v. Prakash Kaur & Ors.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2007-02-26",
+    "primaryCitation": "(2007) 2 SCC 711",
+    "equivalentCitations": ["(2007) 2 SCC 711", "2007 INSC 195", "AIR 2007 SC 1349"],
+    "summary": "Held that banks and financial institutions cannot utilize muscle men or recovery agents to forcefully repossess vehicles without following the due process of law and RBI guidelines.",
+    "keyPropositions": [
+      "Banks cannot resort to muscle men or third-party strong-arm tactics for loan recovery",
+      "Repossession of hypothecated vehicles must strictly comply with judicial process and RBI fair practices code",
+      "Arbitrary seizure constitutes deficiency of service and actionable civil wrong"
+    ],
+    "iracBrief": {
+      "facts": "A truck purchased with financial assistance from ICICI Bank was forcibly seized by recovery agents hired by the bank without prior legal notice while the vehicle was in transit.",
+      "issuesFramed": [
+        "Whether a financing bank is entitled to take physical possession of a hypothecated vehicle using private recovery agents through force without a court order?"
+      ],
+      "provisionsCited": [
+        "Reserve Bank of India Guidelines on Recovery Agents",
+        "Section 51, Code of Civil Procedure, 1908"
+      ],
+      "ratioDecidendi": "Banks cannot take the law into their own hands. Recovery agents and muscle men cannot be employed to forcefully seize hypothecated assets without following due procedure established by law and Reserve Bank of India guidelines.",
+      "finalOrderHeld": "Directions issued to banks and financial institutions to strictly adhere to legal norms; deprecated the practice of employing recovery agents to forcibly repossess vehicles."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CRIMINAL APPEAL NO. 267 OF 2007**\n\n**ICICI BANK LTD. ...APPELLANT**\n\n**VERSUS**\n\n**PRAKASH KAUR & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Dr. AR. Lakshmanan, J.**\n\n1. A growing tendency has emerged among banking companies and financial institutions of employing recovery agents to forcibly take possession of vehicles when there is default in repayment of loan installments.",
+        "highlightedRatioPassages": ["employing recovery agents to forcibly take possession of vehicles"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### DIRECTIONS & RATIO\n\nNow-a-days, we see that banks are engaging muscle men to recover loans. This procedure is completely unknown to the rule of law. We deprecate the practice and make it clear that recovery must only be executed through lawful procedures recognised by courts.",
+        "highlightedRatioPassages": ["banks are engaging muscle men to recover loans. This procedure is completely unknown to the rule of law", "recovery must only be executed through lawful procedures recognised by courts"]
+      }
+    ]
+  },
+  {
+    "authorityId": "suraj_lamp_2011",
+    "primaryDomain": "CIVIL_PROPERTY",
+    "secondaryDomains": ["REAL_ESTATE"],
+    "triggerKeywords": ["gpa sale", "power of attorney", "sale agreement", "section 54", "transfer of property act", "registration act", "immovable property title"],
+    "caseTitle": "Suraj Lamp & Industries Pvt. Ltd. v. State of Haryana & Anr.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2011-10-11",
+    "primaryCitation": "(2012) 1 SCC 656",
+    "equivalentCitations": ["(2012) 1 SCC 656", "2011 INSC 764", "AIR 2012 SC 206"],
+    "summary": "Held that General Power of Attorney (GPA), Agreement to Sell, and Will transactions (SA/GPA/WILL transfers) do not confer title and cannot substitute a registered deed of conveyance under Section 54 of the Transfer of Property Act.",
+    "keyPropositions": [
+      "Immovable property can be transferred only by a registered deed of conveyance",
+      "General Power of Attorney (GPA) is not an instrument of transfer and does not convey title",
+      "Agreements to sell under Section 54 Transfer of Property Act do not create any interest or charge on property"
+    ],
+    "iracBrief": {
+      "facts": "Widespread practice across India of executing sales of immovable properties through Agreement to Sell, General Power of Attorney, and Will to evade stamp duty, registration fees, and capital gains tax.",
+      "issuesFramed": [
+        "Whether transactions in the nature of 'GPA sales' or 'SA/GPA/WILL transfers' convey title in immovable property under Indian law?"
+      ],
+      "provisionsCited": [
+        "Section 54, Transfer of Property Act, 1882",
+        "Section 17, Registration Act, 1908",
+        "Powers of Attorney Act, 1882"
+      ],
+      "ratioDecidendi": "A power of attorney is not an instrument of transfer in regard to any right, title or interest in an immovable property. An agreement to sell does not confer any title. Title in immovable property worth over Rs. 100 can only be conveyed through a registered deed of conveyance.",
+      "finalOrderHeld": "GPA sales declared invalid to convey freehold title in immovable properties. Prospective clarification provided preserving genuine power of attorney transactions."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**SPECIAL LEAVE PETITION (C) NO. 13917 OF 2009**\n\n**SURAJ LAMP & INDUSTRIES PVT. LTD. ...PETITIONER**\n\n**VERSUS**\n\n**STATE OF HARYANA & ANR. ...RESPONDENTS**\n\n### JUDGMENT\n**R.V. Raveendran, J.**\n\n1. The practice of transferring immovable property by General Power of Attorney sales has acquired wide currency. We have heard extensive submissions on the legality of such transactions.",
+        "highlightedRatioPassages": ["practice of transferring immovable property by General Power of Attorney sales"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### FINDINGS ON SECTION 54 TP ACT\n\n16. Section 54 of TP Act makes it clear that a contract of sale does not, of itself, create any interest in or charge on such property. We hold that SA/GPA/WILL transactions are not 'transfers' or 'sales' and cannot be recognised as valid modes of transfer of immovable property.",
+        "highlightedRatioPassages": ["SA/GPA/WILL transactions are not 'transfers' or 'sales' and cannot be recognised as valid modes of transfer of immovable property"]
+      }
+    ]
+  },
+  {
+    "authorityId": "kamal_kumar_2022",
+    "primaryDomain": "CIVIL_PROPERTY",
+    "secondaryDomains": [],
+    "triggerKeywords": ["specific performance", "section 16(c)", "readiness and willingness", "specific relief act", "sale agreement", "time of essence"],
+    "caseTitle": "Kamal Kumar v. Premlata Joshi & Ors.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2022-01-07",
+    "primaryCitation": "(2022) 4 SCC 347",
+    "equivalentCitations": ["(2022) 4 SCC 347", "2022 INSC 22"],
+    "summary": "Enumerated the five mandatory preconditions for a decree of specific performance under Section 16(c) of the Specific Relief Act, 1963, emphasizing continuous readiness and willingness.",
+    "keyPropositions": [
+      "Plaintiff must plead and prove continuous readiness and willingness from agreement date till decree",
+      "Existence of a valid concluded contract with certainty of subject matter and price is indispensable",
+      "Specific performance is an equitable discretionary relief governed by Section 20/16(c) Specific Relief Act"
+    ],
+    "iracBrief": {
+      "facts": "Appellant filed a suit for specific performance of an agreement to sell agricultural land. The defendant disputed the receipt of full consideration and claimed plaintiff abandoned the contract.",
+      "issuesFramed": [
+        "What are the mandatory ingredients and burden of proof required to grant a decree for specific performance of an agreement to sell?"
+      ],
+      "provisionsCited": [
+        "Section 16(c), Specific Relief Act, 1963",
+        "Section 20, Specific Relief Act, 1963"
+      ],
+      "ratioDecidendi": "A plaintiff seeking specific performance must prove: (i) valid contract; (ii) readiness and willingness throughout; (iii) performance or offer to perform essential terms; (iv) no substantial breach; and (v) that grant of relief is equitable.",
+      "finalOrderHeld": "Appeal dismissed. Decree of specific performance refused where plaintiff failed to demonstrate financial readiness."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 4453 OF 2009**\n\n**KAMAL KUMAR ...APPELLANT**\n\n**VERSUS**\n\n**PREMLATA JOSHI & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Abhay S. Oka, J.**\n\n1. It is settled law that grant of decree for specific performance under the Specific Relief Act, 1963 requires fulfillment of strict statutory criteria.",
+        "highlightedRatioPassages": ["grant of decree for specific performance under the Specific Relief Act, 1963 requires fulfillment of strict statutory criteria"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THE FIVE PREREQUISITES\n\n7. The plaintiff must plead and prove: (1) valid contract; (2) readiness and willingness from the date of contract continuously up to the hearing; (3) substantial compliance with terms; (4) prompt filing of suit; and (5) equity favors the relief.",
+        "highlightedRatioPassages": ["readiness and willingness from the date of contract continuously up to the hearing", "equity favors the relief"]
+      }
+    ]
+  },
+  {
+    "authorityId": "puttaswamy_2017",
+    "primaryDomain": "CONSTITUTIONAL",
+    "secondaryDomains": ["CYBER"],
+    "triggerKeywords": ["privacy", "article 21", "fundamental right", "proportionality", "legitimate state aim", "part iii", "informational privacy"],
+    "caseTitle": "Justice K.S. Puttaswamy (Retd.) v. Union of India",
+    "courtName": "Supreme Court of India (9-Judge Bench)",
+    "judgmentDate": "2017-08-24",
+    "primaryCitation": "(2017) 10 SCC 1",
+    "equivalentCitations": ["(2017) 10 SCC 1", "2017 INSC 748", "AIR 2017 SC 4161"],
+    "summary": "Unanimously affirmed the right to privacy as a fundamental right intrinsic to life and personal liberty under Article 21 and Part III of the Constitution of India, establishing the proportionality test for state incursions.",
+    "keyPropositions": [
+      "Right to privacy is an intrinsic part of the right to life and personal liberty under Article 21",
+      "Informational privacy and data autonomy are protected constitutional values",
+      "Any state infringement on privacy must satisfy legality, legitimate state aim, and proportionality"
+    ],
+    "iracBrief": {
+      "facts": "Constitutional challenge to the Aadhaar biometric identification project on the threshold ground that privacy is not a recognized fundamental right under the Indian Constitution.",
+      "issuesFramed": [
+        "Whether the right to privacy is guaranteed as a fundamental right under the Constitution of India?"
+      ],
+      "provisionsCited": [
+        "Article 21, Constitution of India",
+        "Article 19, Constitution of India",
+        "Article 14, Constitution of India"
+      ],
+      "ratioDecidendi": "Privacy is the constitutional core of human dignity. It is protected as an intrinsic facet of the right to life and personal liberty under Article 21 and as part of the freedoms guaranteed by Part III of the Constitution. State actions encroaching upon privacy must satisfy legality, necessity, and proportionality.",
+      "finalOrderHeld": "Reference answered in the affirmative; M.P. Sharma (1954) and Kharak Singh (1962) overruled to the extent they held privacy was not a fundamental right."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**WRIT PETITION (CIVIL) NO. 494 OF 2012**\n\n**JUSTICE K.S. PUTTASWAMY (RETD.) ...PETITIONER**\n\n**VERSUS**\n\n**UNION OF INDIA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Dr. Dhananjaya Y. Chandrachud, J. (for J.S. Khehar, C.J., R.K. Agrawal, J., S. Abdul Nazeer, J., and himself)**\n\n1. Privacy is a concomitant of the negative right of individuals to be let alone and a positive right to control vital aspects of their identity and data.",
+        "highlightedRatioPassages": ["Privacy is a concomitant of the negative right of individuals to be let alone"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THE THREE-FOLD PROPORTIONALITY TEST\n\nAn invasion of life or personal liberty must meet the three-fold requirement: (i) Legality, which postulates the existence of law; (ii) Need, defined in terms of a legitimate state aim; and (iii) Proportionality, which ensures a rational nexus between the objects and the means adopted to achieve them.",
+        "highlightedRatioPassages": ["Legality, which postulates the existence of law", "Proportionality, which ensures a rational nexus between the objects and the means adopted"]
+      }
+    ]
+  },
+  {
+    "authorityId": "anuradha_bhasin_2020",
+    "primaryDomain": "CONSTITUTIONAL",
+    "secondaryDomains": ["CYBER"],
+    "triggerKeywords": ["article 19", "internet shutdown", "freedom of speech", "proportionality", "telecom suspension rules", "judicial review"],
+    "caseTitle": "Anuradha Bhasin v. Union of India",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2020-01-10",
+    "primaryCitation": "(2020) 3 SCC 637",
+    "equivalentCitations": ["(2020) 3 SCC 637", "2020 INSC 30"],
+    "summary": "Held that freedom of speech and expression and freedom to practice any profession over the medium of internet is constitutionally protected under Article 19(1)(a) and 19(1)(g), and suspension orders must be temporary, published, and proportionate.",
+    "keyPropositions": [
+      "Access to the internet is a vital medium protected under Article 19(1)(a) and Article 19(1)(g)",
+      "Indefinite suspension of internet services is impermissible under Telecom Suspension Rules",
+      "Orders restricting fundamental rights must satisfy the doctrine of proportionality and are subject to judicial review"
+    ],
+    "iracBrief": {
+      "facts": "Indefinite shutdown of internet and mobile connectivity in Jammu & Kashmir following constitutional changes in August 2019 challenged by journalists and citizens.",
+      "issuesFramed": [
+        "Whether freedom of speech and trade via the internet is constitutionally protected under Article 19?",
+        "Whether an indefinite suspension of internet services is permissible under law?"
+      ],
+      "provisionsCited": [
+        "Article 19(1)(a) & 19(1)(g), Constitution of India",
+        "Section 144, Code of Criminal Procedure, 1973",
+        "Temporary Suspension of Telecom Services Rules, 2017"
+      ],
+      "ratioDecidendi": "Expression and trade through the medium of the internet are integral to fundamental rights under Article 19. An order suspending internet services must not only be lawful and necessary, but must satisfy strict proportionality. Indefinite suspension is illegal.",
+      "finalOrderHeld": "State directed to publish all suspension orders and review all existing restrictions; indefinite suspension held impermissible."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**WRIT PETITION (CIVIL) NO. 1031 OF 2019**\n\n**ANURADHA BHASIN ...PETITIONER**\n\n**VERSUS**\n\n**UNION OF INDIA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**N.V. Ramana, J.**\n\n1. The internet has become an essential tool in contemporary life. We hold that freedom of speech and expression and freedom to carry on trade over the internet is constitutionally protected.",
+        "highlightedRatioPassages": ["freedom of speech and expression and freedom to carry on trade over the internet is constitutionally protected"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### MANDATE ON INDEFINITE SUSPENSION\n\nComplete suspension of internet services for an indefinite period cannot be countenanced under our constitutional framework. The doctrine of proportionality must govern every executive measure curtailing access.",
+        "highlightedRatioPassages": ["Complete suspension of internet services for an indefinite period cannot be countenanced", "doctrine of proportionality must govern every executive measure"]
+      }
+    ]
+  },
+  {
+    "authorityId": "nitin_khandelwal_2008",
+    "primaryDomain": "CONSUMER",
+    "secondaryDomains": [],
+    "triggerKeywords": ["insurance", "vehicle theft", "repudiation", "non-standard basis", "section 2(11)", "deficiency", "consumer protection act", "policy condition breach"],
+    "caseTitle": "National Insurance Co. Ltd. v. Nitin Khandelwal",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2008-05-08",
+    "primaryCitation": "(2008) 11 SCC 259",
+    "equivalentCitations": ["(2008) 11 SCC 259", "2008 INSC 644"],
+    "summary": "Held that in cases of vehicle theft, breach of policy condition regarding commercial use is not germane to the theft itself; insurance company cannot repudiate claim in toto and must settle on non-standard basis (75%).",
+    "keyPropositions": [
+      "Theft of vehicle is independent of the commercial nature of usage at the time of theft",
+      "Mandatory settlement on non-standard basis (75% of sum insured) where condition breach is not fundamental to the peril",
+      "Doctrine of proportionality prevents total forfeiture in consumer insurance contracts"
+    ],
+    "iracBrief": {
+      "facts": "A vehicle insured for personal use was stolen while being used as a commercial taxi. The insurance company repudiated the entire theft claim citing breach of 'limitation as to use' clause.",
+      "issuesFramed": [
+        "Whether an insurance company is entitled to repudiate a vehicle theft claim in toto on the ground that the vehicle was being used for a commercial purpose in violation of policy conditions?"
+      ],
+      "provisionsCited": [
+        "Consumer Protection Act, 1986",
+        "Insurance Regulatory and Development Authority Guidelines"
+      ],
+      "ratioDecidendi": "In the case of theft of a vehicle, the breach of condition is not germane to the cause of the loss. The insurer is not entitled to repudiate the claim in its entirety and must settle the claim on a non-standard basis, typically up to 75% of the insured declared value.",
+      "finalOrderHeld": "Appeal of insurance company dismissed; order directing settlement of 75% claim upheld."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 3409 OF 2008**\n\n**NATIONAL INSURANCE CO. LTD. ...APPELLANT**\n\n**VERSUS**\n\n**NITIN KHANDELWAL ...RESPONDENT**\n\n### JUDGMENT\n**Tarun Chatterjee, J.**\n\n1. This appeal raises the question whether an insurance company can repudiate an entire theft claim when a vehicle insured for personal use was allegedly used as a taxi.",
+        "highlightedRatioPassages": ["whether an insurance company can repudiate an entire theft claim"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### REASONING & RATIO\n\n13. In the case of theft of a vehicle, breach of condition is not germane. Even if there is some breach of condition, the insurance company cannot repudiate the claim in toto and ought to have settled the claim on a non-standard basis.",
+        "highlightedRatioPassages": ["breach of condition is not germane", "insurance company cannot repudiate the claim in toto and ought to have settled the claim on a non-standard basis"]
+      }
+    ]
+  },
+  {
+    "authorityId": "lucknow_dev_authority_1994",
+    "primaryDomain": "CONSUMER",
+    "secondaryDomains": ["CIVIL_PROPERTY", "REAL_ESTATE"],
+    "triggerKeywords": ["housing construction", "development authority", "delay in possession", "deficiency in service", "misfeasance in public office", "compensation", "section 2(42)"],
+    "caseTitle": "Lucknow Development Authority v. M.K. Gupta",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "1993-11-05",
+    "primaryCitation": "(1994) 1 SCC 243",
+    "equivalentCitations": ["(1994) 1 SCC 243", "1993 INSC 445", "AIR 1994 SC 787"],
+    "summary": "Held that statutory development authorities engaged in constructing and allotting houses render 'service' under the Consumer Protection Act and are liable to pay compensation for delays and harassment caused to consumers.",
+    "keyPropositions": [
+      "Housing construction and flat allotment by statutory bodies constitute 'service' under consumer law",
+      "Public development authorities cannot hide behind sovereign immunity for administrative lethargy",
+      "Commissions have the authority to award exemplary damages for mental harassment and misfeasance"
+    ],
+    "iracBrief": {
+      "facts": "Consumers who were allotted residential flats by statutory development authorities were subjected to prolonged delays of several years without possession or refund.",
+      "issuesFramed": [
+        "Whether statutory bodies engaged in housing and development work come within the purview of the Consumer Protection Act?",
+        "Whether consumer fora have jurisdiction to award compensation for harassment caused by public officers?"
+      ],
+      "provisionsCited": [
+        "Section 2(1)(o), Consumer Protection Act, 1986 [now Section 2(42), CPA 2019]",
+        "Section 14, Consumer Protection Act, 1986"
+      ],
+      "ratioDecidendi": "Housing construction is a service. When a statutory authority delays delivery or alters terms unilaterally, it commits deficiency of service. Public officers are accountable for misfeasance, and consumer commissions can award compensation to victims.",
+      "finalOrderHeld": "Appeals dismissed; compensation awarded to consumers affirmed and authorities directed to recover damages from errant officers."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 6237 OF 1990**\n\n**LUCKNOW DEVELOPMENT AUTHORITY ...APPELLANT**\n\n**VERSUS**\n\n**M.K. GUPTA ...RESPONDENT**\n\n### JUDGMENT\n**R.M. Sahai, J.**\n\n1. The concept of consumer protection is of recent origin. A consumer is not a person of power; public authorities must deal with consumers with accountability.",
+        "highlightedRatioPassages": ["public authorities must deal with consumers with accountability"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### HOLDING ON HOUSING AND MISFEASANCE\n\nHousing construction comes squarely within the definition of service. Where a public authority acts arbitrarily or delays performance indefinitely, it commits misfeasance in public office. The consumer commission is empowered to award adequate compensation.",
+        "highlightedRatioPassages": ["Housing construction comes squarely within the definition of service", "consumer commission is empowered to award adequate compensation"]
+      }
+    ]
+  },
+  {
+    "authorityId": "tata_consultancy_mistry_2021",
+    "primaryDomain": "CORPORATE",
+    "secondaryDomains": [],
+    "triggerKeywords": ["oppression and mismanagement", "section 241", "section 242", "companies act", "board removal", "just and equitable winding up", "quasi-partnership"],
+    "caseTitle": "Tata Consultancy Services Ltd. v. Cyrus Investments Pvt. Ltd.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2021-03-26",
+    "primaryCitation": "(2021) 9 SCC 449",
+    "equivalentCitations": ["(2021) 9 SCC 449", "2021 INSC 225"],
+    "summary": "Held that mere removal of an Executive Chairman by board majority does not amount to oppression or mismanagement under Sections 241-242 of the Companies Act, 2013 unless winding up on just and equitable grounds is made out.",
+    "keyPropositions": [
+      "Removal of a Director or Chairman is an internal corporate governance matter not per se oppressive",
+      "Section 242 relief requires showing that company's affairs warrant winding up on just and equitable grounds",
+      "Principle of quasi-partnership cannot be readily imported into large public limited holding conglomerates"
+    ],
+    "iracBrief": {
+      "facts": "Cyrus Mistry was removed as Executive Chairman of Tata Sons by the Board of Directors. Minority shareholder companies controlled by the Shapoorji Pallonji group alleged oppression and mismanagement under Sections 241-242.",
+      "issuesFramed": [
+        "Whether the removal of an Executive Chairman constitutes oppression and mismanagement under Section 241 of the Companies Act, 2013?",
+        "Whether Tata Sons could be characterized as a quasi-partnership?"
+      ],
+      "provisionsCited": [
+        "Section 241, Companies Act, 2013",
+        "Section 242, Companies Act, 2013",
+        "Section 244, Companies Act, 2013"
+      ],
+      "ratioDecidendi": "Sections 241 and 242 do not confer jurisdiction on NCLT to sit as an appellate authority over board decisions. Unless facts justify winding up under just and equitable grounds, a removal from directorship does not constitute oppression.",
+      "finalOrderHeld": "Appeals of Tata Group allowed; judgment of NCLAT reinstating Cyrus Mistry set aside."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 440-441 OF 2020**\n\n**TATA CONSULTANCY SERVICES LTD. ...APPELLANT**\n\n**VERSUS**\n\n**CYRUS INVESTMENTS PVT. LTD. & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**S.A. Bobde, C.J.**\n\n1. The central question is whether the removal of a person from the post of Executive Chairman can be characterized as oppressive.",
+        "highlightedRatioPassages": ["whether the removal of a person from the post of Executive Chairman can be characterized as oppressive"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### STATUTORY PREREQUISITE UNDER SECTION 242\n\nSection 242(1)(b) mandates a finding that winding up the company would unfairly prejudice shareholders, but that facts would otherwise justify the making of a winding-up order on just and equitable grounds. Absent such grounds, section 241 cannot be invoked.",
+        "highlightedRatioPassages": ["Section 242(1)(b) mandates a finding that winding up the company would unfairly prejudice shareholders", "Absent such grounds, section 241 cannot be invoked"]
+      }
+    ]
+  },
+  {
+    "authorityId": "swiss_ribbons_2019",
+    "primaryDomain": "CORPORATE",
+    "secondaryDomains": ["BANKING"],
+    "triggerKeywords": ["ibc", "insolvency and bankruptcy code", "financial creditor", "operational creditor", "resolution plan", "maximization of assets", "section 12a"],
+    "caseTitle": "Swiss Ribbons Pvt. Ltd. & Anr. v. Union of India",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2019-01-25",
+    "primaryCitation": "(2019) 4 SCC 17",
+    "equivalentCitations": ["(2019) 4 SCC 17", "2019 INSC 84"],
+    "summary": "Upheld the constitutional validity of the Insolvency and Bankruptcy Code, 2016 in its entirety, distinguishing financial creditors from operational creditors and prioritizing corporate resolution over liquidation.",
+    "keyPropositions": [
+      "Insolvency and Bankruptcy Code (IBC) is an economic legislation aimed at corporate reorganization and asset maximization",
+      "Intelligible differentia exists between financial creditors and operational creditors",
+      "Defaulters and errant promoters are legitimately barred from bidding under Section 29A"
+    ],
+    "iracBrief": {
+      "facts": "Writ petitions challenging various provisions of the Insolvency and Bankruptcy Code, 2016, including the classification of creditors and disqualification of promoters under Section 29A.",
+      "issuesFramed": [
+        "Whether the classification between financial and operational creditors under IBC violates Article 14?",
+        "Whether the absolute bar under Section 29A is constitutionally valid?"
+      ],
+      "provisionsCited": [
+        "Insolvency and Bankruptcy Code, 2016",
+        "Section 7, Section 9, Section 12A, Section 29A, IBC 2016",
+        "Article 14, Constitution of India"
+      ],
+      "ratioDecidendi": "The IBC is intended to keep the corporate debtor as a going concern and maximize value. Financial creditors are involved in lending and assessment of viable recovery, whereas operational creditors supply goods. The distinction is founded on intelligible differentia.",
+      "finalOrderHeld": "Constitutional validity of the IBC, 2016 upheld in its entirety."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**WRIT PETITION (CIVIL) NO. 99 OF 2018**\n\n**SWISS RIBBONS PVT. LTD. & ANR. ...PETITIONERS**\n\n**VERSUS**\n\n**UNION OF INDIA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**R.F. Nariman, J.**\n\n1. The Insolvency and Bankruptcy Code, 2016 is a watershed piece of economic legislation designed to revive corporate debtors.",
+        "highlightedRatioPassages": ["watershed piece of economic legislation designed to revive corporate debtors"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### REASONING ON CREDITOR CLASSIFICATION\n\nFinancial creditors lend substantial capital based on detailed project evaluation. Operational creditors provide short-term goods and services. The classification is rational and directly relates to the object of timely debt resolution.",
+        "highlightedRatioPassages": ["Financial creditors lend substantial capital based on detailed project evaluation", "classification is rational and directly relates to the object of timely debt resolution"]
+      }
+    ]
+  },
+  {
+    "authorityId": "satender_kumar_antil_2022",
+    "primaryDomain": "CRIMINAL",
+    "secondaryDomains": ["CONSTITUTIONAL"],
+    "triggerKeywords": ["bail", "section 41a crpc", "arrest guidelines", "undertrial prisoners", "default bail", "personal liberty", "anticipatory bail"],
+    "caseTitle": "Satender Kumar Antil v. Central Bureau of Investigation",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2022-07-11",
+    "primaryCitation": "(2022) 10 SCC 51",
+    "equivalentCitations": ["(2022) 10 SCC 51", "2022 INSC 690"],
+    "summary": "Laid down comprehensive nationwide guidelines categorizing offenses for bail consideration and mandated strict compliance with Section 41 and 41A CrPC to prevent unnecessary pre-trial incarceration.",
+    "keyPropositions": [
+      "Bail is the rule and jail is the exception under Article 21",
+      "Investigating agencies must strictly adhere to Section 41 and 41A CrPC before effecting arrest",
+      "Categorization of offenses: Category A offenses (punishable up to 7 years) warrant bail without custody unless exceptional grounds exist"
+    ],
+    "iracBrief": {
+      "facts": "Pervasive overcrowding of Indian prisons with over 75% undertrial prisoners due to routine arrests and failure of trial courts to exercise bail discretion.",
+      "issuesFramed": [
+        "What guidelines should govern the exercise of bail jurisdiction by courts where accused was not arrested during investigation?"
+      ],
+      "provisionsCited": [
+        "Section 41, Section 41A, Section 88, Section 437, Section 439, CrPC, 1973",
+        "Article 21, Constitution of India"
+      ],
+      "ratioDecidendi": "Arrest is a drastic measure and must not be made routinely. When an accused has cooperated with investigation and was not arrested, courts should not mechanically remand them to custody upon filing of the chargesheet.",
+      "finalOrderHeld": "Binding guidelines issued to all High Courts and States for expeditious disposal of bail applications."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**MISCELLANEOUS APPLICATION NO. 1849 OF 2021**\n\n**SATENDER KUMAR ANTIL ...PETITIONER**\n\n**VERSUS**\n\n**CENTRAL BUREAU OF INVESTIGATION & ANR. ...RESPONDENTS**\n\n### JUDGMENT\n**M.M. Sundresh, J.**\n\n1. Liberty is one of the most essential facets of our constitutional democracy. The rate of incarceration of undertrial prisoners in India requires urgent corrective intervention.",
+        "highlightedRatioPassages": ["rate of incarceration of undertrial prisoners in India requires urgent corrective intervention"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### MANDATE ON BAIL AND SECTION 41A\n\nCourts must remember that bail is the rule and jail the exception. In cases where the police officer does not arrest the accused during investigation under Section 41A, the court shall not insist on custodial appearance merely because cognizance has been taken.",
+        "highlightedRatioPassages": ["bail is the rule and jail the exception", "court shall not insist on custodial appearance merely because cognizance has been taken"]
+      }
+    ]
+  },
+  {
+    "authorityId": "arnesh_kumar_2014",
+    "primaryDomain": "CRIMINAL",
+    "secondaryDomains": ["FAMILY"],
+    "triggerKeywords": ["section 498a", "section 41 crpc", "notice of appearance", "unnecessary arrest", "police powers", "magistrate checklist"],
+    "caseTitle": "Arnesh Kumar v. State of Bihar & Anr.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2014-07-02",
+    "primaryCitation": "(2014) 8 SCC 273",
+    "equivalentCitations": ["(2014) 8 SCC 273", "2014 INSC 485", "AIR 2014 SC 2756"],
+    "summary": "Mandated that police officers cannot automatically arrest an accused in offenses punishable with imprisonment up to 7 years without satisfying the checklist under Section 41(1)(b) CrPC.",
+    "keyPropositions": [
+      "No automatic arrest for offenses punishable with imprisonment up to 7 years (including Section 498A IPC)",
+      "Police must serve Section 41A notice of appearance within two weeks of complaint",
+      "Magistrates must scrutinize police checklist before authorizing detention; failure invites departmental action"
+    ],
+    "iracBrief": {
+      "facts": "Appellant apprehending arrest in a matrimonial dispute under Section 498A IPC approached the Supreme Court after his anticipatory bail was dismissed.",
+      "issuesFramed": [
+        "What checks and balances must be enforced to curb arbitrary arrests by police in cases punishable with imprisonment of seven years or less?"
+      ],
+      "provisionsCited": [
+        "Section 41, Section 41A, Section 57, CrPC, 1973",
+        "Section 498A, Indian Penal Code, 1860"
+      ],
+      "ratioDecidendi": "Arrest brings humiliation, curtails freedom and casts scars forever. Police officers must satisfy the preconditions in Section 41 CrPC and record reasons in writing. Notice under Section 41A must be the primary recourse.",
+      "finalOrderHeld": "Directions issued to all State Governments and High Courts; magistrates authorizing mechanical detention made liable for disciplinary action."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CRIMINAL APPEAL NO. 1277 OF 2014**\n\n**ARNESH KUMAR ...APPELLANT**\n\n**VERSUS**\n\n**STATE OF BIHAR & ANR. ...RESPONDENTS**\n\n### JUDGMENT\n**Chandramauli Kr. Prasad, J.**\n\n1. Arrest brings humiliation, curtails freedom and casts scars forever. No arrest should be made simply because it is lawful for the police officer to do so.",
+        "highlightedRatioPassages": ["No arrest should be made simply because it is lawful for the police officer to do so"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### DIRECTIONS TO POLICE AND MAGISTRATES\n\nAll police officers be provided with a check list containing specified sub-clauses under Section 41(1)(b)(ii). The Magistrate while authorizing detention shall peruse the report and only after recording satisfaction shall authorize further detention.",
+        "highlightedRatioPassages": ["All police officers be provided with a check list", "only after recording satisfaction shall authorize further detention"]
+      }
+    ]
+  },
+  {
+    "authorityId": "shreya_singhal_2015",
+    "primaryDomain": "CYBER",
+    "secondaryDomains": ["CONSTITUTIONAL"],
+    "triggerKeywords": ["section 66a it act", "section 79 it act", "intermediary liability", "takedown notice", "court order", "freedom of speech", "chilling effect"],
+    "caseTitle": "Shreya Singhal v. Union of India",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2015-03-24",
+    "primaryCitation": "(2015) 5 SCC 1",
+    "equivalentCitations": ["(2015) 5 SCC 1", "2015 INSC 249", "AIR 2015 SC 1523"],
+    "summary": "Struck down Section 66A of the Information Technology Act as unconstitutional and read down Section 79(3)(b) IT Act to mandate that intermediaries must take down content only upon receiving a court order or government notification.",
+    "keyPropositions": [
+      "Section 66A IT Act struck down for being overbroad, vague, and violating Article 19(1)(a)",
+      "Intermediaries cannot be arbiters of unlawful speech; Section 79(3)(b) read down to require court order or government directive",
+      "Discussion and advocacy distinguished from incitement"
+    ],
+    "iracBrief": {
+      "facts": "Arrests of citizens under Section 66A of the Information Technology Act for posting political opinions on social media challenged as a violation of free speech.",
+      "issuesFramed": [
+        "Whether Section 66A of the IT Act infringes the fundamental right to freedom of speech under Article 19(1)(a)?",
+        "Whether Section 79(3)(b) makes intermediaries judges of content upon receiving private complaints?"
+      ],
+      "provisionsCited": [
+        "Section 66A, Information Technology Act, 2000",
+        "Section 79(3)(b), Information Technology Act, 2000",
+        "Article 19(1)(a) & Article 19(2), Constitution of India"
+      ],
+      "ratioDecidendi": "Section 66A casts the net too wide and produces a chilling effect on speech. Regarding Section 79(3)(b), an intermediary must receive actual knowledge in the form of a court order or authorized governmental direction, not mere private notices, to trigger takedown duties.",
+      "finalOrderHeld": "Section 66A struck down in its entirety; Section 79(3)(b) and Rule 3(4) of the 2011 Intermediary Rules read down."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**WRIT PETITION (CRIMINAL) NO. 199 OF 2013**\n\n**SHREYA SINGHAL ...PETITIONER**\n\n**VERSUS**\n\n**UNION OF INDIA ...RESPONDENT**\n\n### JUDGMENT\n**R.F. Nariman, J.**\n\n1. This batch of writ petitions raises questions of great constitutional importance relating to freedom of expression over the internet.",
+        "highlightedRatioPassages": ["questions of great constitutional importance relating to freedom of expression over the internet"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### INTERMEDIARY SAFE HARBOUR READ DOWN\n\nSection 79(3)(b) must be read down to mean that the intermediary upon receiving actual knowledge from a court order or on being notified by the appropriate government must expeditiously remove the unlawful content. Otherwise, intermediaries would be swamped with private complaints and forced to censor legitimate speech.",
+        "highlightedRatioPassages": ["Section 79(3)(b) must be read down to mean that the intermediary upon receiving actual knowledge from a court order", "otherwise intermediaries would be forced to censor legitimate speech"]
+      }
+    ]
+  },
+  {
+    "authorityId": "louboutin_2018",
+    "primaryDomain": "CYBER",
+    "secondaryDomains": ["IP", "CONSUMER"],
+    "triggerKeywords": ["section 79", "intermediary", "safe harbour", "e-commerce", "active participant", "due diligence", "counterfeit", "trademark", "e-commerce rules"],
+    "caseTitle": "Christian Louboutin SAS v. Nakul Bajaj & Ors.",
+    "courtName": "Delhi High Court (Commercial Division)",
+    "judgmentDate": "2018-11-02",
+    "primaryCitation": "2018 SCC OnLine Del 12215",
+    "equivalentCitations": ["2018 SCC OnLine Del 12215", "ILR (2018) VI Delhi 1014"],
+    "summary": "Held that e-commerce platforms that actively curate products, guarantee authenticity, promote listings, or facilitate transactions forfeit passive intermediary safe harbour under Section 79 of the IT Act.",
+    "keyPropositions": [
+      "Section 79(3) IT Act forfeiture of intermediary immunity upon active commercial participation",
+      "Distinction between passive technical conduits and active e-commerce facilitators",
+      "Active platforms have an affirmative legal duty to verify seller identities and prevent counterfeit trade"
+    ],
+    "iracBrief": {
+      "facts": "Christian Louboutin SAS, owner of the 'Red Sole' trademark, sued e-commerce platform Darveys.com for selling counterfeit luxury shoes. The platform claimed immunity under Section 79 IT Act as an intermediary.",
+      "issuesFramed": [
+        "Whether an e-commerce platform that verifies authenticity and charges commission qualifies as an intermediary under Section 79 IT Act?",
+        "Whether safe harbour immunity protects active market facilitators?"
+      ],
+      "provisionsCited": [
+        "Section 79, Information Technology Act, 2000",
+        "Section 29, Trade Marks Act, 1999",
+        "Information Technology (Intermediary Guidelines) Rules"
+      ],
+      "ratioDecidendi": "When an e-commerce entity goes beyond being an automated conduit and actively advertises, stores, guarantees quality, or curates seller listings, it becomes an active participant and forfeits safe harbour immunity under Section 79(3) IT Act.",
+      "finalOrderHeld": "Permanent injunction granted in favor of plaintiff restraining defendant platform from selling unauthorized products."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE HIGH COURT OF DELHI AT NEW DELHI\n**CS (COMM) 344/2018**\n\n**CHRISTIAN LOUBOUTIN SAS ...PLAINTIFF**\n\n**VERSUS**\n\n**NAKUL BAJAJ & ORS. ...DEFENDANTS**\n\n### JUDGMENT\n**Prathiba M. Singh, J.**\n\n1. This suit raises significant questions regarding the role and liability of e-commerce platforms in trademark infringement and the limits of Section 79 immunity.",
+        "highlightedRatioPassages": ["role and liability of e-commerce platforms in trademark infringement and the limits of Section 79 immunity"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### ACTIVE CONDUIT VS PASSIVE CARRIER\n\nActive participation by an e-commerce website removes it from the status of a mere intermediary. Safe harbour under Section 79 is not an open cheque; an entity that promotes, packs, or vouches for goods cannot claim safe harbour.",
+        "highlightedRatioPassages": ["Active participation by an e-commerce website removes it from the status of a mere intermediary", "Safe harbour under Section 79 is not an open cheque"]
+      }
+    ]
+  },
+  {
+    "authorityId": "bangalore_water_supply_1978",
+    "primaryDomain": "EMPLOYMENT",
+    "secondaryDomains": [],
+    "triggerKeywords": ["industry", "section 2(j)", "industrial disputes act", "workman", "employer employee relationship", "triple test"],
+    "caseTitle": "Bangalore Water Supply & Sewerage Board v. A. Rajappa",
+    "courtName": "Supreme Court of India (7-Judge Bench)",
+    "judgmentDate": "1978-02-21",
+    "primaryCitation": "(1978) 2 SCC 213",
+    "equivalentCitations": ["(1978) 2 SCC 213", "1978 INSC 44", "AIR 1978 SC 548"],
+    "summary": "Formulated the comprehensive 'Triple Test' to determine the definition of 'industry' under Section 2(j) of the Industrial Disputes Act, 1947, bringing educational, welfare, and municipal bodies within its ambit.",
+    "keyPropositions": [
+      "The 'Triple Test' governs industry: (i) systematic activity, (ii) cooperation between employer and employee, (iii) production/distribution of goods and services",
+      "Absence of profit motive or commercial motive is completely irrelevant to being an industry",
+      "Sovereign functions strictly restricted to primary and inalienable regal functions of the State"
+    ],
+    "iracBrief": {
+      "facts": "Employees of the Bangalore Water Supply Board were subjected to fines and disciplinary proceedings. When they approached the Labour Court, the Board contended it was a statutory body discharging sovereign functions and not an 'industry'.",
+      "issuesFramed": [
+        "What is the true scope and meaning of 'industry' under Section 2(j) of the Industrial Disputes Act, 1947?"
+      ],
+      "provisionsCited": [
+        "Section 2(j), Section 2(s), Industrial Disputes Act, 1947"
+      ],
+      "ratioDecidendi": "Where there is systematic activity organized by cooperation between employer and employee for the production and/or distribution of goods and services calculated to satisfy human wants and wishes, prima facie, there is an 'industry' in that enterprise.",
+      "finalOrderHeld": "Bangalore Water Supply Board held to be an industry; Labour Court jurisdiction affirmed."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 753 OF 1975**\n\n**BANGALORE WATER SUPPLY & SEWERAGE BOARD ...APPELLANT**\n\n**VERSUS**\n\n**A. RAJAPPA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**V.R. Krishna Iyer, J.**\n\n1. The definition of 'industry' in Section 2(j) of the Industrial Disputes Act has been a legal storm center. We formulate a clear test to settle the law.",
+        "highlightedRatioPassages": ["definition of 'industry' in Section 2(j) of the Industrial Disputes Act has been a legal storm center"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THE TRIPLE TEST\n\nI. Where there is (i) systematic activity, (ii) organized by co-operation between employer and employee, (iii) for the production and/or distribution of goods and services calculated to satisfy human wants and wishes, prima facie, there is an 'industry'.\nII. The absence of profit motive is irrelevant.",
+        "highlightedRatioPassages": ["systematic activity, organized by co-operation between employer and employee", "absence of profit motive is irrelevant"]
+      }
+    ]
+  },
+  {
+    "authorityId": "state_of_karnataka_umadevi_2006",
+    "primaryDomain": "EMPLOYMENT",
+    "secondaryDomains": ["CONSTITUTIONAL"],
+    "triggerKeywords": ["regularization", "contractual employment", "ad hoc appointment", "public employment", "article 14", "article 16", "backdoor entry"],
+    "caseTitle": "State of Karnataka & Ors. v. Umadevi (3) & Ors.",
+    "courtName": "Supreme Court of India (Constitution Bench)",
+    "judgmentDate": "2006-04-10",
+    "primaryCitation": "(2006) 4 SCC 1",
+    "equivalentCitations": ["(2006) 4 SCC 1", "2006 INSC 206", "AIR 2006 SC 1806"],
+    "summary": "Held that courts cannot direct blanket absorption or regularization of temporary, daily-wage, or contractual employees in public employment, as backdoor entries violate Articles 14 and 16 of the Constitution.",
+    "keyPropositions": [
+      "Public employment must adhere strictly to constitutional recruitment procedures under Articles 14 and 16",
+      "Contractual or daily-wage workers have no vested right to claim regularization or permanence",
+      "One-time exception permitted only for irregularly appointed employees who worked for over 10 years without court protection"
+    ],
+    "iracBrief": {
+      "facts": "Contractual and daily-wage employees working for government departments approached courts seeking regularization based on continuous service.",
+      "issuesFramed": [
+        "Whether High Courts under Article 226 have jurisdiction to order regularization of employees engaged on daily wages or contract without competitive selection?"
+      ],
+      "provisionsCited": [
+        "Article 14, Article 16, Article 309, Constitution of India"
+      ],
+      "ratioDecidendi": "Adherence to Articles 14 and 16 is a must in the process of public employment. Courts cannot encourage backdoor appointments by granting permanence to contractual appointees. A one-time measure is permitted only for irregular (not illegal) appointments who completed 10 years.",
+      "finalOrderHeld": "Appeals of State allowed; directions of High Court regularizing contractual staff set aside."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 3595-3612 OF 1999**\n\n**STATE OF KARNATAKA & ORS. ...APPELLANTS**\n\n**VERSUS**\n\n**UMADEVI (3) & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**P.K. Balasubramanyan, J.**\n\n1. Public employment in a sovereign socialist secular democratic republic has to be set down in accordance with the Constitution.",
+        "highlightedRatioPassages": ["Public employment has to be set down in accordance with the Constitution"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### EQUALITY OF OPPORTUNITY\n\nIt is not open to the court to prevent regular recruitment and direct that persons who were engaged on temporary or contractual terms be absorbed into service, as that violates the mandate of Articles 14 and 16.",
+        "highlightedRatioPassages": ["not open to the court to direct that persons engaged on temporary terms be absorbed", "violates the mandate of Articles 14 and 16"]
+      }
+    ]
+  },
+  {
+    "authorityId": "vellore_citizens_1996",
+    "primaryDomain": "ENVIRONMENTAL",
+    "secondaryDomains": ["CONSTITUTIONAL"],
+    "triggerKeywords": ["polluter pays principle", "precautionary principle", "sustainable development", "article 21", "environment protection act", "industrial pollution", "tanneries"],
+    "caseTitle": "Vellore Citizens Welfare Forum v. Union of India",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "1996-08-28",
+    "primaryCitation": "(1996) 5 SCC 647",
+    "equivalentCitations": ["(1996) 5 SCC 647", "1996 INSC 984", "AIR 1996 SC 2715"],
+    "summary": "Integrated the 'Precautionary Principle' and the 'Polluter Pays Principle' into the environmental law of India as essential components of sustainable development and Article 21.",
+    "keyPropositions": [
+      "The Precautionary Principle and the Polluter Pays Principle are essential features of Sustainable Development",
+      "Remediation of damaged environment is part of the process of sustainable development",
+      "Onus of proof is on the actor or industrialist to demonstrate that actions are environmentally benign"
+    ],
+    "iracBrief": {
+      "facts": "Tanneries in Tamil Nadu were discharging untreated toxic effluents into agricultural lands and the Palar River, poisoning drinking water wells and rendering soil barren.",
+      "issuesFramed": [
+        "Whether tanneries can be permitted to continue operations without setting up effluent treatment plants?",
+        "What legal doctrines govern ecological restoration under Indian law?"
+      ],
+      "provisionsCited": [
+        "Article 21, Article 48A, Article 51A(g), Constitution of India",
+        "Environment (Protection) Act, 1986",
+        "Water (Prevention and Control of Pollution) Act, 1974"
+      ],
+      "ratioDecidendi": "The Precautionary Principle and the Polluter Pays Principle are part of the environmental law of the country. Environmental measures must anticipate, prevent, and attack the causes of environmental degradation. The polluter is liable to compensate victims and bear the cost of restoring the degraded ecosystem.",
+      "finalOrderHeld": "Tanneries directed to install effluent treatment systems; environmental fine imposed; Green Bench constituted."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**WRIT PETITION (CIVIL) NO. 914 OF 1991**\n\n**VELLORE CITIZENS WELFARE FORUM ...PETITIONER**\n\n**VERSUS**\n\n**UNION OF INDIA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Kuldip Singh, J.**\n\n1. Sustainable development has been accepted as a viable concept to eradicate poverty and improve the quality of human life while preserving ecosystems.",
+        "highlightedRatioPassages": ["Sustainable development has been accepted as a viable concept"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### PRECAUTIONARY PRINCIPLE & POLLUTER PAYS\n\nThe Precautionary Principle mandates that where there are threats of serious irreversible damage, lack of full scientific certainty shall not be used as a reason for postponing cost-effective measures. Under the Polluter Pays principle, the financial cost of preventing or remedying damage lies with the polluter.",
+        "highlightedRatioPassages": ["threats of serious irreversible damage, lack of scientific certainty shall not be used as a reason", "financial cost of remedying damage lies with the polluter"]
+      }
+    ]
+  },
+  {
+    "authorityId": "mc_mehta_taj_trapezium_1996",
+    "primaryDomain": "ENVIRONMENTAL",
+    "secondaryDomains": [],
+    "triggerKeywords": ["taj trapezium", "air pollution", "cng transition", "environmental degradation", "public trust doctrine", "relocation of industries"],
+    "caseTitle": "M.C. Mehta v. Union of India (Taj Trapezium Case)",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "1996-12-30",
+    "primaryCitation": "(1997) 2 SCC 353",
+    "equivalentCitations": ["(1997) 2 SCC 353", "1996 INSC 1632"],
+    "summary": "Applied the precautionary principle and public trust doctrine to protect the Taj Mahal from industrial atmospheric pollution, directing 292 industries in the Taj Trapezium Zone to switch to natural gas or relocate.",
+    "keyPropositions": [
+      "Monuments of world cultural heritage are held in public trust and require strict environmental safeguards",
+      "Industries emitting sulfur dioxide must transition to non-polluting fuels or relocate outside the eco-sensitive zone",
+      "Workers' rights to relocation allowances and continuity of employment protected during environmental transitions"
+    ],
+    "iracBrief": {
+      "facts": "Atmospheric emissions containing sulfur dioxide from coal and coke-based foundries and refineries in Agra and Mathura caused acid rain and yellowing of the marble facade of the Taj Mahal.",
+      "issuesFramed": [
+        "Whether industries operating in the Taj Trapezium Zone (TTZ) should be directed to stop using coal/coke and switch to gas or relocate?"
+      ],
+      "provisionsCited": [
+        "Air (Prevention and Control of Pollution) Act, 1981",
+        "Environment (Protection) Act, 1986",
+        "Article 21, Constitution of India"
+      ],
+      "ratioDecidendi": "The atmospheric pollution generated by chemical industries is a patent threat to the Taj Mahal. Under the precautionary principle, commercial convenience must yield to the preservation of cultural heritage. Industries must switch to natural gas or face closure and relocation.",
+      "finalOrderHeld": "292 industries ordered to switch over to natural gas; those not obtaining gas connections directed to cease operations and relocate."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**WRIT PETITION (CIVIL) NO. 13381 OF 1984**\n\n**M.C. MEHTA ...PETITIONER**\n\n**VERSUS**\n\n**UNION OF INDIA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Kuldip Singh, J.**\n\n1. The Taj Mahal is a masterpiece of architectural heritage. Industrial development cannot be permitted to destroy our irreplaceable national treasures.",
+        "highlightedRatioPassages": ["Industrial development cannot be permitted to destroy our irreplaceable national treasures"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### DIRECTIVE ON GAS CONVERSION\n\nThe 292 industries listed shall apply for gas connection. The industries which do not obtain gas connectivity shall stop functioning with coal/coke in the TTZ and relocate in accordance with the scheme framed.",
+        "highlightedRatioPassages": ["industries which do not obtain gas connectivity shall stop functioning with coal/coke"]
+      }
+    ]
+  },
+  {
+    "authorityId": "rajnesh_v_neha_2020",
+    "primaryDomain": "FAMILY",
+    "secondaryDomains": ["CRIMINAL"],
+    "triggerKeywords": ["maintenance", "affidavit of assets and liabilities", "section 125 crpc", "dv act", "hindu marriage act", "quantum of maintenance", "overlapping jurisdiction"],
+    "caseTitle": "Rajnesh v. Neha & Anr.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2020-11-04",
+    "primaryCitation": "(2021) 2 SCC 324",
+    "equivalentCitations": ["(2021) 2 SCC 324", "2020 INSC 632"],
+    "summary": "Framed comprehensive binding guidelines for uniform determination of maintenance across overlapping statutory frameworks, making the filing of an Affidavit of Assets and Liabilities mandatory.",
+    "keyPropositions": [
+      "Mandatory filing of structured Affidavits of Assets and Liabilities by both spouses in all maintenance claims",
+      "Maintenance awarded from the date of filing of the application to prevent delay tactics",
+      "Harmonization of overlapping maintenance claims across HMA, DV Act, and Section 125 CrPC with adjustment mechanism"
+    ],
+    "iracBrief": {
+      "facts": "Inconsistent orders and decades of delay across family courts, magistrate courts, and civil courts regarding interim and final maintenance in matrimonial disputes.",
+      "issuesFramed": [
+        "What uniform procedure should govern the assessment of maintenance and disposal of overlapping claims across diverse statutes?"
+      ],
+      "provisionsCited": [
+        "Section 125, Code of Criminal Procedure, 1973",
+        "Section 24, Hindu Marriage Act, 1955",
+        "Protection of Women from Domestic Violence Act, 2005"
+      ],
+      "ratioDecidendi": "Maintenance is intended to prevent destitution. To eliminate concealment of income, both parties must file comprehensive Affidavits of Assets and Liabilities. Maintenance must be awarded from the date of the petition.",
+      "finalOrderHeld": "Comprehensive guidelines and standard Affidavit formats framed; orders circulated to all High Courts and Family Courts."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CRIMINAL APPEAL NO. 730 OF 2020**\n\n**RAJNESH ...APPELLANT**\n\n**VERSUS**\n\n**NEHA & ANR. ...RESPONDENTS**\n\n### JUDGMENT\n**Indu Malhotra, J.**\n\n1. Matrimonial litigation often involves a long and arduous battle for maintenance. We formulate uniform criteria to ensure expeditious disposal.",
+        "highlightedRatioPassages": ["We formulate uniform criteria to ensure expeditious disposal"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### MANDATORY AFFIDAVIT OF ASSETS\n\nIt is directed that both parties in all matrimonial maintenance proceedings shall mandatorily disclose their assets and liabilities on sworn affidavit in the format specified in Enclosures I, II, and III.",
+        "highlightedRatioPassages": ["both parties in all matrimonial maintenance proceedings shall mandatorily disclose their assets and liabilities on sworn affidavit"]
+      }
+    ]
+  },
+  {
+    "authorityId": "vineeta_sharma_2020",
+    "primaryDomain": "FAMILY",
+    "secondaryDomains": ["CIVIL_PROPERTY"],
+    "triggerKeywords": ["coparcenary rights", "hindu succession act", "section 6", "daughters rights", "retrospective application", "joint hindu family", "unobstructed heritage"],
+    "caseTitle": "Vineeta Sharma v. Rakesh Sharma & Ors.",
+    "courtName": "Supreme Court of India (3-Judge Bench)",
+    "judgmentDate": "2020-08-11",
+    "primaryCitation": "(2020) 9 SCC 1",
+    "equivalentCitations": ["(2020) 9 SCC 1", "2020 INSC 483"],
+    "summary": "Held that daughters possess coparcenary rights in Hindu Joint Family property by birth under Section 6 of the Hindu Succession Act, 1956 as amended in 2005, irrespective of whether the father was alive on 09.09.2005.",
+    "keyPropositions": [
+      "Daughters have equal coparcenary rights by birth under Section 6 Hindu Succession Act",
+      "Daughter's right is an unobstructed heritage; father need not have been alive as of 09.09.2005",
+      "Only registered partition deeds or court decrees executed prior to 20.12.2004 are saved from reopening"
+    ],
+    "iracBrief": {
+      "facts": "Conflicting judgments of the Supreme Court in Prakash v. Phulavati (2016) and Danamma (2018) on whether amended Section 6 applies to daughters whose fathers died prior to the 2005 amendment.",
+      "issuesFramed": [
+        "Whether Section 6 of the Hindu Succession Act as substituted by the 2005 Amendment confers coparcenary rights on daughters irrespective of whether the father was alive on 9 September 2005?"
+      ],
+      "provisionsCited": [
+        "Section 6, Hindu Succession Act, 1956 (as amended by Act 39 of 2005)"
+      ],
+      "ratioDecidendi": "Coparcenary rights under amended Section 6 are conferred by birth. The right is not dependent on the father being alive at the time of the amendment. The 2005 Amendment has retroactive effect.",
+      "finalOrderHeld": "Reference answered in the affirmative; Prakash v. Phulavati overruled to the extent it held father coparcener had to be alive."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 32601 OF 2018**\n\n**VINEETA SHARMA ...APPELLANT**\n\n**VERSUS**\n\n**RAKESH SHARMA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Arun Mishra, J.**\n\n1. Daughters are coparceners by birth with equal rights and liabilities in the Hindu Undivided Family property.",
+        "highlightedRatioPassages": ["Daughters are coparceners by birth with equal rights and liabilities"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### RETROACTIVE CONFERMENT OF RIGHTS\n\nThe provisions contained in substituted Section 6 of the Hindu Succession Act, 1956 confer status of coparcener on the daughter by birth. The father need not have been living on 9-9-2005.",
+        "highlightedRatioPassages": ["confer status of coparcener on the daughter by birth", "father need not have been living on 9-9-2005"]
+      }
+    ]
+  },
+  {
+    "authorityId": "cadila_healthcare_2001",
+    "primaryDomain": "IP",
+    "secondaryDomains": ["CONSUMER"],
+    "triggerKeywords": ["trademark", "passing off", "deceptive similarity", "medicinal products", "likelihood of confusion", "trade dress", "drugs"],
+    "caseTitle": "Cadila Health Care Ltd. v. Cadila Pharmaceuticals Ltd.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2001-03-26",
+    "primaryCitation": "(2001) 5 SCC 73",
+    "equivalentCitations": ["(2001) 5 SCC 73", "2001 INSC 182", "AIR 2001 SC 1952"],
+    "summary": "Formulated the definitive tests for determining deceptive similarity and likelihood of confusion in trademark passing-off disputes, laying down a strict standard of scrutiny for medicinal and pharmaceutical products.",
+    "keyPropositions": [
+      "Stricter standard of similarity must be applied to medicinal products where confusion could endanger human health",
+      "Seven-factor test: nature of marks, degree of resemblances, nature of goods, similarity of customer class, mode of purchasing",
+      "English precedents on 'discerning buyers' do not apply to the diverse multi-lingual Indian marketplace"
+    ],
+    "iracBrief": {
+      "facts": "Two pharmaceutical companies manufactured medicines for cerebral malaria under the brand names 'Falcigo' and 'Falcitab', leading to allegations of passing off and trademark deception.",
+      "issuesFramed": [
+        "What principles govern the determination of deceptive similarity in passing off actions involving medicinal products?"
+      ],
+      "provisionsCited": [
+        "Trade and Merchandise Marks Act, 1958",
+        "Drugs and Cosmetics Act, 1940"
+      ],
+      "ratioDecidendi": "In the case of medicinal products, confusion may cause grave health harm. The test is the impression made on an ordinary purchaser of average intelligence. Strict care must be exercised to prevent confusing brand names.",
+      "finalOrderHeld": "Guidelines laid down for deciding pharmaceutical trademark suits and matter remanded to trial court."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 2372 OF 2001**\n\n**CADILA HEALTH CARE LTD. ...APPELLANT**\n\n**VERSUS**\n\n**CADILA PHARMACEUTICALS LTD. ...RESPONDENT**\n\n### JUDGMENT\n**B.N. Kirpal, J.**\n\n1. In the field of medicines, confusion between marks can be disastrous. A higher standard of diligence is required to prevent brand confusion in pharmaceutical preparations.",
+        "highlightedRatioPassages": ["In the field of medicines, confusion between marks can be disastrous"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THE SEVEN-FACTOR GUIDELINE\n\nCourts must consider: (a) nature of marks; (b) degree of resemblance; (c) nature of goods; (d) similarity in performance; (e) class of purchasers; (f) mode of purchase; and (g) any surrounding circumstances.",
+        "highlightedRatioPassages": ["degree of resemblance", "class of purchasers", "nature of goods"]
+      }
+    ]
+  },
+  {
+    "authorityId": "novartis_2013",
+    "primaryDomain": "IP",
+    "secondaryDomains": [],
+    "triggerKeywords": ["patents act", "section 3(d)", "therapeutic efficacy", "evergreening", "glivec", "patentability criteria", "pharmaceuticals"],
+    "caseTitle": "Novartis AG v. Union of India & Ors.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2013-04-01",
+    "primaryCitation": "(2013) 6 SCC 1",
+    "equivalentCitations": ["(2013) 6 SCC 1", "2013 INSC 226", "AIR 2013 SC 1311"],
+    "summary": "Held that a minor chemical variant of a known pharmaceutical substance is not patentable under Section 3(d) of the Patents Act, 1970 unless it demonstrates significantly enhanced therapeutic efficacy, rejecting evergreening attempts.",
+    "keyPropositions": [
+      "Section 3(d) of the Patents Act prevents 'evergreening' of pharmaceutical patents",
+      "'Efficacy' under Section 3(d) strictly means therapeutic efficacy, not merely higher bioavailability or physical stability",
+      "Parliament intentionally set a high bar for patentability to ensure affordable access to life-saving medicines"
+    ],
+    "iracBrief": {
+      "facts": "Novartis sought a patent for the beta-crystalline form of Imatinib Mesylate (cancer drug Glivec). The patent controller rejected the application under Section 3(d) because the known substance had already been patented abroad.",
+      "issuesFramed": [
+        "Whether the beta-crystalline form of Imatinib Mesylate exhibits enhanced therapeutic efficacy as required by Section 3(d) of the Patents Act, 1970?"
+      ],
+      "provisionsCited": [
+        "Section 3(d), Patents Act, 1970 (as amended in 2005)",
+        "Section 2(1)(j), Section 2(1)(ja), Patents Act, 1970"
+      ],
+      "ratioDecidendi": "Under Section 3(d), the mere discovery of a new form of a known substance which does not result in the enhancement of the known efficacy of that substance is not an invention. For pharmaceutical products, efficacy means therapeutic efficacy in healing disease.",
+      "finalOrderHeld": "Appeal of Novartis dismissed; patent for beta crystalline form of Imatinib Mesylate denied."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 2706-2716 OF 2013**\n\n**NOVARTIS AG ...APPELLANT**\n\n**VERSUS**\n\n**UNION OF INDIA & ORS. ...RESPONDENTS**\n\n### JUDGMENT\n**Aftab Alam, J.**\n\n1. This case concerns Section 3(d) of the Patents Act, 1970, which was enacted by Parliament to guard against frivolous patenting and evergreening.",
+        "highlightedRatioPassages": ["enacted by Parliament to guard against frivolous patenting and evergreening"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THERAPEUTIC EFFICACY MANDATE\n\nIn the case of a medicine, efficacy means 'therapeutic efficacy'. Bioavailability by itself does not demonstrate enhancement of therapeutic efficacy under Section 3(d). The patent grant was rightfully refused.",
+        "highlightedRatioPassages": ["efficacy means 'therapeutic efficacy'", "Bioavailability by itself does not demonstrate enhancement of therapeutic efficacy"]
+      }
+    ]
+  },
+  {
+    "authorityId": "vodafone_2012",
+    "primaryDomain": "TAXATION",
+    "secondaryDomains": ["CORPORATE"],
+    "triggerKeywords": ["income tax act", "capital gains", "section 9", "offshore transaction", "look at test", "corporate veil", "indirect transfer"],
+    "caseTitle": "Vodafone International Holdings B.V. v. Union of India",
+    "courtName": "Supreme Court of India (3-Judge Bench)",
+    "judgmentDate": "2012-01-20",
+    "primaryCitation": "(2012) 6 SCC 613",
+    "equivalentCitations": ["(2012) 6 SCC 613", "2012 INSC 44"],
+    "summary": "Held that offshore transfer of shares between non-resident holding companies which indirectly held Indian operating assets is not taxable under Section 9(1)(i) of the Income Tax Act, 1961, establishing the 'look at' test.",
+    "keyPropositions": [
+      "Revenue must 'look at' the corporate transaction as a whole and not dissect it to invent tax liability",
+      "Offshore share sales between non-residents did not attract Indian capital gains tax under pre-amendment Section 9",
+      "Corporate veil can be pierced only in cases of sham entities or fraudulent tax evasion schemes"
+    ],
+    "iracBrief": {
+      "facts": "Vodafone, a Dutch company, acquired 100% share capital of an offshore company in the Cayman Islands (CGP Investments) which held indirect equity interest in Hutchison Essar Ltd., an Indian telecom operator.",
+      "issuesFramed": [
+        "Whether the Indian revenue department had territorial jurisdiction under Section 9(1)(i) to tax capital gains arising from an offshore share transfer between foreign entities?"
+      ],
+      "provisionsCited": [
+        "Section 9(1)(i), Income Tax Act, 1961",
+        "Section 195, Income Tax Act, 1961"
+      ],
+      "ratioDecidendi": "A legal transaction cannot be reconstructed by the tax authorities unless it is a fraudulent device. Under Section 9(1)(i) as it stood, an offshore transfer of shares in a foreign company was not taxable merely because the foreign company held assets in India.",
+      "finalOrderHeld": "Appeal allowed; demand of tax and penalty on Vodafone quashed."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 733 OF 2012**\n\n**VODAFONE INTERNATIONAL HOLDINGS B.V. ...APPELLANT**\n\n**VERSUS**\n\n**UNION OF INDIA & ANR. ...RESPONDENTS**\n\n### JUDGMENT\n**S.H. Kapadia, C.J.**\n\n1. This matter concerns cross-border corporate investments and the scope of Section 9(1)(i) of the Income Tax Act.",
+        "highlightedRatioPassages": ["scope of Section 9(1)(i) of the Income Tax Act"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THE 'LOOK AT' DOCTRINE\n\nThe Revenue must look at the transaction as a whole. Where a holding structure is bona fide and has commercial substance, the sale of shares of an overseas company cannot be treated as a sale of Indian underlying assets.",
+        "highlightedRatioPassages": ["Revenue must look at the transaction as a whole", "sale of shares of an overseas company cannot be treated as a sale of Indian underlying assets"]
+      }
+    ]
+  },
+  {
+    "authorityId": "mohit_minerals_gst_2022",
+    "primaryDomain": "TAXATION",
+    "secondaryDomains": [],
+    "triggerKeywords": ["gst", "integrated goods and services tax", "ocean freight", "reverse charge", "composite supply", "cooperative federalism", "gst council"],
+    "caseTitle": "Union of India & Anr. v. Mohit Minerals Pvt. Ltd.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2022-05-19",
+    "primaryCitation": "(2022) 10 SCC 700",
+    "equivalentCitations": ["(2022) 10 SCC 700", "2022 INSC 603"],
+    "summary": "Held that separate IGST cannot be levied on Indian importers on the ocean freight component of CIF contracts under reverse charge, as it constitutes a non-severable part of a composite supply of goods.",
+    "keyPropositions": [
+      "Indian importers cannot be subjected to double taxation on ocean freight in CIF contracts",
+      "Supply of transportation of goods in CIF import forms a composite supply governed by Section 8 of CGST Act",
+      "Recommendations of the GST Council are not binding on Parliament or State Legislatures, embodying cooperative federalism"
+    ],
+    "iracBrief": {
+      "facts": "Indian importers paid customs duty and IGST on the CIF value of imported goods. The Central Government issued notifications mandating an additional 5% IGST on estimated ocean freight under reverse charge.",
+      "issuesFramed": [
+        "Whether an Indian importer in a CIF contract can be mandated to pay IGST on ocean freight when customs duty and tax have already been paid on the composite CIF import?"
+      ],
+      "provisionsCited": [
+        "Section 5(3) & 5(4), Integrated Goods and Services Tax Act, 2017",
+        "Section 8, Central Goods and Services Tax Act, 2017",
+        "Article 279A, Constitution of India"
+      ],
+      "ratioDecidendi": "Under a CIF contract, freight is an inseparable component of a composite supply of imported goods. Levying separate tax on the recipient of goods for services rendered by a foreign shipper amounts to unauthorized double taxation.",
+      "finalOrderHeld": "Appeals of Union of India dismissed; notifications levying IGST on ocean freight held unconstitutional and ultra vires."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 1390 OF 2022**\n\n**UNION OF INDIA & ANR. ...APPELLANTS**\n\n**VERSUS**\n\n**M/S MOHIT MINERALS PVT. LTD. ...RESPONDENT**\n\n### JUDGMENT\n**Dr. Dhananjaya Y. Chandrachud, J.**\n\n1. This dispute tests the validity of notifications issued under the IGST Act imposing tax on ocean freight under reverse charge.",
+        "highlightedRatioPassages": ["notifications issued under the IGST Act imposing tax on ocean freight"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### COMPOSITE SUPPLY & ULTRA VIRES\n\nTo levy a separate tax on the freight element of a CIF contract violates the principle of composite supply under Section 8. The impugned notifications are ultra vires the IGST Act.",
+        "highlightedRatioPassages": ["violates the principle of composite supply under Section 8", "impugned notifications are ultra vires the IGST Act"]
+      }
+    ]
+  },
+  {
+    "authorityId": "vidya_drolia_2020",
+    "primaryDomain": "TENANCY",
+    "secondaryDomains": ["CIVIL_PROPERTY"],
+    "triggerKeywords": ["landlord tenant", "arbitrability", "rent control act", "exclusive jurisdiction", "section 8 arbitration act", "eviction", "transfer of property act"],
+    "caseTitle": "Vidya Drolia & Ors. v. Durga Trading Corporation",
+    "courtName": "Supreme Court of India (3-Judge Bench)",
+    "judgmentDate": "2020-12-14",
+    "primaryCitation": "(2021) 2 SCC 1",
+    "equivalentCitations": ["(2021) 2 SCC 1", "2020 INSC 697"],
+    "summary": "Held that landlord-tenant disputes governed by the Transfer of Property Act are arbitrable, whereas tenancy disputes governed by special Rent Control Acts providing exclusive forum jurisdiction are non-arbitrable.",
+    "keyPropositions": [
+      "Landlord-tenant disputes under the Transfer of Property Act are arbitrable as they operate in personam",
+      "Disputes under special Rent Control statutes are non-arbitrable where the statute creates a specialized tribunal",
+      "Four-fold test of non-arbitrability formulated for actions in rem, public policy, and special statutory monopolies"
+    ],
+    "iracBrief": {
+      "facts": "Reference to a larger bench on whether landlord-tenant disputes governed by tenancy agreements with arbitration clauses can be referred to arbitration under Section 8 of the Arbitration and Conciliation Act.",
+      "issuesFramed": [
+        "Whether landlord-tenant disputes are capable of adjudication by arbitration under Indian law?"
+      ],
+      "provisionsCited": [
+        "Section 8, Section 11, Section 34, Arbitration and Conciliation Act, 1996",
+        "Section 111, Transfer of Property Act, 1882",
+        "State Rent Control Acts"
+      ],
+      "ratioDecidendi": "Landlord-tenant disputes under the Transfer of Property Act are rights in personam and are arbitrable. However, where a special Rent Control statute creates a special forum to protect statutory tenants, such disputes are non-arbitrable.",
+      "finalOrderHeld": "Himangni Enterprises overruled; disputes under Transfer of Property Act held arbitrable."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 2402 OF 2019**\n\n**VIDYA DROLIA & ORS. ...APPELLANTS**\n\n**VERSUS**\n\n**DURGA TRADING CORPORATION ...RESPONDENT**\n\n### JUDGMENT\n**Sanjiv Khanna, J.**\n\n1. This judgment settles the legal principles governing arbitrability of disputes and landlord-tenant litigation under Indian law.",
+        "highlightedRatioPassages": ["legal principles governing arbitrability of disputes and landlord-tenant litigation"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### THE TEST ON TENANCY ARBITRATION\n\nLandlord-tenant disputes are arbitrable as the TP Act does not forbid arbitration. However, landlord-tenant disputes covered and governed by rent control legislation would not be arbitrable when specific forum has been given exclusive jurisdiction.",
+        "highlightedRatioPassages": ["Landlord-tenant disputes are arbitrable as the TP Act does not forbid arbitration", "disputes covered and governed by rent control legislation would not be arbitrable"]
+      }
+    ]
+  },
+  {
+    "authorityId": "satyawati_sharma_2008",
+    "primaryDomain": "TENANCY",
+    "secondaryDomains": ["CONSTITUTIONAL"],
+    "triggerKeywords": ["rent control act", "bonafide requirement", "commercial tenancy", "eviction of tenant", "delhi rent control act", "equal protection", "article 14"],
+    "caseTitle": "Satyawati Sharma v. Union of India & Anr.",
+    "courtName": "Supreme Court of India",
+    "judgmentDate": "2008-04-16",
+    "primaryCitation": "(2008) 5 SCC 287",
+    "equivalentCitations": ["(2008) 5 SCC 287", "2008 INSC 545"],
+    "summary": "Struck down the discriminatory restriction in Section 14(1)(e) of the Delhi Rent Control Act which limited eviction on bona fide personal requirement only to residential premises, extending it equally to commercial tenancies.",
+    "keyPropositions": [
+      "Landlords can seek summary eviction for bona fide personal requirement in respect of commercial premises as well",
+      "Denial of eviction remedy for commercial premises while granting it for residential premises violates Article 14",
+      "Doctrine of severability applied to strike down discriminatory words in rent statutes"
+    ],
+    "iracBrief": {
+      "facts": "Landlord owned commercial premises and urgently needed them to set up a business for self and son, but Section 14(1)(e) of the Delhi Rent Control Act permitted eviction for bona fide requirement only for residential premises.",
+      "issuesFramed": [
+        "Whether restricting eviction on the ground of bona fide requirement solely to residential premises violates Article 14 of the Constitution?"
+      ],
+      "provisionsCited": [
+        "Section 14(1)(e), Delhi Rent Control Act, 1958",
+        "Article 14, Constitution of India"
+      ],
+      "ratioDecidendi": "A classification between residential and commercial tenancies for the purpose of bona fide requirement of the landlord has no rational nexus to the object of rent control. Restricting the landlord's right to recover commercial property for bona fide requirement violates Article 14.",
+      "finalOrderHeld": "Discriminatory words 'let for residential purposes' in Section 14(1)(e) severed; landlords permitted to evict for commercial requirement."
+    },
+    "pages": [
+      {
+        "pageNumber": 1,
+        "pageMarkdown": "## IN THE SUPREME COURT OF INDIA\n**CIVIL APPEAL NO. 1897 OF 2003**\n\n**SATYAWATI SHARMA ...APPELLANT**\n\n**VERSUS**\n\n**UNION OF INDIA & ANR. ...RESPONDENTS**\n\n### JUDGMENT\n**B.N. Agrawal, J.**\n\n1. This appeal challenges the constitutional validity of Section 14(1)(e) of the Delhi Rent Control Act, 1958.",
+        "highlightedRatioPassages": ["constitutional validity of Section 14(1)(e) of the Delhi Rent Control Act"]
+      },
+      {
+        "pageNumber": 2,
+        "pageMarkdown": "### ARTICLE 14 AND BONAFIDE NEED\n\nThere is no justification for depriving a landlord of recovering commercial premises for his bona fide requirement. Section 14(1)(e) is violative of Article 14 to the extent it discriminates between residential and non-residential premises.",
+        "highlightedRatioPassages": ["no justification for depriving a landlord of recovering commercial premises for his bona fide requirement", "violative of Article 14"]
+      }
+    ]
+  }
+]

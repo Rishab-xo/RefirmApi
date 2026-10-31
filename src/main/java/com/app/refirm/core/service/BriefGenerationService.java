@@ -212,6 +212,7 @@ public class BriefGenerationService {
 
         OpenAiChatOptions chatOptions = OpenAiChatOptions.builder()
                 .model("o3-mini")
+                .temperature(1.0)
                 .build();
 
         String draft = chatClient.prompt()
@@ -255,6 +256,7 @@ public class BriefGenerationService {
 
         OpenAiChatOptions chatOptions = OpenAiChatOptions.builder()
                 .model("o3-mini")
+                .temperature(1.0)
                 .build();
 
         String draft = chatClient.prompt()
@@ -299,6 +301,7 @@ public class BriefGenerationService {
         try {
             OpenAiChatOptions chatOptions = OpenAiChatOptions.builder()
                     .model("o3-mini")
+                    .temperature(1.0)
                     .build();
 
             String rawOutput = chatClient.prompt()

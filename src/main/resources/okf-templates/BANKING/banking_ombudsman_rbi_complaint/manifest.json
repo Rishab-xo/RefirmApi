@@ -1,0 +1,88 @@
+{
+  "templateId": "banking_ombudsman_rbi_complaint",
+  "title": "Complaint before RBI Integrated Ombudsman for Unauthorized Electronic Transactions",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "BANKING",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when customer suffers unauthorized digital debit, phishing, or bank deficiency and the regulated entity has failed to resolve grievance within 30 days.",
+  "variantComparisonNote": "Administrative complaint before RBI Ombudsman. Distinct from consumer complaint under CPA 2019 and civil suit.",
+  "youWillNeed": "Bank account statement, copy of complaint sent to bank branch, bank rejection letter/acknowledgment ticket, police cyber cell report.",
+  "legalBasis": "Reserve Bank - Integrated Ombudsman Scheme, 2021; RBI Master Circular DBR.No.Leg.BC.78/09.07.005/2017-18; Section 35A Banking Regulation Act, 1949.",
+  "triggerKeywords": [
+    "ombudsman",
+    "rbi",
+    "unauthorized debit",
+    "phishing",
+    "atm",
+    "netbanking",
+    "bank deficiency"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Pre-requisite complaint submitted to bank more than 30 days prior",
+    "Zero liability notification given to bank within 3 working days",
+    "Failure of bank to reverse unauthorized electronic debit within 10 working days",
+    "Compensation sought within Ombudsman scheme ceiling of ₹20 Lakhs + ₹1 Lakh for harassment"
+  ],
+  "particulars": [
+    {
+      "key": "complainant_name",
+      "label": "Complainant Name",
+      "description": "Account holder full name",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "bank_name",
+      "label": "Bank Name",
+      "description": "Regulated entity bank name",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "disputed_amount",
+      "label": "Disputed Sum (INR)",
+      "description": "Unauthorized transaction amount",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "complaint_date",
+      "label": "Complaint Date",
+      "description": "Date of Ombudsman filing",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "account_number",
+      "label": "Account Number",
+      "description": "Bank account number debited",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "branch_location",
+      "label": "Branch Location",
+      "description": "City of bank branch maintaining account",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "transaction_factual_matrix",
+      "title": "Details of Unauthorized Debit",
+      "draftingInstruction": "Narrate chronological facts of unauthorized digital debits, immediate reporting to bank helpline, cyber cell registration and denial of OTP sharing."
+    },
+    {
+      "blockKey": "bank_deficiency_and_rbi_violations",
+      "title": "Breach of RBI Master Directions",
+      "draftingInstruction": "Demonstrate bank's failure to maintain fraud monitoring systems and violation of RBI Master Circular on Customer Zero Liability."
+    },
+    {
+      "blockKey": "reliefs_and_compensation_sought",
+      "title": "Restoration & Compensation Claim",
+      "draftingInstruction": "Specify exact financial restitution of disputed sum with savings bank interest and compensation for harassment under Ombudsman Scheme 2021."
+    }
+  ]
+}

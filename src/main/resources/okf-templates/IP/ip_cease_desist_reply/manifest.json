@@ -1,0 +1,87 @@
+{
+  "templateId": "ip_cease_desist_reply",
+  "title": "Reply to Cease and Desist Notice Rebutting Trademark Infringement and Asserting Honest Concurrent Use",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "IP",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when defending against an aggressive IP cease and desist notice, refuting deceptive similarity, asserting honest concurrent use under Section 12, or lack of monopoly over generic words.",
+  "variantComparisonNote": "Defense advocate reply to IP infringement notice. Distinct from written statement in commercial suit.",
+  "youWillNeed": "Client's trademark application status, first-use proof/bills, packaging differentiating goods, trademark registry search reports of rival marks.",
+  "legalBasis": "Sections 12, 17, 30, 35, 142 Trade Marks Act, 1999; Kaviraj Pandit Durga Dutt Sharma v. Navaratna Pharmaceutical Laboratories (1965).",
+  "triggerKeywords": [
+    "trademark reply",
+    "cease and desist response",
+    "honest concurrent use",
+    "generic mark",
+    "groundless threats",
+    "section 142"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Denial of deceptive similarity and confusion in consumer mind",
+    "Plea of honest concurrent adoption and continuous prior commercial use",
+    "Anti-dissection rule and lack of exclusive monopoly over generic/descriptive elements",
+    "Peremptory call to withdraw groundless threats of legal proceedings under Section 142"
+  ],
+  "particulars": [
+    {
+      "key": "reply_date",
+      "label": "Date of Reply",
+      "description": "Date of sending reply notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "client_name",
+      "label": "Client Entity Name",
+      "description": "Name of client receiving notice",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "claimant_name",
+      "label": "Claimant Name",
+      "description": "Name of claimant issuing notice",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "disputed_mark",
+      "label": "Disputed Mark / Word",
+      "description": "Mark alleged to be infringing",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing reply",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_city",
+      "label": "Advocate Office City",
+      "description": "City of advocate chambers",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_objections_and_disclaimer",
+      "title": "Preliminary Objections & Anti-Dissection Rule",
+      "draftingInstruction": "Draft preliminary objections refuting monopoly over generic words under Section 17, distinct trade channels, and total ocular and phonetic dissimilarity."
+    },
+    {
+      "blockKey": "honest_concurrent_prior_use_defense",
+      "title": "Bona Fide Adoption & Honest Concurrent Use",
+      "draftingInstruction": "Detail client's independent bona fide adoption of mark {{FACT:disputed_mark}}, substantial investments, and statutory defense of honest concurrent use under Section 12."
+    },
+    {
+      "blockKey": "peremptory_demand_to_withdraw_notice",
+      "title": "Notice Withdrawal Demand & Section 142 Warning",
+      "draftingInstruction": "Call upon {{FACT:claimant_name}} to withdraw notice unconditionally, warning of a suit against groundless threats under Section 142 Trade Marks Act, 1999."
+    }
+  ]
+}

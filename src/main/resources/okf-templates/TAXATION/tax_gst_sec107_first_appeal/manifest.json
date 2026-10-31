@@ -1,0 +1,94 @@
+{
+  "templateId": "tax_gst_sec107_first_appeal",
+  "title": "Memo of Appeal before the Appellate Authority under Section 107 of the Central Goods and Services Tax Act, 2017",
+  "category": "APPEALS",
+  "primaryDomain": "TAXATION",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "APPELLATE",
+  "whenToUse": "Use when challenging an adverse GST adjudication order (Form GST DRC-07) before the Joint Commissioner (Appeals) or Commissioner (Appeals) within 3 months under Section 107 CGST Act.",
+  "variantComparisonNote": "Statutory first appeal in Form GST APL-01 with mandatory pre-deposit. Distinct from reply to show cause notice.",
+  "youWillNeed": "Impugned Order-in-Original (DRC-07), SCN, reply to SCN, proof of 10% statutory pre-deposit challan, statement of facts and grounds of appeal.",
+  "legalBasis": "Section 107 Central Goods and Services Tax Act, 2017; Rule 108 CGST Rules, 2017; CBIC Appellate Guidelines.",
+  "triggerKeywords": [
+    "gst appeal",
+    "section 107",
+    "apl-01",
+    "pre-deposit",
+    "appellate authority",
+    "drc-07 appeal"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Filing within 3 months limitation period under Section 107(1)",
+    "Mandatory electronic pre-deposit of 10% of disputed tax under Section 107(6)",
+    "Formulation of concise and distinct Grounds of Appeal without argumentative narrative",
+    "Prayer to set aside impugned order and stay balance recovery during appeal pendency"
+  ],
+  "particulars": [
+    {
+      "key": "appellate_authority_name",
+      "label": "Appellate Authority Designation",
+      "description": "Commissioner (Appeals) / Joint Commissioner (Appeals)",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "appellant_name",
+      "label": "Appellant Taxpayer Name",
+      "description": "Full corporate/legal name of appellant",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "respondent_adjudicating_officer",
+      "label": "Respondent Adjudicating Officer",
+      "description": "Designation of officer who passed impugned order",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "impugned_order_number",
+      "label": "Impugned Order-in-Original No.",
+      "description": "DRC-07 adjudication order reference",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "disputed_amount",
+      "label": "Disputed Tax Liability (INR)",
+      "description": "Total disputed tax confirmed in order",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "place",
+      "label": "Place / City",
+      "description": "Seat of Appellate Authority",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "appeal_date",
+      "label": "Appeal Date",
+      "description": "Date of filing appeal",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "statement_of_facts_and_impugned_order",
+      "title": "Statement of Facts & Impugned Findings",
+      "draftingInstruction": "Narrate business profile, receipt of SCN, adjudication order No. {{FACT:impugned_order_number}}, compliance with 10% pre-deposit under Section 107(6), and timely filing."
+    },
+    {
+      "blockKey": "grounds_of_appeal",
+      "title": "Concise Grounds of Appeal",
+      "draftingInstruction": "Draft numbered, rigorous grounds of appeal demonstrating violation of natural justice, arbitrary rejection of invoices, misapplication of law, and perversity in order."
+    },
+    {
+      "blockKey": "prayer_and_reliefs_sought",
+      "title": "Appellate Prayer & Stay Relief",
+      "draftingInstruction": "Draft prayer to set aside impugned order, quash demand of ₹{{FACT:disputed_amount}}/- and penalties, and stay balance 90% demand pending adjudication."
+    }
+  ]
+}

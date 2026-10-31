@@ -1,0 +1,79 @@
+{
+  "templateId": "employment_show_cause_reply_defense",
+  "title": "Employee's Reply to Show Cause Notice / Explanation in Disciplinary Proceedings",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "EMPLOYMENT",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when an employee or managerial professional receives a show cause notice or charge-sheet alleging misconduct, insubordination, or performance default.",
+  "variantComparisonNote": "Written explanation and preliminary defense in domestic enquiry. Distinct from legal notice for wrongful termination.",
+  "youWillNeed": "Copy of show cause notice, relevant company policies, emails refuting charges, appraisal records.",
+  "legalBasis": "Principles of Natural Justice; Industrial Employment (Standing Orders) Act, 1946; Managing Director, ECIL v. B. Karunakar (1993).",
+  "triggerKeywords": [
+    "show cause reply",
+    "domestic enquiry",
+    "misconduct defense",
+    "charge sheet reply",
+    "disciplinary reply"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Specific denial of alleged charges of misconduct",
+    "Plea of denial of natural justice or failure to furnish relied-upon documents",
+    "Presentation of verifiable documentary trail disproving allegations",
+    "Demand for dropping of notice or fair oral hearing with defense representative"
+  ],
+  "particulars": [
+    {
+      "key": "reply_date",
+      "label": "Date of Reply",
+      "description": "Date of submitting written explanation",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "employee_name",
+      "label": "Employee Name",
+      "description": "Full name of employee submitting reply",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "employer_management_name",
+      "label": "Employer / Disciplinary Authority",
+      "description": "Designation/Name of Management Authority",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "employee_id",
+      "label": "Employee ID / Roll No.",
+      "description": "Official employee identification number",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "place",
+      "label": "Office Location / City",
+      "description": "Workplace location",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_denials_and_procedural_infirmities",
+      "title": "Preliminary Objections & Procedural Lapses",
+      "draftingInstruction": "Draft preliminary objections showing vagueness of charges, non-supply of foundational documents, and violation of natural justice principles."
+    },
+    {
+      "blockKey": "detailed_factual_defense_and_mitigation",
+      "title": "Para-Wise Factual Rebuttal",
+      "draftingInstruction": "Provide point-by-point factual refutation of each alleged charge of misconduct, showing performance records, approvals, and absence of mala fides."
+    },
+    {
+      "blockKey": "request_for_exoneration_or_fair_inquiry",
+      "title": "Prayer for Exoneration & Closing Request",
+      "draftingInstruction": "Request unconditional dropping of charges and full exoneration, or in the alternative, grant of full opportunity to lead defense evidence in enquiry."
+    }
+  ]
+}

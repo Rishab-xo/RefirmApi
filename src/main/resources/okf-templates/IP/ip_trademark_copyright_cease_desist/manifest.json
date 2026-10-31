@@ -1,0 +1,87 @@
+{
+  "templateId": "ip_trademark_copyright_cease_desist",
+  "title": "Cease and Desist Legal Notice for Trademark Infringement, Copyright Infringement, and Passing Off",
+  "category": "NOTICES",
+  "primaryDomain": "IP",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "PRE_LITIGATION_NOTICE",
+  "whenToUse": "Use when a competitor or third party unlawfully adopts or copies a registered trademark, logo, artistic packaging, or brand identity to deceive consumers.",
+  "variantComparisonNote": "Pre-litigation intellectual property warning notice. Distinct from commercial suit for permanent injunction.",
+  "youWillNeed": "Trademark registration certificates, copyright registration (if any), samples/screenshots of original vs. infringing marks/products, proof of prior commercial use.",
+  "legalBasis": "Sections 28, 29, 134, 135 Trade Marks Act, 1999; Sections 51, 55 Copyright Act, 1957; Commercial Courts Act, 2015.",
+  "triggerKeywords": [
+    "trademark infringement",
+    "cease and desist",
+    "passing off",
+    "deceptive similarity",
+    "copyright violation",
+    "ip notice"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Proof of statutory registration and trans-border goodwill of client's mark",
+    "Demonstration of visual, phonetic, and conceptual deceptive similarity",
+    "Proof of bad faith adoption and calculated attempt to pass off goods",
+    "Requisition to cease use, withdraw infringing applications, and surrender stocks within 7 days"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Notice Date",
+      "description": "Date of issuing cease and desist notice",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "proprietor_client_name",
+      "label": "Proprietor / Client Name",
+      "description": "Registered trademark proprietor entity",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "infringing_entity_name",
+      "label": "Infringing Entity Name",
+      "description": "Name of infringing infringer / company",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "registered_trademark_name",
+      "label": "Registered Trademark / Brand",
+      "description": "Protected trademark brand name or device",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing legal notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_office_city",
+      "label": "Advocate Office City",
+      "description": "City of advocate chambers",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "intellectual_property_ownership_and_goodwill",
+      "title": "Proprietary Rights & Trademark Goodwill",
+      "draftingInstruction": "Detail client's prior adoption, statutory registrations for {{FACT:registered_trademark_name}} under Trade Marks Act 1999, market turnover, and brand reputation."
+    },
+    {
+      "blockKey": "infringing_activities_and_confusion",
+      "title": "Infringing Activities & Deceptive Similarity",
+      "draftingInstruction": "Establish deceptive similarity under Cadila Healthcare test, consumer confusion, bad-faith poaching of goodwill, and dilution of {{FACT:registered_trademark_name}}."
+    },
+    {
+      "blockKey": "statutory_requisitions_and_injunction_warning",
+      "title": "Statutory Demands & Injunction Warning",
+      "draftingInstruction": "Call upon {{FACT:infringing_entity_name}} to cease and desist within 7 days, destroy packaging, recall inventory, and render accounts, warning of commercial suit for injunction and damages."
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "templateId": "ip_infringement_injunction_suit",
+  "title": "Commercial Suit for Permanent Injunction against Trademark Infringement, Passing Off, and Damages",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "IP",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when filing a formal commercial suit before District Commercial Court or High Court for permanent injunction, delivery up, and punitive damages against intellectual property infringement.",
+  "variantComparisonNote": "Commercial plaint with Statement of Truth under Commercial Courts Act, 2015. Distinct from pre-litigation cease and desist notice.",
+  "youWillNeed": "Legal proceedings certificate (LPC) from Trademark Registry, original invoices showing sales, certified copy of search report, Section 63 BSA certificate for digital captures.",
+  "legalBasis": "Sections 28, 29, 134, 135 Trade Marks Act, 1999; Order VII Rule 1 CPC, 1908; Commercial Courts Act, 2015; Section 63 Bharatiya Sakshya Adhiniyam, 2023.",
+  "triggerKeywords": [
+    "commercial suit",
+    "trademark suit",
+    "permanent injunction",
+    "passing off",
+    "rendition of accounts",
+    "statement of truth"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Jurisdiction invoked under Section 134(2) of Trade Marks Act (Plaintiff's residence/business)",
+    "Commercial dispute definition satisfied under Section 2(1)(c) Commercial Courts Act",
+    "Urgent interim relief sought under Order XXXIX Rules 1 & 2 read with Section 12A exemption",
+    "Statement of Truth verified under Order VI Rule 15A CPC"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Commercial Court Designation",
+      "description": "Designation of Commercial Court / High Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Place / City of Seat",
+      "description": "City of Commercial Court",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "plaintiff_name",
+      "label": "Plaintiff Proprietor Name",
+      "description": "Full corporate name of plaintiff",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "defendant_name",
+      "label": "Defendant Infringer Name",
+      "description": "Name of infringing entity / defendant",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "suit_valuation_amount",
+      "label": "Suit Valuation / Damages Claim (INR)",
+      "description": "Valuation of suit for court fees and damages",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "filing_date",
+      "label": "Filing Date",
+      "description": "Date of presentation of plaint",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "plaintiff_proprietary_rights_and_reputation",
+      "title": "Plaintiff's Brand Equity & Statutory Rights",
+      "draftingInstruction": "Narrate Plaintiff's prior adoption, statutory trademark registrations under Section 28 Trade Marks Act, 1999, marketing expenditure, and goodwill."
+    },
+    {
+      "blockKey": "cause_of_action_and_infringing_conduct",
+      "title": "Infringing Conduct & Passing Off",
+      "draftingInstruction": "Demonstrate Defendant's infringing conduct under Section 29, identical goods/services, phonetic and ocular similarity, and deception of the trade and public."
+    },
+    {
+      "blockKey": "prayers_for_injunction_rendition_of_accounts_and_damages",
+      "title": "Prayers for Injunction, Delivery Up & Damages",
+      "draftingInstruction": "Draft comprehensive prayers for permanent injunction, destruction and delivery up of dies/stocks, rendition of accounts under Section 135, and damages of ₹{{FACT:suit_valuation_amount}}/-."
+    }
+  ]
+}

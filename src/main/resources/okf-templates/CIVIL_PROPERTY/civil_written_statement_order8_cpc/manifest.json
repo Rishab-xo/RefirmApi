@@ -1,0 +1,80 @@
+{
+  "templateId": "civil_written_statement_order8_cpc",
+  "title": "Written Statement on Behalf of Defendant under Order VIII Rule 1 of the Code of Civil Procedure, 1908",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "CIVIL_PROPERTY",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when defending any civil or property suit by filing the mandatory written statement within 30 to 120 days under Order VIII Rule 1 CPC, 1908.",
+  "variantComparisonNote": "Statutory defense pleading under Order VIII Rule 1 CPC with preliminary objections and para-wise denials. Distinct from interlocutory replies.",
+  "youWillNeed": "Copy of plaint with summons, supporting documents, title records / receipts proving defense, authorization/Vakalatnama.",
+  "legalBasis": "Order VIII Rules 1 to 5 Code of Civil Procedure, 1908; Commercial Courts Act, 2015; Salem Advocate Bar Association v. UOI (2005).",
+  "triggerKeywords": [
+    "written statement",
+    "order viii rule 1",
+    "preliminary objections",
+    "cpc defense",
+    "specific denial",
+    "civil reply"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Filing within statutory timeline under Order VIII Rule 1 CPC",
+    "Clear preliminary objections regarding non-maintainability, limitation, or lack of cause of action",
+    "Specific para-wise denial complying with Order VIII Rules 3, 4 & 5 (evasive denial deemed admitted)",
+    "Verification of defense averments under Order VI Rule 15 CPC"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Civil Court Designation",
+      "description": "Designation of Trial Court",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Seat of Court",
+      "description": "City of court jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "defendant_name",
+      "label": "Defendant Name",
+      "description": "Full name of defending party",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "plaintiff_name",
+      "label": "Plaintiff Name",
+      "description": "Full name of plaintiff",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "filing_date",
+      "label": "Filing Date",
+      "description": "Date of submitting written statement",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_objections_on_maintainability",
+      "title": "Preliminary Objections on Maintainability",
+      "draftingInstruction": "Draft comprehensive preliminary objections under Order VII Rule 11, bar of limitation, lack of locus standi, suppression of material facts, and misjoinder of parties."
+    },
+    {
+      "blockKey": "para_wise_specific_denials_and_defense",
+      "title": "Para-Wise Specific Denials & Positive Case",
+      "draftingInstruction": "Draft strict specific para-wise denials of plaint averments under Order VIII Rule 5 CPC, setting up defendant's affirmative defense, discharge of liability, or rival title."
+    },
+    {
+      "blockKey": "prayer_for_dismissal_with_costs",
+      "title": "Prayer for Dismissal & Exemplary Costs",
+      "draftingInstruction": "Draft formal prayer to dismiss the suit with exemplary compensatory costs under Section 35A of the Code of Civil Procedure, 1908."
+    }
+  ]
+}

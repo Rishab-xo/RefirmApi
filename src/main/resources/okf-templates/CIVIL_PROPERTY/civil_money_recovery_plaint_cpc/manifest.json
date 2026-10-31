@@ -1,0 +1,88 @@
+{
+  "templateId": "civil_money_recovery_plaint_cpc",
+  "title": "Plaint in Suit for Recovery of Money with Interest under Order VII Rule 1 of the Code of Civil Procedure, 1908",
+  "category": "PLEADINGS_COMPLAINTS",
+  "primaryDomain": "CIVIL_PROPERTY",
+  "targetPerspective": "CLAIMANT_PETITIONER",
+  "stage": "ORIGINAL_FILING",
+  "whenToUse": "Use when instituting an ordinary or commercial civil suit for recovery of unpaid invoices, loans, contractual dues, or liquidated debts under Order VII CPC, 1908.",
+  "variantComparisonNote": "Substantive civil recovery plaint under Order VII Rule 1 CPC. Distinct from summary suit under Order XXXVII CPC and pre-litigation demand notices.",
+  "youWillNeed": "Invoices, ledger accounts, delivery challans, contract copy, acknowledgment of debt / balance confirmation, speed post notice receipts.",
+  "legalBasis": "Order VII Rule 1 Code of Civil Procedure, 1908; Section 34 CPC (Interest); Limitation Act, 1963 (Articles 14 to 26); Commercial Courts Act, 2015.",
+  "triggerKeywords": [
+    "money recovery suit",
+    "plaint cpc",
+    "unpaid invoices",
+    "debt recovery",
+    "order vii rule 1",
+    "commercial plaint"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Factual accrual of debt and proof of consideration under Contract Act",
+    "Pleading specific dates of cause of action and continuous limitation within 3 years",
+    "Pecuniary and territorial jurisdiction of Court specifically established",
+    "Valuation and payment of ad-valorem court fees under Court-fees Act",
+    "Pleader and client verification under Order VI Rule 15 CPC"
+  ],
+  "particulars": [
+    {
+      "key": "court_name",
+      "label": "Civil Court Designation",
+      "description": "Designation of Senior Civil Judge / District Judge",
+      "required": true,
+      "ledgerSourceKey": "targetForum.forumName"
+    },
+    {
+      "key": "place",
+      "label": "Seat of Court",
+      "description": "City or District seat of jurisdiction",
+      "required": true,
+      "ledgerSourceKey": "location"
+    },
+    {
+      "key": "plaintiff_name",
+      "label": "Plaintiff Name",
+      "description": "Full legal name of creditor plaintiff",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "defendant_name",
+      "label": "Defendant Name",
+      "description": "Full name of defaulting debtor defendant",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "principal_sum_claimed",
+      "label": "Principal Claim Sum (INR)",
+      "description": "Principal monetary amount claimed",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "filing_date",
+      "label": "Filing Date",
+      "description": "Date of presentation of plaint",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "commercial_dealings_and_debt_acknowledgment",
+      "title": "Commercial Transactions & Incurrence of Debt",
+      "draftingInstruction": "Narrate commercial relationship, goods/services supplied, invoices raised, confirmation of accounts, and defendant's acknowledgment of liability."
+    },
+    {
+      "blockKey": "default_cause_of_action_and_limitation",
+      "title": "Default, Cause of Action & Limitation",
+      "draftingInstruction": "Detail defendant's default, dishonoured commitments, service of demand notice, accrual of cause of action, and compliance with 3-year limitation."
+    },
+    {
+      "blockKey": "valuation_court_fees_and_plaint_prayer",
+      "title": "Valuation, Court Fees & Plaint Prayer",
+      "draftingInstruction": "Set out court fee valuation under Court-fees Act, and draft formal prayer for decree of ₹{{FACT:principal_sum_claimed}}/- with 18% p.a. pendente-lite and future interest."
+    }
+  ]
+}

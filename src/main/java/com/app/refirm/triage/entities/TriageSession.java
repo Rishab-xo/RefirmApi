@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.domain.Persistable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class TriageSession implements Persistable<UUID> {
 
     @Override
     @Transient
+    @JsonIgnore
     public boolean isNew() {
         return isNew;
     }

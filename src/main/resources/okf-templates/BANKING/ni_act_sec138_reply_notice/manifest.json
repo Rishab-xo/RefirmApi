@@ -1,0 +1,94 @@
+{
+  "templateId": "ni_act_sec138_reply_notice",
+  "title": "Reply to Statutory Demand Notice under Section 138 of Negotiable Instruments Act, 1881",
+  "category": "REPLIES_DEFENSE",
+  "primaryDomain": "BANKING",
+  "targetPerspective": "OPPOSITE_PARTY_RESPONDENT",
+  "stage": "DEFENSE_REPLY",
+  "whenToUse": "Use when responding to a 15-day Section 138 statutory demand notice, rebutting the presumption of enforceable debt and asserting security cheque misuse or failure of consideration.",
+  "variantComparisonNote": "Formal advocate reply notice to pre-empt criminal proceedings. Distinct from formal court written statement in trial.",
+  "youWillNeed": "Copy of received demand notice, proof of commercial contract, bank ledger showing prior payments, communications demonstrating security nature of cheque.",
+  "legalBasis": "Section 138 Proviso (b), Section 139 Negotiable Instruments Act, 1881; Krishna Janardhan Bhat v. Dattatraya G. Hegde (2008); Basalingappa v. Mudibasappa (2019).",
+  "triggerKeywords": [
+    "cheque",
+    "reply notice",
+    "security cheque",
+    "no debt",
+    "rebuttal",
+    "section 138"
+  ],
+  "mandatoryStatutoryIngredients": [
+    "Specific denial of existing legally enforceable debt on date of cheque",
+    "Assertion of security instrument status or discharge through alternative mode",
+    "Rebuttal of Section 139 statutory presumption",
+    "Call upon payee to return instrument within 7 days"
+  ],
+  "particulars": [
+    {
+      "key": "notice_date",
+      "label": "Reply Notice Date",
+      "description": "Date of issuing reply",
+      "required": true,
+      "ledgerSourceKey": "currentDate"
+    },
+    {
+      "key": "replying_party_name",
+      "label": "Client / Drawer Name",
+      "description": "Name of drawer sending reply",
+      "required": true,
+      "ledgerSourceKey": "perspectiveClient.name"
+    },
+    {
+      "key": "sender_party_name",
+      "label": "Payee / Claimant Name",
+      "description": "Name of payee who sent notice",
+      "required": true,
+      "ledgerSourceKey": "oppositeParties.primary"
+    },
+    {
+      "key": "cheque_number",
+      "label": "Cheque Number",
+      "description": "Cheque number referred in demand notice",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "cheque_amount",
+      "label": "Cheque Amount (INR)",
+      "description": "Disputed monetary sum",
+      "required": true,
+      "ledgerSourceKey": "disputeAmount"
+    },
+    {
+      "key": "replying_advocate_name",
+      "label": "Advocate Name",
+      "description": "Counsel issuing reply",
+      "required": true,
+      "ledgerSourceKey": "MANUAL"
+    },
+    {
+      "key": "advocate_office_address",
+      "label": "Advocate Chamber Address",
+      "description": "Chamber address of counsel",
+      "required": true,
+      "ledgerSourceKey": "location"
+    }
+  ],
+  "aiBlocks": [
+    {
+      "blockKey": "preliminary_objections",
+      "title": "Preliminary Objections on Maintainability",
+      "draftingInstruction": "Draft aggressive preliminary objections showing absence of legally enforceable debt, misuse of undated security leaf, and non-maintainability of notice."
+    },
+    {
+      "blockKey": "factual_defense_and_denial",
+      "title": "Para-wise Defense & Security Cheque Misuse",
+      "draftingInstruction": "Provide para-wise denial of allegations in demand notice, detailing contractual breakdown, failure of consideration, and breach of trust by payee."
+    },
+    {
+      "blockKey": "closing_demands",
+      "title": "Closing Demands & Warning of Legal Action",
+      "draftingInstruction": "Issue peremptory demand to return dishonoured instrument within 7 days, warning of criminal action under Section 316/318 BNS, 2023 if false complaint is filed."
+    }
+  ]
+}
