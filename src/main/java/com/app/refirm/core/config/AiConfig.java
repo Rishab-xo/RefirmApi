@@ -88,7 +88,7 @@ public class AiConfig {
     public ChatModel reasoningChatModel(
             @org.springframework.beans.factory.annotation.Value("${spring.ai.openai.chat.base-url:https://api.openai.com}") String baseUrl,
             @org.springframework.beans.factory.annotation.Value("${spring.ai.openai.chat.api-key}") String apiKey,
-            @org.springframework.beans.factory.annotation.Value("${refirm.ai.models.reasoning:o3-mini}") String reasoningModel
+            @org.springframework.beans.factory.annotation.Value("${refirm.ai.models.reasoning:gpt-5.6-terra}") String reasoningModel
     ) {
         org.springframework.http.client.SimpleClientHttpRequestFactory requestFactory =
                 new org.springframework.http.client.SimpleClientHttpRequestFactory();

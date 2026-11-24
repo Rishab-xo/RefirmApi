@@ -5,13 +5,15 @@ import com.app.refirm.arguments.domain.ArgumentDossier;
 import com.app.refirm.arguments.domain.ArgumentSubmission;
 import com.app.refirm.arguments.domain.BenchQuestionItem;
 import com.app.refirm.arguments.domain.RebuttalMatrixItem;
-import com.app.refirm.arguments.domain.VerifiedPrecedentAuthority;
 import com.app.refirm.arguments.entity.WorkspaceArgumentSheet;
 import com.app.refirm.arguments.repository.WorkspaceArgumentSheetRepository;
 import com.app.refirm.arguments.service.ArgumentMarkdownRenderer;
 import com.app.refirm.arguments.service.PrecedentAuthorityProvider;
 import com.app.refirm.inspector.domain.CorpusPrecedentEntry;
+import com.app.refirm.inspector.domain.PrecedentIndexRecord;
+import com.app.refirm.inspector.domain.PrecedentSearchCriteria;
 import com.app.refirm.inspector.dto.InspectorDTOs.*;
+import com.app.refirm.inspector.repository.PrecedentIndexRepository;
 import com.app.refirm.templates.controller.dto.WorkspaceDraftDTO;
 import com.app.refirm.templates.domain.TemplateManifest;
 import com.app.refirm.templates.domain.TemplateParticular;
@@ -38,7 +40,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Unified service powering View 2B: 4 Right-Hand Inspector Pills (Particulars | Cited | Statutes | Relevant).
@@ -59,6 +60,8 @@ public class InspectorService {
     private final AuthorityDrawerService drawerService;
     private final CorpusPrecedentRegistryService corpusRegistry;
     private final ArgumentMarkdownRenderer markdownRenderer;
+    private final PrecedentIndexRepository precedentIndexRepository;
+    private final PariMateriaCrosswalkService crosswalkService;
 
     @Autowired
     public InspectorService(
@@ -71,7 +74,9 @@ public class InspectorService {
             PrecedentAuthorityProvider precedentProvider,
             AuthorityDrawerService drawerService,
             @Autowired(required = false) CorpusPrecedentRegistryService corpusRegistry,
-            @Autowired(required = false) ArgumentMarkdownRenderer markdownRenderer
+            @Autowired(required = false) ArgumentMarkdownRenderer markdownRenderer,
+            @Autowired(required = false) PrecedentIndexRepository precedentIndexRepository,
+            @Autowired(required = false) PariMateriaCrosswalkService crosswalkService
     ) {
         this.workspaceRepository = workspaceRepository;
         this.draftRepository = draftRepository;
@@ -83,6 +88,25 @@ public class InspectorService {
         this.drawerService = drawerService;
         this.corpusRegistry = corpusRegistry;
         this.markdownRenderer = markdownRenderer != null ? markdownRenderer : new ArgumentMarkdownRenderer();
+        this.precedentIndexRepository = precedentIndexRepository;
+        this.crosswalkService = crosswalkService;
+    }
+
+    public InspectorService(
+            LegalWorkspaceRepository workspaceRepository,
+            WorkspaceDraftRepository draftRepository,
+            WorkspaceArgumentSheetRepository argumentSheetRepository,
+            WorkspaceDocumentRepository documentRepository,
+            WorkspaceSavedAuthorityRepository savedAuthorityRepository,
+            TemplateRegistryService registryService,
+            PrecedentAuthorityProvider precedentProvider,
+            AuthorityDrawerService drawerService,
+            CorpusPrecedentRegistryService corpusRegistry,
+            ArgumentMarkdownRenderer markdownRenderer
+    ) {
+        this(workspaceRepository, draftRepository, argumentSheetRepository, documentRepository,
+                savedAuthorityRepository, registryService, precedentProvider, drawerService,
+                corpusRegistry, markdownRenderer, null, null);
     }
 
     public InspectorService(
@@ -304,25 +328,86 @@ public class InspectorService {
             }
         }
 
-        // 2. Domain-matched verified precedents from CorpusPrecedentRegistryService
-        List<CorpusPrecedentEntry> corpusEntries = corpusRegistry != null
-                ? corpusRegistry.findRelevantForWorkspace(workspace)
-                : Collections.emptyList();
+        // 2. Tier 1 PostgreSQL Precedent Search via Ring 1 + Ring 2 (falling back to CorpusPrecedentRegistryService)
+        boolean dbSearchSuccess = false;
+        if (precedentIndexRepository != null) {
+            try {
+                List<String> tuples = new ArrayList<>();
+                if (workspace.getLatestDraftingContext() != null && workspace.getLatestDraftingContext().statutePack() != null) {
+                    for (StatutePin pin : workspace.getLatestDraftingContext().statutePack()) {
+                        if (pin.actName() != null && pin.sectionNumber() != null && crosswalkService != null) {
+                            String t = crosswalkService.toCanonicalTuple(pin.actName(), pin.sectionNumber());
+                            if (!t.isEmpty()) tuples.add(t);
+                        }
+                    }
+                }
 
-        for (CorpusPrecedentEntry entry : corpusEntries) {
-            if (seenAuthorityIds.add(entry.authorityId())) {
-                candidates.add(new CandidateAuthority(
-                        entry.authorityId(),
-                        entry.caseTitle(),
-                        entry.courtName(),
-                        entry.judgmentDate(),
-                        entry.primaryCitation(),
-                        entry.equivalentCitations(),
-                        "VERIFIED_CORPUS",
+                PariMateriaCrosswalkService.ExpandedTupleQuery expandedQuery = crosswalkService != null
+                        ? crosswalkService.expandQueryTuples(tuples)
+                        : null;
+
+                String preferredDomain = (workspace.getPrimaryDomain() != null && workspace.getPrimaryDomain() != com.app.refirm.triage.domain.LegalDomain.UNKNOWN)
+                        ? workspace.getPrimaryDomain().name()
+                        : null;
+
+                String textSnippet = (renderedMarkdown != null && !renderedMarkdown.isBlank())
+                        ? renderedMarkdown.substring(0, Math.min(renderedMarkdown.length(), 200))
+                        : (workspace.getTitle() != null ? workspace.getTitle() : null);
+
+                PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(
+                        expandedQuery != null ? expandedQuery.allExpandedTuples() : tuples,
+                        textSnippet,
+                        preferredDomain,
                         null,
-                        entry.summary(),
-                        entry.keyPropositions()
-                ));
+                        null,
+                        null,
+                        15
+                );
+
+                List<PrecedentIndexRecord> dbMatches = precedentIndexRepository.searchPrecedents(criteria);
+                if (dbMatches != null && !dbMatches.isEmpty()) {
+                    dbSearchSuccess = true;
+                    for (PrecedentIndexRecord rec : dbMatches) {
+                        if (seenAuthorityIds.add(rec.authorityId())) {
+                            candidates.add(new CandidateAuthority(
+                                    rec.authorityId(),
+                                    rec.caseTitle(),
+                                    rec.courtName(),
+                                    rec.judgmentDate(),
+                                    rec.primaryCitation(),
+                                    rec.equivalentCitations(),
+                                    "VERIFIED_CORPUS",
+                                    null,
+                                    rec.twoLineRatio(),
+                                    rec.legalPropositions()
+                            ));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Notice querying precedent index in partitionCitedAndRelevantAuthorities: {}", e.getMessage());
+            }
+        }
+
+        if (!dbSearchSuccess && corpusRegistry != null) {
+            List<CorpusPrecedentEntry> corpusEntries = corpusRegistry.findRelevantForWorkspace(workspace);
+            if (corpusEntries != null) {
+                for (CorpusPrecedentEntry entry : corpusEntries) {
+                    if (seenAuthorityIds.add(entry.authorityId())) {
+                        candidates.add(new CandidateAuthority(
+                                entry.authorityId(),
+                                entry.caseTitle(),
+                                entry.courtName(),
+                                entry.judgmentDate(),
+                                entry.primaryCitation(),
+                                entry.equivalentCitations(),
+                                "VERIFIED_CORPUS",
+                                null,
+                                entry.summary(),
+                                entry.keyPropositions()
+                        ));
+                    }
+                }
             }
         }
 

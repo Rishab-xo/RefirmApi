@@ -6,6 +6,7 @@ import com.app.refirm.arguments.repository.WorkspaceArgumentSheetRepository;
 import com.app.refirm.arguments.service.*;
 import com.app.refirm.inspector.service.InspectorService;
 import com.app.refirm.triage.domain.StatutePin;
+import com.app.refirm.triage.domain.DraftingContext;
 import com.app.refirm.workspace.domain.*;
 import com.app.refirm.workspace.entity.LegalWorkspace;
 import com.app.refirm.workspace.entity.WorkspaceDocument;
@@ -886,6 +887,9 @@ class ArgumentPrepServiceTest {
         );
 
         String tableSummary = ArgumentMarkdownRenderer.summarizeStatutePinForTableCell(sec3Pin, dossierWithSubClauses);
+        
+        
+        
         assertNotNull(tableSummary);
         assertTrue(tableSummary.contains("(8)"), "Must extract sub-clause (8)");
         assertTrue(tableSummary.contains("(10)"), "Must extract sub-clause (10)");
@@ -1228,5 +1232,618 @@ class ArgumentPrepServiceTest {
         assertTrue(standardMarkdown.startsWith("# Courtroom Argument Sheet"),
                 "Document H1 must fall back to 'Courtroom Argument Sheet' when Strategic Advisory is absent");
     }
-}
 
+    @Test
+    @DisplayName("Test 14: Surgical Intent Masking & Implicit Perspective Resolution")
+    void testSurgicalIntentMaskingAndImplicitPerspectiveResolution() {
+        // Part 1: Surgical masking when asking for "only oral arguments and submissions opposing anticipatory bail"
+        // Workspace default is CLAIMANT_PETITIONER
+        DraftingContext ctx = new DraftingContext(
+                "Opposing anticipatory bail in corporate fraud",
+                null,
+                List.of(new StatutePin("Code of Criminal Procedure, 1973", "Section 438", "Anticipatory bail")),
+                null
+        );
+        workspace.setLatestDraftingContext(ctx);
+
+        WorkspaceArgumentSheet surgicalSheet = argumentPrepService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                null, // overridePerspective == null to trigger auto-resolution
+                "Give me only oral arguments and submissions opposing anticipatory bail"
+        );
+
+        assertNotNull(surgicalSheet);
+        // Opposing anticipatory bail resolves to CLAIMANT_PETITIONER
+        assertEquals(PartyPerspective.CLAIMANT_PETITIONER, surgicalSheet.getPartyPerspective());
+        ArgumentDossier surgicalDossier = surgicalSheet.getArgumentDossier();
+        assertNotNull(surgicalDossier);
+
+        // Verification of surgical dossier fields:
+        assertFalse(surgicalDossier.openingPitch60Seconds().isBlank(), "Pitch must be preserved when only submissions/arguments are requested");
+        assertFalse(surgicalDossier.coreSubmissions().isEmpty(), "Core submissions must be preserved");
+        assertTrue(surgicalDossier.framedIssues().isEmpty(), "Framed issues must be suppressed/zeroed");
+        assertTrue(surgicalDossier.rebuttalMatrix().isEmpty(), "Rebuttals must be suppressed/zeroed");
+        assertTrue(surgicalDossier.benchGrillQuestions().isEmpty(), "Bench questions must be suppressed/zeroed");
+        assertTrue(surgicalDossier.preHearingEvidenceChecklist().isEmpty(), "Checklist must be suppressed/zeroed");
+
+        // Verification of rendered markdown:
+        String markdown = surgicalSheet.getRenderedMarkdown();
+        assertNotNull(markdown);
+        assertTrue(markdown.contains("### 1. 60-SECOND OPENING COURTROOM PITCH"), "Section 1 pitch must be rendered");
+        assertFalse(markdown.contains("### 2. ISSUES FRAMED FOR DETERMINATION"), "Section 2 issues must be omitted");
+        assertTrue(markdown.contains("### 2B. APPLICABLE STATUTORY FRAMEWORK"), "Table 2B must be rendered");
+        assertTrue(markdown.contains("### 3. CORE LEGAL & FACTUAL SUBMISSIONS"), "Section 3 submissions must be rendered");
+        assertFalse(markdown.contains("### 4. OPPOSITE-PARTY REBUTTAL MATRIX"), "Section 4 rebuttals must be omitted");
+        assertFalse(markdown.contains("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR"), "Section 5 bench traps must be omitted");
+        assertFalse(markdown.contains("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE"), "Section 6 checklist must be omitted");
+
+        // Part 2: Automatic perspective resolution when prompt states "Prepare our defense as Respondent opposing Section 9 interim injunction"
+        // Even if workspace was set to CLAIMANT_PETITIONER
+        workspace.setPartyPerspective(PartyPerspective.CLAIMANT_PETITIONER);
+        WorkspaceArgumentSheet respondentSheet = argumentPrepService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                null,
+                "Prepare our defense as Respondent opposing Section 9 interim injunction"
+        );
+
+        assertNotNull(respondentSheet);
+        assertEquals(PartyPerspective.OPPOSITE_PARTY_RESPONDENT, respondentSheet.getPartyPerspective(),
+                "Implicit party representation cues must resolve targetPerspective to OPPOSITE_PARTY_RESPONDENT");
+        assertTrue(respondentSheet.getRenderedMarkdown().contains("OPPOSITE PARTY / RESPONDENT"),
+                "Rendered markdown badge must reflect OPPOSITE PARTY / RESPONDENT");
+    }
+
+    @Test
+    @DisplayName("Test 15: Universal Additive Argument Generation Planner for 3 Real-World Lawyer Prompts")
+    void testUniversalAdditiveArgumentGenerationPlannerRealWorldPrompts() {
+        // Prompt 1: Section 9 Arbitration Interim Injunction Defense (OPPOSITE_PARTY_RESPONDENT)
+        DraftingContext ctx1 = new DraftingContext(
+                "Claimant seeking interim injunction to freeze bank accounts under Section 9",
+                null,
+                List.of(new StatutePin("Arbitration and Conciliation Act, 1996", "Section 9", "Interim measures by Court")),
+                null
+        );
+        workspace.setLatestDraftingContext(ctx1);
+        workspace.setPartyPerspective(PartyPerspective.CLAIMANT_PETITIONER); // will be overridden dynamically
+
+        WorkspaceArgumentSheet sheet1 = argumentPrepService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                null,
+                "Prepare our defense as Respondent. The claimant has filed a Section 9 application under the Arbitration and Conciliation Act seeking an urgent interim injunction to freeze our bank accounts"
+        );
+
+        assertNotNull(sheet1);
+        assertEquals(PartyPerspective.OPPOSITE_PARTY_RESPONDENT, sheet1.getPartyPerspective(),
+                "Prompt 1 must resolve dynamically to OPPOSITE_PARTY_RESPONDENT");
+        ArgumentDossier dossier1 = sheet1.getArgumentDossier();
+        assertNotNull(dossier1);
+        assertFalse(dossier1.openingPitch60Seconds().isBlank(), "Prompt 1 pitch must be included");
+        assertFalse(dossier1.coreSubmissions().isEmpty(), "Prompt 1 submissions must be included");
+        assertTrue(dossier1.framedIssues().isEmpty(), "Prompt 1 issues must be omitted");
+        assertTrue(dossier1.rebuttalMatrix().isEmpty(), "Prompt 1 rebuttals must be omitted");
+        assertTrue(dossier1.benchGrillQuestions().isEmpty(), "Prompt 1 bench questions must be omitted");
+        assertTrue(dossier1.preHearingEvidenceChecklist().isEmpty(), "Prompt 1 checklist must be omitted");
+
+        String md1 = sheet1.getRenderedMarkdown();
+        assertNotNull(md1);
+        assertTrue(md1.contains("### 1. 60-SECOND OPENING COURTROOM PITCH"), "Section 1 pitch must be rendered");
+        assertFalse(md1.contains("### 2. ISSUES FRAMED FOR DETERMINATION"), "Section 2 issues must be omitted");
+        assertTrue(md1.contains("### 2B. APPLICABLE STATUTORY FRAMEWORK"), "Table 2B must be rendered");
+        assertTrue(md1.contains("### 3. CORE LEGAL & FACTUAL SUBMISSIONS"), "Section 3 submissions must be rendered");
+        assertFalse(md1.contains("### 4. OPPOSITE-PARTY REBUTTAL MATRIX"), "Section 4 rebuttals must be omitted");
+        assertFalse(md1.contains("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR"), "Section 5 bench traps must be omitted");
+        assertFalse(md1.contains("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE"), "Section 6 checklist must be omitted");
+
+        // Prompt 2: Opposing Section 8 Arbitration Reference in Section 7 IBC (CLAIMANT_PETITIONER)
+        DraftingContext ctx2 = new DraftingContext(
+                "Opposing Section 8 reference in Section 7 IBC petition",
+                null,
+                List.of(
+                        new StatutePin("Insolvency and Bankruptcy Code, 2016", "Section 7", "Initiation of CIRP by financial creditor"),
+                        new StatutePin("Arbitration and Conciliation Act, 1996", "Section 8", "Power to refer parties to arbitration"),
+                        new StatutePin("Limitation Act, 1963", "Section 18", "Effect of acknowledgment in writing")
+                ),
+                null
+        );
+        workspace.setLatestDraftingContext(ctx2);
+        workspace.setPartyPerspective(PartyPerspective.OPPOSITE_PARTY_RESPONDENT); // will be overridden dynamically
+
+        WorkspaceArgumentSheet sheet2 = argumentPrepService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                null,
+                "Opposing a Section 8 Arbitration reference filed by a Corporate Debtor in a Section 7 IBC petition, with reliance on a balance-sheet acknowledgment under Section 18 Limitation Act."
+        );
+
+        assertNotNull(sheet2);
+        assertEquals(PartyPerspective.CLAIMANT_PETITIONER, sheet2.getPartyPerspective(),
+                "Prompt 2 must resolve dynamically to CLAIMANT_PETITIONER");
+        ArgumentDossier dossier2 = sheet2.getArgumentDossier();
+        assertNotNull(dossier2);
+        assertFalse(dossier2.openingPitch60Seconds().isBlank(), "Prompt 2 pitch must be included");
+        assertFalse(dossier2.coreSubmissions().isEmpty(), "Prompt 2 submissions must be included");
+        assertTrue(dossier2.framedIssues().isEmpty(), "Prompt 2 issues must be omitted");
+        assertTrue(dossier2.rebuttalMatrix().isEmpty(), "Prompt 2 rebuttals must be omitted");
+        assertTrue(dossier2.benchGrillQuestions().isEmpty(), "Prompt 2 bench questions must be omitted");
+        assertTrue(dossier2.preHearingEvidenceChecklist().isEmpty(), "Prompt 2 checklist must be omitted");
+
+        String md2 = sheet2.getRenderedMarkdown();
+        assertNotNull(md2);
+        assertTrue(md2.contains("### 1. 60-SECOND OPENING COURTROOM PITCH"), "Section 1 pitch must be rendered");
+        assertFalse(md2.contains("### 2. ISSUES FRAMED FOR DETERMINATION"), "Section 2 issues must be omitted");
+        assertTrue(md2.contains("### 2B. APPLICABLE STATUTORY FRAMEWORK"), "Table 2B must be rendered");
+        assertTrue(md2.contains("### 3. CORE LEGAL & FACTUAL SUBMISSIONS"), "Section 3 submissions must be rendered");
+        assertFalse(md2.contains("### 4. OPPOSITE-PARTY REBUTTAL MATRIX"), "Section 4 rebuttals must be omitted");
+        assertFalse(md2.contains("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR"), "Section 5 bench traps must be omitted");
+        assertFalse(md2.contains("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE"), "Section 6 checklist must be omitted");
+
+        // Prompt 3: Opposing Anticipatory Bail under Section 420 IPC (CLAIMANT_PETITIONER)
+        DraftingContext ctx3 = new DraftingContext(
+                "Opposing anticipatory bail in corporate fraud under Section 420 IPC",
+                null,
+                List.of(
+                        new StatutePin("Code of Criminal Procedure, 1973", "Section 438", "Anticipatory bail"),
+                        new StatutePin("Indian Penal Code, 1860", "Section 420", "Cheating and dishonestly inducing delivery of property")
+                ),
+                null
+        );
+        workspace.setLatestDraftingContext(ctx3);
+        workspace.setPartyPerspective(PartyPerspective.OPPOSITE_PARTY_RESPONDENT); // will be overridden dynamically
+
+        WorkspaceArgumentSheet sheet3 = argumentPrepService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                null,
+                "Prepare me arguments to oppose anticipatory bail in a ₹2.5 Crore corporate fraud case under Section 420 IPC"
+        );
+
+        assertNotNull(sheet3);
+        assertEquals(PartyPerspective.CLAIMANT_PETITIONER, sheet3.getPartyPerspective(),
+                "Prompt 3 must resolve dynamically to CLAIMANT_PETITIONER");
+        ArgumentDossier dossier3 = sheet3.getArgumentDossier();
+        assertNotNull(dossier3);
+        assertFalse(dossier3.openingPitch60Seconds().isBlank(), "Prompt 3 pitch must be included");
+        assertFalse(dossier3.coreSubmissions().isEmpty(), "Prompt 3 submissions must be included");
+        assertTrue(dossier3.framedIssues().isEmpty(), "Prompt 3 issues must be omitted");
+        assertTrue(dossier3.rebuttalMatrix().isEmpty(), "Prompt 3 rebuttals must be omitted");
+        assertTrue(dossier3.benchGrillQuestions().isEmpty(), "Prompt 3 bench questions must be omitted");
+        assertTrue(dossier3.preHearingEvidenceChecklist().isEmpty(), "Prompt 3 checklist must be omitted");
+
+        String md3 = sheet3.getRenderedMarkdown();
+        assertNotNull(md3);
+        assertTrue(md3.contains("### 1. 60-SECOND OPENING COURTROOM PITCH"), "Section 1 pitch must be rendered");
+        assertFalse(md3.contains("### 2. ISSUES FRAMED FOR DETERMINATION"), "Section 2 issues must be omitted");
+        assertTrue(md3.contains("### 2B. APPLICABLE STATUTORY FRAMEWORK"), "Table 2B must be rendered");
+        assertTrue(md3.contains("### 3. CORE LEGAL & FACTUAL SUBMISSIONS"), "Section 3 submissions must be rendered");
+        assertFalse(md3.contains("### 4. OPPOSITE-PARTY REBUTTAL MATRIX"), "Section 4 rebuttals must be omitted");
+        assertFalse(md3.contains("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR"), "Section 5 bench traps must be omitted");
+        assertFalse(md3.contains("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE"), "Section 6 checklist must be omitted");
+    }
+
+    @Test
+    @DisplayName("Test 16: Perspective Priority Fix - customFocusInstruction overrides non-null overridePerspective")
+    void shouldPrioritizePromptPerspectiveOverDefaultWorkspaceOverride() {
+        UUID workspaceId = UUID.randomUUID();
+        String clerkUserId = "clerk_perspective_test";
+
+        LegalWorkspace workspace = new LegalWorkspace();
+        workspace.setWorkspaceId(workspaceId);
+        workspace.setClerkUserId(clerkUserId);
+        workspace.setTitle("Arbitration Bank Freeze Matter");
+        workspace.setPartyPerspective(PartyPerspective.CLAIMANT_PETITIONER);
+        workspace.setPrimaryDomain(com.app.refirm.triage.domain.LegalDomain.CORPORATE);
+
+        DraftingContext ctx = new DraftingContext(
+                "Arbitration Section 9 interim relief",
+                null,
+                List.of(new StatutePin("The Arbitration and Conciliation Act, 1996", "Section 9", "Interim measures by Court")),
+                null
+        );
+        workspace.setLatestDraftingContext(ctx);
+
+        when(workspaceRepository.findByWorkspaceIdAndClerkUserId(workspaceId, clerkUserId))
+                .thenReturn(Optional.of(workspace));
+        when(argumentSheetRepository.save(any(WorkspaceArgumentSheet.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Call with explicit overridePerspective = CLAIMANT_PETITIONER (default router state)
+        // but prompt explicitly instructs "Prepare our defense as Respondent..."
+        WorkspaceArgumentSheet sheet = argumentPrepService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                PartyPerspective.CLAIMANT_PETITIONER,
+                "Prepare our defense as Respondent. The claimant has filed a Section 9 application under the Arbitration and Conciliation Act seeking an urgent interim injunction to freeze our bank accounts"
+        );
+
+        assertNotNull(sheet);
+        assertEquals(PartyPerspective.OPPOSITE_PARTY_RESPONDENT, sheet.getPartyPerspective(),
+                "Explicit defense prompt cue must override default CLAIMANT_PETITIONER overridePerspective");
+        assertTrue(sheet.getTitle().contains("Respondent Defense"), "Title should reflect Respondent perspective");
+    }
+
+    @Test
+    @DisplayName("Test 17: Terra Free-Flowing Markdown Pipeline preserves sections, clarifies, and increments version")
+    void shouldHandleTerraFreeFlowingMarkdownPipelineAndVersionIncrement() {
+        UUID workspaceId = UUID.randomUUID();
+        String clerkUserId = "clerk_terra_test";
+
+        LegalWorkspace workspace = new LegalWorkspace();
+        workspace.setWorkspaceId(workspaceId);
+        workspace.setClerkUserId(clerkUserId);
+        workspace.setTitle("Urgent Section 9 Bank Freeze Defense");
+        workspace.setPartyPerspective(PartyPerspective.OPPOSITE_PARTY_RESPONDENT);
+        workspace.setPrimaryDomain(com.app.refirm.triage.domain.LegalDomain.CORPORATE);
+
+        StatutePin s9Pin = new StatutePin("The Arbitration and Conciliation Act, 1996", "Section 9", "Interim measures by Court");
+        workspace.setLatestDraftingContext(new DraftingContext("Interim relief dispute", null, List.of(s9Pin), null));
+
+        when(workspaceRepository.findByWorkspaceIdAndClerkUserId(workspaceId, clerkUserId))
+                .thenReturn(Optional.of(workspace));
+        when(argumentSheetRepository.save(any(WorkspaceArgumentSheet.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Mock chatClient content() returning Senior Counsel Markdown
+        String seniorCounselMarkdown = """
+                ### Core Position
+                May it please this Hon'ble Court, on behalf of the Respondent, we submit that the Section 9 application to freeze working-capital bank accounts is an abuse of process.
+
+                ### Threshold Objections
+                The Claimant has failed to establish irreparable injury under Section 9 of the Arbitration and Conciliation Act, 1996.
+
+                ### Pre-empting Opponent
+                The Claimant will allege dissipation of assets, but the balance sheets reflect healthy operations.
+
+                ### Clarifications to Sharpen This Brief
+                1. Are the accounts sought to be frozen current payroll or operational accounts?
+                2. Has notice under Section 21 invoking arbitration been issued?
+                """;
+
+        ChatClient mockChatClient = mock(ChatClient.class);
+        ChatClient.ChatClientRequestSpec mockSpec = mock(ChatClient.ChatClientRequestSpec.class);
+        ChatClient.CallResponseSpec mockCall = mock(ChatClient.CallResponseSpec.class);
+
+        when(mockChatClient.prompt()).thenReturn(mockSpec);
+        when(mockSpec.system(anyString())).thenReturn(mockSpec);
+        when(mockSpec.user(anyString())).thenReturn(mockSpec);
+        when(mockSpec.call()).thenReturn(mockCall);
+        when(mockCall.content()).thenReturn(seniorCounselMarkdown);
+
+        ArgumentPrepService terraService = new ArgumentPrepService(
+                workspaceRepository,
+                documentRepository,
+                argumentSheetRepository,
+                precedentProvider,
+                firewallSanitizer,
+                markdownRenderer,
+                mockChatClient,
+                new ObjectMapper(),
+                null
+        );
+
+        // Turn 1
+        WorkspaceArgumentSheet sheetV1 = terraService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                PartyPerspective.OPPOSITE_PARTY_RESPONDENT,
+                "Prepare our defense as Respondent against Section 9 bank freeze"
+        );
+
+        assertNotNull(sheetV1);
+        assertEquals(1, sheetV1.getVersion(), "Initial sheet should be version 1");
+        String md1 = sheetV1.getRenderedMarkdown();
+        assertNotNull(md1);
+        assertTrue(md1.contains("### Core Position"));
+        assertTrue(md1.contains("### Threshold Objections"));
+        assertTrue(md1.contains("### Clarifications to Sharpen This Brief"));
+        assertFalse(md1.contains("(Section )"), "Must not contain broken (Section ) artifacts");
+
+        // Turn 2: Simulate stateful follow-up when previous sheet exists in repository
+        when(argumentSheetRepository.findByWorkspaceIdAndClerkUserIdOrderByUpdatedAtDesc(workspaceId, clerkUserId))
+                .thenReturn(List.of(sheetV1));
+
+        WorkspaceArgumentSheet sheetV2 = terraService.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                PartyPerspective.OPPOSITE_PARTY_RESPONDENT,
+                "The accounts are active payroll accounts and no Section 21 notice has been served."
+        );
+
+        assertNotNull(sheetV2);
+        assertEquals(2, sheetV2.getVersion(), "Follow-up sheet must increment version to 2");
+    }
+
+    @Test
+    @DisplayName("Test 18: Universal Acronym Parsing, Bleed Prevention & Post-Terra OKF Resolution with 2-Line Coverage Footer")
+    void testUniversalAcronymParsingBleedPreventionAndPostTerraResolution() {
+        // 1. Verify tuple parsing from complex Indian statutory sentence:
+        // "Under Sections 7 and 3 of the IBC and Sections 415 and 420 IPC and Sections 41, 41A and 438 CrPC"
+        String citationText = "Under Sections 7 and 3 of the IBC and Sections 415 and 420 IPC and Sections 41, 41A and 438 CrPC";
+        Set<ArgumentMarkdownRenderer.ActSectionRef> refs = new LinkedHashSet<>();
+        ArgumentMarkdownRenderer.parseTextIntoRefs(citationText, refs);
+
+        // Assert IBC sections extracted
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Insolvency and Bankruptcy Code") && r.sectionNumber().equals("7")),
+                "Must extract Section 7 IBC");
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Insolvency and Bankruptcy Code") && r.sectionNumber().equals("3")),
+                "Must extract Section 3 IBC");
+
+        // Assert IPC sections extracted
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Indian Penal Code") && r.sectionNumber().equals("415")),
+                "Must extract Section 415 IPC");
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Indian Penal Code") && r.sectionNumber().equals("420")),
+                "Must extract Section 420 IPC");
+
+        // Assert CrPC sections extracted
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Code of Criminal Procedure") && r.sectionNumber().equals("41")),
+                "Must extract Section 41 CrPC");
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Code of Criminal Procedure") && r.sectionNumber().equals("41A")),
+                "Must extract Section 41A CrPC");
+        assertTrue(refs.stream().anyMatch(r -> ArgumentMarkdownRenderer.isActMatch(r.actKey(), "Code of Criminal Procedure") && r.sectionNumber().equals("438")),
+                "Must extract Section 438 CrPC");
+
+        // 2. Bleed Prevention: Verify filterToActivelyCitedStatutes does NOT bleed Section 7 or Section 9 into Arbitration Act
+        // when only Section 8 of the Arbitration Act was cited, alongside Section 7 of the IBC
+        List<StatutePin> statutePack = List.of(
+                new StatutePin("Arbitration and Conciliation Act, 1996", "7", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Arbitration agreement", "content"),
+                new StatutePin("Arbitration and Conciliation Act, 1996", "8", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Power to refer parties to arbitration", "content"),
+                new StatutePin("Arbitration and Conciliation Act, 1996", "9", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Interim measures by Court", "content"),
+                new StatutePin("Insolvency and Bankruptcy Code, 2016", "7", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Initiation of corporate insolvency", "content")
+        );
+
+        Set<ArgumentMarkdownRenderer.ActSectionRef> mixedRefs = Set.of(
+                new ArgumentMarkdownRenderer.ActSectionRef("IBC", "7"),
+                new ArgumentMarkdownRenderer.ActSectionRef("Arbitration Act", "8")
+        );
+
+        List<StatutePin> filtered = ArgumentMarkdownRenderer.filterToActivelyCitedStatutes(statutePack, mixedRefs);
+        assertEquals(2, filtered.size(), "Only explicitly cited Section 7 IBC and Section 8 Arbitration Act should remain");
+        assertTrue(filtered.stream().anyMatch(p -> p.actName().contains("Insolvency") && p.sectionNumber().equals("7")));
+        assertTrue(filtered.stream().anyMatch(p -> p.actName().contains("Arbitration") && p.sectionNumber().equals("8")));
+        assertFalse(filtered.stream().anyMatch(p -> p.actName().contains("Arbitration") && p.sectionNumber().equals("7")),
+                "Arbitration Act Section 7 must NOT bleed in when only IBC Section 7 was cited");
+        assertFalse(filtered.stream().anyMatch(p -> p.actName().contains("Arbitration") && p.sectionNumber().equals("9")),
+                "Arbitration Act Section 9 must NOT bleed in");
+
+        // 3. Post-Terra Catalog Resolution & 2-Line Coverage Footer:
+        LegalRetrievalService mockRetrieval = mock(LegalRetrievalService.class);
+        when(mockRetrieval.findStatuteFile(eq("IPC"), eq("420"))).thenReturn(Optional.of(
+                new LegalRetrievalService.StatuteFile(
+                        "Indian Penal Code, 1860",
+                        "section_420.md",
+                        "## Section 420. Cheating and dishonestly inducing delivery of property\nWhoever cheats and thereby dishonestly induces...",
+                        "cheating and dishonestly inducing delivery of property"
+                )
+        ));
+        when(mockRetrieval.findStatuteFile(eq("IPC"), eq("415"))).thenReturn(Optional.of(
+                new LegalRetrievalService.StatuteFile(
+                        "Indian Penal Code, 1860",
+                        "section_415.md",
+                        "## Section 415. Cheating\nWhoever, by deceiving any person...",
+                        "cheating deception"
+                )
+        ));
+
+        ArgumentPrepService terraServiceWithRetrieval = new ArgumentPrepService(
+                workspaceRepository,
+                documentRepository,
+                argumentSheetRepository,
+                precedentProvider,
+                firewallSanitizer,
+                markdownRenderer,
+                chatClient,
+                objectMapper,
+                mockRetrieval
+        );
+
+        String rawTerraOutput = """
+                ## Submissions Opposing Anticipatory Bail
+                **Alleged offence: Section 420 IPC | Alleged corporate fraud: ₹2.5 crore**
+                **For the Complainant**
+
+                The ingredients of cheating under Sections 415 and 420 IPC are squarely made out.
+                In *Sushila Aggarwal v. State (NCT of Delhi)*, (2020) 5 SCC 1, the Constitution Bench held that anticipatory bail cannot be granted mechanically.
+                """;
+
+        when(chatClient.prompt().system(anyString()).user(anyString()).call().content())
+                .thenReturn(rawTerraOutput);
+
+        WorkspaceArgumentSheet sheet = terraServiceWithRetrieval.generateArgumentSheet(
+                workspaceId,
+                clerkUserId,
+                PartyPerspective.CLAIMANT_PETITIONER,
+                "Submissions opposing anticipatory bail under Sections 415 and 420 IPC"
+        );
+
+        assertNotNull(sheet);
+        String md = sheet.getRenderedMarkdown();
+        assertNotNull(md);
+
+        // Verify Statutory Source Coverage contains resolved OKF pins
+        assertTrue(md.contains("> **Statutory Source Coverage:**"), "Must contain Statutory Source Coverage block");
+        assertTrue(md.contains("Indian Penal Code, 1860 (Section 415, Section 420)") || md.contains("Indian Penal Code"),
+                "Must verify resolved IPC sections in OKF Pack");
+
+        // Verify Case Law Coverage line is appended
+        assertTrue(md.contains("> **Case Law Coverage:**"), "Must contain transparent 2nd line Case Law Coverage block");
+        assertTrue(md.contains("recalled from model knowledge"), "Must contain disclaimer for recalled case citations");
+    }
+
+    @Test
+    @DisplayName("Test 19: Strict Statutory Attribution & No Cross-Act Substitution for Repeated 'Section' Lists")
+    void testStrictStatutoryAttributionAndNoCrossActSubstitution() {
+        String citationText = "Sections 415 and 420 IPC, Section 438 CrPC, and Section 41 and Section 41A CrPC";
+        Set<ArgumentMarkdownRenderer.ActSectionRef> refs =
+                ArgumentMarkdownRenderer.extractCitedActSectionRefs(null, citationText);
+
+        assertNotNull(refs); 
+
+        // 1. Assert exactly 5 tuples with explicit Act keys are extracted
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().equalsIgnoreCase("IPC") && r.sectionNumber().equals("415")),
+                "Must extract (IPC, 415)");
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().equalsIgnoreCase("IPC") && r.sectionNumber().equals("420")),
+                "Must extract (IPC, 420)");
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().equalsIgnoreCase("CrPC") && r.sectionNumber().equals("438")),
+                "Must extract (CrPC, 438)");
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().equalsIgnoreCase("CrPC") && r.sectionNumber().equals("41")),
+                "Must extract (CrPC, 41)");
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().equalsIgnoreCase("CrPC") && r.sectionNumber().equals("41A")),
+                "Must extract (CrPC, 41A)");
+
+        // 2. Assert no bare section refs exist for 41, 41A, 438
+        assertFalse(refs.stream().anyMatch(r -> r.actKey().isBlank() && (r.sectionNumber().equals("41") || r.sectionNumber().equals("41A") || r.sectionNumber().equals("438"))),
+                "Should not have bare section references without Act key");
+
+        // 3. Bleed and cross-Act substitution prevention in filterToActivelyCitedStatutes
+        List<StatutePin> candidatePins = List.of(
+                new StatutePin("The Bharatiya Nagarik Suraksha Sanhita, 2023", "438", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content"),
+                new StatutePin("The Arbitration and Conciliation Act, 1996", "41", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content"),
+                new StatutePin("The Customs Act, 1962", "41A", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content"),
+                new StatutePin("The Code of Criminal Procedure, 1973", "438", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content"),
+                new StatutePin("The Code of Criminal Procedure, 1973", "41", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content"),
+                new StatutePin("The Indian Penal Code, 1860", "415", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content"),
+                new StatutePin("The Indian Penal Code, 1860", "420", com.app.refirm.triage.domain.StatuteType.OPERATIVE, "Heading", "content")
+        );
+
+        List<StatutePin> filtered = ArgumentMarkdownRenderer.filterToActivelyCitedStatutes(candidatePins, refs);
+
+        // CrPC and IPC pins must be retained
+        assertTrue(filtered.stream().anyMatch(p -> p.actName().contains("Criminal Procedure") && p.sectionNumber().equals("438")),
+                "CrPC 438 must be retained");
+        assertTrue(filtered.stream().anyMatch(p -> p.actName().contains("Criminal Procedure") && p.sectionNumber().equals("41")),
+                "CrPC 41 must be retained");
+        assertTrue(filtered.stream().anyMatch(p -> p.actName().contains("Indian Penal Code") && p.sectionNumber().equals("415")),
+                "IPC 415 must be retained");
+        assertTrue(filtered.stream().anyMatch(p -> p.actName().contains("Indian Penal Code") && p.sectionNumber().equals("420")),
+                "IPC 420 must be retained");
+
+        // Cross-act substitutions must NEVER occur
+        assertFalse(filtered.stream().anyMatch(p -> p.actName().contains("Bharatiya Nagarik Suraksha") && p.sectionNumber().equals("438")),
+                "BNSS Section 438 must NEVER be substituted when CrPC 438 was cited");
+        assertFalse(filtered.stream().anyMatch(p -> p.actName().contains("Arbitration") && p.sectionNumber().equals("41")),
+                "Arbitration Act Section 41 must NEVER be substituted when CrPC 41 was cited");
+        assertFalse(filtered.stream().anyMatch(p -> p.actName().contains("Customs") && p.sectionNumber().equals("41A")),
+                "Customs Act Section 41A must NEVER be substituted when CrPC 41A was cited");
+
+        // 4. Post-Terra catalog resolution check
+        LegalRetrievalService mockRetrieval = mock(LegalRetrievalService.class);
+        when(mockRetrieval.findStatuteFile("CrPC", "438")).thenReturn(Optional.of(
+                new LegalRetrievalService.StatuteFile(
+                        "The Code of Criminal Procedure, 1973",
+                        "section_438.md",
+                        "Direction for grant of bail...",
+                        "bail"
+                )
+        ));
+        when(mockRetrieval.findStatuteFile("CrPC", "41")).thenReturn(Optional.of(
+                new LegalRetrievalService.StatuteFile(
+                        "The Code of Criminal Procedure, 1973",
+                        "section_41.md",
+                        "When police may arrest without warrant...",
+                        "arrest"
+                )
+        ));
+        // Section 41A is not in CrPC OKF bundle (unbundled)
+        when(mockRetrieval.findStatuteFile("CrPC", "41A")).thenReturn(Optional.empty());
+
+        List<StatutePin> dynamicPins = new ArrayList<>();
+        ArgumentPrepService service = new ArgumentPrepService(
+                workspaceRepository,
+                documentRepository,
+                argumentSheetRepository,
+                precedentProvider,
+                firewallSanitizer,
+                markdownRenderer,
+                chatClient,
+                objectMapper,
+                mockRetrieval
+        );
+
+        service.resolveTerraCitedStatutesFromCatalog(citationText, dynamicPins);
+
+        assertEquals(2, dynamicPins.size(), "Only bundled CrPC 438 and CrPC 41 should be resolved");
+        assertTrue(dynamicPins.stream().anyMatch(p -> p.actName().contains("Criminal Procedure") && p.sectionNumber().equals("438")));
+        assertTrue(dynamicPins.stream().anyMatch(p -> p.actName().contains("Criminal Procedure") && p.sectionNumber().equals("41")));
+        assertFalse(dynamicPins.stream().anyMatch(p -> p.actName().contains("Customs")), "Customs Act must NOT be substituted");
+        assertFalse(dynamicPins.stream().anyMatch(p -> p.actName().contains("Arbitration")), "Arbitration Act must NOT be substituted");
+        assertFalse(dynamicPins.stream().anyMatch(p -> p.actName().contains("Bharatiya")), "BNSS must NOT be substituted");
+    }
+
+    @Test
+    @DisplayName("Test 20: Article vs Section Label Formatting & Extraction (Limitation Act Articles 113, 137 vs Sections 5, 14, Constitution Article 226)")
+    void testArticleVsSectionLabelFormattingAndExtraction() {
+        // 1. formatProvisionPrefix unit assertions
+        assertEquals("Article ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "137"));
+        assertEquals("Article ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "113"));
+        assertEquals("Article ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "54"));
+        assertEquals("Article ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "schedule_articles_113_137.md"));
+        assertEquals("Section ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "5"));
+        assertEquals("Section ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "14"));
+        assertEquals("Section ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "32"));
+        assertEquals("Section ", ArgumentMarkdownRenderer.formatProvisionPrefix("The Limitation Act, 1963", "section_5.md"));
+        assertEquals("Article ", ArgumentMarkdownRenderer.formatProvisionPrefix("Constitution of India", "226"));
+        assertEquals("Article ", ArgumentMarkdownRenderer.formatProvisionPrefix("Constitution of India", "32"));
+        assertEquals("Section ", ArgumentMarkdownRenderer.formatProvisionPrefix("Indian Penal Code", "420"));
+        assertEquals("Section ", ArgumentMarkdownRenderer.formatProvisionPrefix("Insolvency and Bankruptcy Code, 2016", "7"));
+
+        // 2. formatProvisionForTableCell assertions
+        StatutePin limitationArt137Pin = new StatutePin(
+                "The Limitation Act, 1963",
+                "137",
+                StatuteType.OPERATIVE,
+                "Residuary Limitation (Articles 113 and 137)",
+                "---\nsection: '137'\nheading: Residuary Limitation\n---\nOperative text"
+        );
+        String tableCellArt137 = ArgumentMarkdownRenderer.formatProvisionForTableCell(limitationArt137Pin);
+        assertTrue(tableCellArt137.startsWith("Article 137"), "Must be formatted as Article 137: " + tableCellArt137);
+        assertFalse(tableCellArt137.contains("Section 137"), "Must NOT be formatted as Section 137: " + tableCellArt137);
+
+        StatutePin limitationSec5Pin = new StatutePin(
+                "The Limitation Act, 1963",
+                "5",
+                StatuteType.OPERATIVE,
+                "Extension of prescribed period",
+                "---\nsection: '5'\nheading: Extension of period\n---\nOperative text"
+        );
+        String tableCellSec5 = ArgumentMarkdownRenderer.formatProvisionForTableCell(limitationSec5Pin);
+        assertTrue(tableCellSec5.startsWith("Section 5"), "Must be formatted as Section 5: " + tableCellSec5);
+
+        StatutePin constArt226Pin = new StatutePin(
+                "Constitution of India",
+                "226",
+                StatuteType.OPERATIVE,
+                "Power of High Courts to issue certain writs",
+                "---\nsection: '226'\nheading: Power of High Courts\n---\nOperative text"
+        );
+        String tableCellArt226 = ArgumentMarkdownRenderer.formatProvisionForTableCell(constArt226Pin);
+        assertTrue(tableCellArt226.startsWith("Article 226"), "Must be formatted as Article 226: " + tableCellArt226);
+
+        // 3. renderStatutorySourceCoverage assertions
+        List<StatutePin> pins = List.of(limitationArt137Pin, limitationSec5Pin, constArt226Pin);
+        String coverageMarkdown = ArgumentMarkdownRenderer.renderStatutorySourceCoverage(pins, null, null);
+        assertTrue(coverageMarkdown.contains("Article 137"), "Coverage must contain Article 137: " + coverageMarkdown);
+        assertTrue(coverageMarkdown.contains("Section 5"), "Coverage must contain Section 5: " + coverageMarkdown);
+        assertTrue(coverageMarkdown.contains("Article 226"), "Coverage must contain Article 226: " + coverageMarkdown);
+        assertFalse(coverageMarkdown.contains("Section 137"), "Coverage must NEVER contain Section 137: " + coverageMarkdown);
+        assertFalse(coverageMarkdown.contains("Section 226"), "Coverage must NEVER contain Section 226: " + coverageMarkdown);
+
+        // 4. parseTextIntoRefs assertions with Article citations
+        Set<ArgumentMarkdownRenderer.ActSectionRef> refs = new LinkedHashSet<>();
+        String promptWithArticles = "We rely on Article 137 of the Limitation Act, 1963 and Article 226 of the Constitution of India.";
+        ArgumentMarkdownRenderer.parseTextIntoRefs(promptWithArticles, refs);
+
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().toLowerCase().contains("limitation") && r.sectionNumber().equals("137")),
+                "Must extract Limitation Act Article 137");
+        assertTrue(refs.stream().anyMatch(r -> r.actKey().toLowerCase().contains("constitution") && r.sectionNumber().equals("226")),
+                "Must extract Constitution Article 226");
+
+        // 5. STATIC_TERRA_SYSTEM_PROMPT assertions (minimal, zero format/table handcuffs)
+        assertTrue(ArgumentPrepService.STATIC_TERRA_SYSTEM_PROMPT.contains("NATURAL STRUCTURE & PROPORTIONALITY"));
+        assertTrue(ArgumentPrepService.STATIC_TERRA_SYSTEM_PROMPT.contains("sub-sections/preconditions of the invoked provision itself"));
+        assertTrue(ArgumentPrepService.STATIC_TERRA_SYSTEM_PROMPT.contains("external statutory interplay/sequencing"));
+        assertFalse(ArgumentPrepService.STATIC_TERRA_SYSTEM_PROMPT.contains("Anticipated Counter-Arguments & Our Answers"));
+        assertFalse(ArgumentPrepService.STATIC_TERRA_SYSTEM_PROMPT.contains("Particulars / Chronology to Insert from Record"));
+    }
+}

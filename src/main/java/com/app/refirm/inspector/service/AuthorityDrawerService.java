@@ -2,6 +2,10 @@ package com.app.refirm.inspector.service;
 
 import com.app.refirm.arguments.service.PrecedentAuthorityProvider;
 import com.app.refirm.inspector.domain.CorpusPrecedentEntry;
+import com.app.refirm.inspector.domain.HydratedJudgmentDocument;
+import com.app.refirm.inspector.domain.PrecedentIndexRecord;
+import com.app.refirm.inspector.domain.PrecedentSearchCriteria;
+import com.app.refirm.inspector.repository.PrecedentIndexRepository;
 import com.app.refirm.inspector.dto.InspectorDTOs.DrawerPage;
 import com.app.refirm.inspector.dto.InspectorDTOs.InAppJudgmentDrawerResponse;
 import com.app.refirm.inspector.dto.InspectorDTOs.JudgmentAuthorityCard;
@@ -38,6 +42,11 @@ public class AuthorityDrawerService {
     private final PrecedentAuthorityProvider precedentProvider;
     private final CorpusPrecedentRegistryService corpusRegistry;
     private final com.app.refirm.workspace.repository.WorkspaceDocumentPageRepository pageRepository;
+    private final PrecedentIndexRepository precedentIndexRepository;
+    private final PariMateriaCrosswalkService crosswalkService;
+    private final Tier2VaquillReadThroughClient tier2Client;
+    private final PrecedentAsyncEnrichmentService asyncEnrichmentService;
+    private final PrecedentContentStore precedentContentStore;
 
     @Autowired
     public AuthorityDrawerService(
@@ -46,7 +55,12 @@ public class AuthorityDrawerService {
             WorkspaceSavedAuthorityRepository savedAuthorityRepository,
             PrecedentAuthorityProvider precedentProvider,
             CorpusPrecedentRegistryService corpusRegistry,
-            @Autowired(required = false) com.app.refirm.workspace.repository.WorkspaceDocumentPageRepository pageRepository
+            @Autowired(required = false) com.app.refirm.workspace.repository.WorkspaceDocumentPageRepository pageRepository,
+            @Autowired(required = false) PrecedentIndexRepository precedentIndexRepository,
+            @Autowired(required = false) PariMateriaCrosswalkService crosswalkService,
+            @Autowired(required = false) Tier2VaquillReadThroughClient tier2Client,
+            @Autowired(required = false) PrecedentAsyncEnrichmentService asyncEnrichmentService,
+            @Autowired(required = false) PrecedentContentStore precedentContentStore
     ) {
         this.workspaceRepository = workspaceRepository;
         this.documentRepository = documentRepository;
@@ -54,6 +68,53 @@ public class AuthorityDrawerService {
         this.precedentProvider = precedentProvider;
         this.corpusRegistry = corpusRegistry;
         this.pageRepository = pageRepository;
+        this.precedentIndexRepository = precedentIndexRepository;
+        this.crosswalkService = crosswalkService;
+        this.tier2Client = tier2Client;
+        this.asyncEnrichmentService = asyncEnrichmentService;
+        this.precedentContentStore = precedentContentStore;
+    }
+
+    public AuthorityDrawerService(
+            LegalWorkspaceRepository workspaceRepository,
+            WorkspaceDocumentRepository documentRepository,
+            WorkspaceSavedAuthorityRepository savedAuthorityRepository,
+            PrecedentAuthorityProvider precedentProvider,
+            CorpusPrecedentRegistryService corpusRegistry,
+            com.app.refirm.workspace.repository.WorkspaceDocumentPageRepository pageRepository,
+            PrecedentIndexRepository precedentIndexRepository,
+            PariMateriaCrosswalkService crosswalkService,
+            Tier2VaquillReadThroughClient tier2Client,
+            PrecedentAsyncEnrichmentService asyncEnrichmentService
+    ) {
+        this(workspaceRepository, documentRepository, savedAuthorityRepository, precedentProvider,
+                corpusRegistry, pageRepository, precedentIndexRepository, crosswalkService, tier2Client, asyncEnrichmentService, null);
+    }
+
+    public AuthorityDrawerService(
+            LegalWorkspaceRepository workspaceRepository,
+            WorkspaceDocumentRepository documentRepository,
+            WorkspaceSavedAuthorityRepository savedAuthorityRepository,
+            PrecedentAuthorityProvider precedentProvider,
+            CorpusPrecedentRegistryService corpusRegistry,
+            com.app.refirm.workspace.repository.WorkspaceDocumentPageRepository pageRepository,
+            PrecedentIndexRepository precedentIndexRepository,
+            PariMateriaCrosswalkService crosswalkService
+    ) {
+        this(workspaceRepository, documentRepository, savedAuthorityRepository, precedentProvider,
+                corpusRegistry, pageRepository, precedentIndexRepository, crosswalkService, null, null);
+    }
+
+    public AuthorityDrawerService(
+            LegalWorkspaceRepository workspaceRepository,
+            WorkspaceDocumentRepository documentRepository,
+            WorkspaceSavedAuthorityRepository savedAuthorityRepository,
+            PrecedentAuthorityProvider precedentProvider,
+            CorpusPrecedentRegistryService corpusRegistry,
+            com.app.refirm.workspace.repository.WorkspaceDocumentPageRepository pageRepository
+    ) {
+        this(workspaceRepository, documentRepository, savedAuthorityRepository, precedentProvider,
+                corpusRegistry, pageRepository, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -150,34 +211,76 @@ public class AuthorityDrawerService {
             }
         }
 
-        // 2. Fetch domain-filtered and keyword-ranked precedents from CorpusPrecedentRegistryService
-        List<CorpusPrecedentEntry> entries;
-        if (workspace != null) {
-            entries = corpusRegistry.findRelevantForWorkspace(workspace);
-        } else {
-            entries = corpusRegistry.findByDomain(domainStr);
+        // 2. Tier 1 PostgreSQL search via PrecedentIndexRepository (falling back to in-memory CorpusPrecedentRegistryService)
+        boolean dbSearchSuccess = false;
+        if (precedentIndexRepository != null) {
+            try {
+                PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(
+                        List.of(),
+                        null,
+                        domainStr,
+                        null,
+                        null,
+                        null,
+                        20
+                );
+                List<PrecedentIndexRecord> dbMatches = precedentIndexRepository.searchPrecedents(criteria);
+                if (dbMatches != null && !dbMatches.isEmpty()) {
+                    dbSearchSuccess = true;
+                    for (PrecedentIndexRecord rec : dbMatches) {
+                        if (seenIds.add(rec.authorityId())) {
+                            boolean saved = workspaceId != null && clerkUserId != null
+                                    && savedAuthorityRepository.existsByWorkspaceIdAndAuthorityIdAndClerkUserId(workspaceId, rec.authorityId(), clerkUserId);
+
+                            cards.add(new JudgmentAuthorityCard(
+                                    rec.authorityId(),
+                                    rec.caseTitle(),
+                                    rec.courtName(),
+                                    rec.judgmentDate(),
+                                    rec.primaryCitation(),
+                                    rec.equivalentCitations(),
+                                    "VERIFIED_CORPUS",
+                                    null,
+                                    null,
+                                    null,
+                                    rec.twoLineRatio(),
+                                    rec.legalPropositions(),
+                                    saved
+                            ));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Notice querying precedent index in getRelevantAuthoritiesForDomain: {}", e.getMessage());
+            }
         }
 
-        for (CorpusPrecedentEntry entry : entries) {
-            if (seenIds.add(entry.authorityId())) {
-                boolean saved = workspaceId != null && clerkUserId != null
-                        && savedAuthorityRepository.existsByWorkspaceIdAndAuthorityIdAndClerkUserId(workspaceId, entry.authorityId(), clerkUserId);
+        if (!dbSearchSuccess && corpusRegistry != null) {
+            List<CorpusPrecedentEntry> entries = (workspace != null)
+                    ? corpusRegistry.findRelevantForWorkspace(workspace)
+                    : corpusRegistry.findByDomain(domainStr);
 
-                cards.add(new JudgmentAuthorityCard(
-                        entry.authorityId(),
-                        entry.caseTitle(),
-                        entry.courtName(),
-                        entry.judgmentDate(),
-                        entry.primaryCitation(),
-                        entry.equivalentCitations(),
-                        "VERIFIED_CORPUS",
-                        null,
-                        null,
-                        null,
-                        entry.summary(),
-                        entry.keyPropositions(),
-                        saved
-                ));
+            for (CorpusPrecedentEntry entry : entries) {
+                if (seenIds.add(entry.authorityId())) {
+                    boolean saved = workspaceId != null && clerkUserId != null
+                            && savedAuthorityRepository.existsByWorkspaceIdAndAuthorityIdAndClerkUserId(workspaceId, entry.authorityId(), clerkUserId);
+
+                    cards.add(new JudgmentAuthorityCard(
+                            entry.authorityId(),
+                            entry.caseTitle(),
+                            entry.courtName(),
+                            entry.judgmentDate(),
+                            entry.primaryCitation(),
+                            entry.equivalentCitations(),
+                            "VERIFIED_CORPUS",
+                            null,
+                            null,
+                            null,
+                            entry.summary(),
+                            entry.keyPropositions(),
+                            saved
+                    ));
+                }
             }
         }
 
@@ -228,18 +331,87 @@ public class AuthorityDrawerService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public InAppJudgmentDrawerResponse getCorpusAuthorityDrawer(String authorityId) {
+        return buildCorpusAuthorityDrawer(authorityId);
+    }
+
     private InAppJudgmentDrawerResponse buildCorpusAuthorityDrawer(String authorityId) {
-        Optional<CorpusPrecedentEntry> entryOpt = corpusRegistry.findById(authorityId);
-        if (entryOpt.isPresent()) {
-            CorpusPrecedentEntry entry = entryOpt.get();
-            return new InAppJudgmentDrawerResponse(
-                    entry.authorityId(),
-                    entry.caseTitle(),
-                    entry.primaryCitation(),
-                    entry.equivalentCitations(),
-                    entry.iracBrief(),
-                    entry.pages()
-            );
+        // 1. Check Table 1 & Table 2 in PrecedentIndexRepository for sub-3ms lazy Split Reader
+        if (precedentIndexRepository != null) {
+            try {
+                Optional<PrecedentIndexRecord> recOpt = precedentIndexRepository.findByAuthorityId(authorityId);
+                if (recOpt.isPresent()) {
+                    PrecedentIndexRecord rec = recOpt.get();
+                    List<DrawerPage> pages = null;
+                    if (precedentContentStore != null) {
+                        pages = precedentContentStore.loadPages(authorityId, rec.r2ObjectKey()).orElse(null);
+                    }
+                    if (pages == null || pages.isEmpty()) {
+                        pages = precedentIndexRepository.findDrawerPagesByAuthorityId(authorityId);
+                    }
+
+                    // Mode A: Lazy Hydration from Tier 2 Vaquill Read-Through
+                    if ((pages == null || pages.isEmpty()) && tier2Client != null
+                            && rec.parquetDocId() != null && !rec.parquetDocId().isBlank()) {
+                        try {
+                            Optional<HydratedJudgmentDocument> docOpt = tier2Client.fetchFullDocumentByDocId(
+                                    rec.parquetShard(), rec.parquetDocId());
+                            if (docOpt.isPresent() && !docOpt.get().pages().isEmpty()) {
+                                pages = docOpt.get().pages();
+                                precedentIndexRepository.saveDrawerPages(authorityId, pages);
+                            }
+                        } catch (Exception e) {
+                            log.debug("Notice: Tier 2 lazy drawer hydration failed for {}: {}", authorityId, e.getMessage());
+                        }
+                    }
+
+                    if (pages == null || pages.isEmpty()) {
+                        // Synthesize clean fallback page for CATALOG_STUB rows
+                        pages = List.of(new DrawerPage(
+                                1,
+                                "### Ratio Decidendi\n\n" + rec.twoLineRatio(),
+                                List.of(rec.twoLineRatio())
+                        ));
+                    }
+
+                    // Trigger async IRAC enrichment write-behind if record is CATALOG_STUB
+                    if ("CATALOG_STUB".equalsIgnoreCase(rec.enrichmentStatus()) && asyncEnrichmentService != null) {
+                        asyncEnrichmentService.triggerAsyncEnrichment(rec, pages);
+                    }
+
+                    IracBrief irac = rec.iracBrief() != null
+                            ? rec.iracBrief()
+                            : new IracBrief(rec.twoLineRatio(), List.of(), List.of(), rec.twoLineRatio(), "");
+
+                    return new InAppJudgmentDrawerResponse(
+                            rec.authorityId(),
+                            rec.caseTitle(),
+                            rec.primaryCitation(),
+                            rec.equivalentCitations(),
+                            irac,
+                            pages
+                    );
+                }
+            } catch (Exception e) {
+                log.warn("Notice querying precedent index drawer for {}: {}", authorityId, e.getMessage());
+            }
+        }
+
+        // 2. In-Memory Corpus Catalog Fallback
+        if (corpusRegistry != null) {
+            Optional<CorpusPrecedentEntry> entryOpt = corpusRegistry.findById(authorityId);
+            if (entryOpt.isPresent()) {
+                CorpusPrecedentEntry entry = entryOpt.get();
+                return new InAppJudgmentDrawerResponse(
+                        entry.authorityId(),
+                        entry.caseTitle(),
+                        entry.primaryCitation(),
+                        entry.equivalentCitations(),
+                        entry.iracBrief(),
+                        entry.pages()
+                );
+            }
         }
 
         log.warn("Corpus authority not found for ID: {}. Checking fallback.", authorityId);

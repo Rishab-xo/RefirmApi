@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "1.0.0",
+  "topics": [
+    {
+      "topicSlug": "regular-bail",
+      "title": "Regular Bail Judgments",
+      "subtitle": "Read Supreme Court and High Court judgments on regular bail, parity, prolonged custody, trial delays and bail conditions.",
+      "primaryDomain": "CRIMINAL",
+      "governingTuples": ["CRPC:437", "CRPC:439", "BNSS:480", "BNSS:483", "CRPC:167(2)", "BNSS:187(3)", "CRPC:436A", "BNSS:479", "NDPS:37", "PMLA:45"],
+      "statutoryBannerTitle": "Sections 437 and 439 CrPC · Sections 480 and 483 BNSS",
+      "statutoryBannerNote": "From 1 July 2024, Sections 480 and 483 of the Bharatiya Nagarik Suraksha Sanhita (BNSS) replace Sections 437 and 439 CrPC. Judgments decided under the earlier provision keep the section they interpreted.",
+      "issuePills": [
+        {
+          "issueSlug": "parity",
+          "label": "Parity",
+          "matchTuples": [],
+          "matchKeywords": ["parity", "co-accused granted bail", "similarly placed accused", "role of co-accused"]
+        },
+        {
+          "issueSlug": "prolonged-custody",
+          "label": "Prolonged custody",
+          "matchTuples": ["CRPC:436A", "BNSS:479", "CONSTITUTION:21"],
+          "matchKeywords": ["prolonged custody", "prolonged incarceration", "long incarceration", "undertrial detention", "article 21 speedy trial"]
+        },
+        {
+          "issueSlug": "trial-delay",
+          "label": "Trial delay",
+          "matchTuples": ["CRPC:167(2)", "BNSS:187(3)"],
+          "matchKeywords": ["trial delay", "delay in trial", "unexamined witnesses", "default bail", "incomplete chargesheet"]
+        },
+        {
+          "issueSlug": "bail-conditions",
+          "label": "Bail conditions",
+          "matchTuples": ["CRPC:437", "CRPC:439", "BNSS:480", "BNSS:483"],
+          "matchKeywords": ["bail conditions", "onerous condition", "deposit of money", "cancellation of bail", "supervening circumstances", "passport surrender"]
+        },
+        {
+          "issueSlug": "ndps-uapa-special-acts",
+          "label": "NDPS, UAPA and special Acts",
+          "matchTuples": ["NDPS:37", "PMLA:45", "UAPA:43D", "UAPA:43D(5)"],
+          "matchKeywords": ["section 37 ndps", "commercial quantity", "twin conditions", "section 45 pmla", "section 43d(5) uapa"]
+        }
+      ]
+    },
+    {
+      "topicSlug": "anticipatory-bail",
+      "title": "Anticipatory Bail Judgments",
+      "subtitle": "Supreme Court and High Court authorities on pre-arrest bail, custodial interrogation necessity, Arnesh Kumar notice compliance, and statutory bars.",
+      "primaryDomain": "CRIMINAL",
+      "governingTuples": ["CRPC:438", "BNSS:482", "CRPC:41A", "BNSS:35(3)"],
+      "statutoryBannerTitle": "Section 438 CrPC · Section 482 BNSS",
+      "statutoryBannerNote": "From 1 July 2024, Section 482 BNSS governs directions for grant of bail to a person apprehending arrest (formerly Section 438 CrPC).",
+      "issuePills": [
+        {
+          "issueSlug": "custodial-interrogation",
+          "label": "Custodial interrogation",
+          "matchTuples": ["CRPC:438", "BNSS:482"],
+          "matchKeywords": ["custodial interrogation", "recovery of articles", "non-cooperation"]
+        },
+        {
+          "issueSlug": "notice-compliance-41a",
+          "label": "Sec 41A / 35(3) Notice",
+          "matchTuples": ["CRPC:41", "CRPC:41A", "BNSS:35", "BNSS:35(3)"],
+          "matchKeywords": ["arnesh kumar", "section 41a notice", "mechanical arrest", "seven years imprisonment"]
+        },
+        {
+          "issueSlug": "civil-dispute-criminal-colour",
+          "label": "Civil dispute given criminal colour",
+          "matchTuples": ["IPC:420", "BNS:318(4)", "IPC:406", "BNS:316(2)"],
+          "matchKeywords": ["civil dispute", "breach of contract", "commercial transaction", "recovery of money"]
+        }
+      ]
+    },
+    {
+      "topicSlug": "quashing-482-528",
+      "title": "Quashing of FIR & Criminal Proceedings",
+      "subtitle": "Precedents under Section 482 CrPC and Section 528 BNSS on Bhajan Lal parameters, abuse of process, compromise quashing, and civil-flavoured disputes.",
+      "primaryDomain": "CRIMINAL",
+      "governingTuples": ["CRPC:482", "BNSS:528"],
+      "statutoryBannerTitle": "Section 482 CrPC · Section 528 BNSS",
+      "statutoryBannerNote": "Inherent powers of the High Court to prevent abuse of process of any Court or secure the ends of justice.",
+      "issuePills": [
+        {
+          "issueSlug": "bhajan-lal-parameters",
+          "label": "No prima facie offence",
+          "matchTuples": ["CRPC:482", "BNSS:528"],
+          "matchKeywords": ["bhajan lal", "prima facie offence", "uncontroverted allegations", "mala fide"]
+        },
+        {
+          "issueSlug": "settlement-compromise",
+          "label": "Compromise & Settlement",
+          "matchTuples": ["CRPC:482", "BNSS:528", "CRPC:320"],
+          "matchKeywords": ["gian singh", "narinder singh", "mutual settlement", "compromise deed", "matrimonial settlement"]
+        }
+      ]
+    },
+    {
+      "topicSlug": "cheque-dishonour-138",
+      "title": "Dishonour of Cheque (Section 138 & 141 NI Act)",
+      "subtitle": "Judgments on statutory notice timelines, legally enforceable debt presumption, security cheques, and director vicarious liability.",
+      "primaryDomain": "BANKING",
+      "governingTuples": ["NI_ACT:138", "NI_ACT:139", "NI_ACT:141", "NI_ACT:142", "NI_ACT:143A"],
+      "statutoryBannerTitle": "Sections 138, 139 and 141, Negotiable Instruments Act, 1881",
+      "statutoryBannerNote": "Covers statutory ingredients under Section 138 proviso (a)–(c), reverse burden under Section 139, and company/director arraignment under Section 141.",
+      "issuePills": [
+        {
+          "issueSlug": "director-vicarious-liability",
+          "label": "Director liability (Sec 141)",
+          "matchTuples": ["NI_ACT:141"],
+          "matchKeywords": ["aneeta hada", "company not arraigned", "non-executive director", "in charge of and responsible", "specific averments"]
+        },
+        {
+          "issueSlug": "security-cheque-debt",
+          "label": "Security cheque & Presumption",
+          "matchTuples": ["NI_ACT:138", "NI_ACT:139"],
+          "matchKeywords": ["security cheque", "legally enforceable debt", "rebuttal of presumption", "preponderance of probabilities", "financial capacity"]
+        },
+        {
+          "issueSlug": "notice-limitation-defect",
+          "label": "Notice & Timeline Bars",
+          "matchTuples": ["NI_ACT:138", "NI_ACT:142"],
+          "matchKeywords": ["premature complaint", "demand notice", "fifteen days", "thirty days", "service of notice"]
+        }
+      ]
+    },
+    {
+      "topicSlug": "ibc-insolvency-cirp",
+      "title": "CIRP Admission & Maintainability (IBC Sections 7, 9 & 10A)",
+      "subtitle": "Supreme Court and NCLAT authorities on financial debt default, pre-existing disputes, Section 10A bar, and limitation under Article 137.",
+      "primaryDomain": "CORPORATE",
+      "governingTuples": ["IBC:7", "IBC:8", "IBC:9", "IBC:10A", "LIMITATION_ACT:18", "LIMITATION_ACT:137"],
+      "statutoryBannerTitle": "Sections 7, 9 and 10A, Insolvency and Bankruptcy Code, 2016",
+      "statutoryBannerNote": "Covers CIRP initiation by Financial and Operational Creditors, Mobilox pre-existing dispute test, and Section 10A COVID default exclusion.",
+      "issuePills": [
+        {
+          "issueSlug": "pre-existing-dispute",
+          "label": "Pre-existing dispute (Sec 9)",
+          "matchTuples": ["IBC:8", "IBC:9"],
+          "matchKeywords": ["mobilox", "pre-existing dispute", "plausible contention", "demand notice reply"]
+        },
+        {
+          "issueSlug": "section-10a-bar",
+          "label": "Section 10A COVID Bar",
+          "matchTuples": ["IBC:10A"],
+          "matchKeywords": ["section 10a", "ramesh kymal", "25 march 2020", "continuing default"]
+        },
+        {
+          "issueSlug": "ibc-limitation-sec-18",
+          "label": "Limitation & Balance Sheet (Sec 18)",
+          "matchTuples": ["LIMITATION_ACT:18", "LIMITATION_ACT:137", "IBC:7"],
+          "matchKeywords": ["acknowledgement of debt", "balance sheet entry", "denga", "asset reconstruction", "date of default"]
+        }
+      ]
+    }
+  ]
+}
+

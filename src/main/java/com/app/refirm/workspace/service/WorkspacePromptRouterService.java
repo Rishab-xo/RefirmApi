@@ -121,8 +121,24 @@ public class WorkspacePromptRouterService {
         int wordCount = promptText.isBlank() ? 0 : promptText.trim().split("\\s+").length;
 
         // Archetype 4: DIRECT_ARGUMENTS_OR_JUDGMENTS
+        // Also detect stateful follow-up turns where the user is replying to Terra's clarification questions
+        boolean isArgumentFollowUp = false;
+        if (mode == PromptExecutionMode.AUTO && !isDocumentPrompt(promptText) && workspace.getChatHistory() != null && !workspace.getChatHistory().isEmpty()) {
+            int histSize = workspace.getChatHistory().size();
+            for (int i = histSize - 1; i >= Math.max(0, histSize - 2); i--) {
+                com.app.refirm.triage.entities.ConversationTurn turn = workspace.getChatHistory().get(i);
+                if ("AI".equalsIgnoreCase(turn.getRole()) && turn.getMessage() != null) {
+                    if (turn.getMessage().contains("Clarifications to Sharpen This Brief")
+                            || turn.getMessage().contains("ARGUMENT_SHEET")
+                            || turn.getMessage().contains("Courtroom Argument Sheet")) {
+                        isArgumentFollowUp = true;
+                        break;
+                    }
+                }
+            }
+        }
         boolean isArchetype4Args = (mode == PromptExecutionMode.ARGUMENTS)
-                || (mode == PromptExecutionMode.AUTO && isArgumentPrompt(promptText));
+                || (mode == PromptExecutionMode.AUTO && (isArgumentPrompt(promptText) || isArgumentFollowUp));
 
         // Archetype 3: DOCUMENT_CENTRIC_QUERY
         boolean isArchetype3Doc = (mode == PromptExecutionMode.REVIEW)

@@ -152,6 +152,61 @@ public class AuthorityFirewallSanitizer {
         );
     }
 
+    /**
+     * Sanitizes free-flowing Markdown from the Terra reasoning pipeline.
+     * 1. Strips fabricated citations (Fake Corp, XYZ v. ABC, SCC 999) using scrubUnverifiedCitations.
+     * 2. Replaces unverified .pdf/.txt references with [Unverified document - not found in vault]
+     *    unless present in activeEvidenceDocs.
+     */
+    public String sanitizeMarkdown(
+            String rawMarkdown,
+            List<StatutePin> allowedStatutes,
+            List<VerifiedPrecedentAuthority> allowedPrecedents,
+            List<WorkspaceDocument> activeEvidenceDocs
+    ) {
+        if (rawMarkdown == null || rawMarkdown.isBlank()) {
+            return "";
+        }
+
+        boolean hasPrecedents = allowedPrecedents != null && !allowedPrecedents.isEmpty();
+        List<String> allowedPrecedentTitles = hasPrecedents
+                ? allowedPrecedents.stream()
+                .map(VerifiedPrecedentAuthority::caseTitleAndCitation)
+                .filter(s -> s != null && !s.isBlank())
+                .toList()
+                : List.of();
+
+        // 1. Scrub fabricated citations
+        String scrubbed = scrubUnverifiedCitations(rawMarkdown, allowedPrecedentTitles);
+
+        // 2. Validate document references
+        boolean hasEvidenceDocs = activeEvidenceDocs != null && !activeEvidenceDocs.isEmpty();
+        Set<String> allowedDocNames = hasEvidenceDocs
+                ? activeEvidenceDocs.stream()
+                .map(d -> d.getFileName() != null ? d.getFileName().toLowerCase() : "")
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toSet())
+                : Set.of();
+
+        // Match filenames like document.pdf, invoice.txt, agreement.docx
+        Pattern docPattern = Pattern.compile("(?i)\\b([a-zA-Z0-9_\\-\\s]{2,40}\\.(?:pdf|txt|docx|doc|csv|xlsx))\\b");
+        Matcher docMatcher = docPattern.matcher(scrubbed);
+        StringBuffer sb = new StringBuffer();
+        while (docMatcher.find()) {
+            String filename = docMatcher.group(1).trim();
+            String lowerFile = filename.toLowerCase();
+            boolean isAllowed = allowedDocNames.stream().anyMatch(d -> d.equals(lowerFile) || d.contains(lowerFile) || lowerFile.contains(d));
+            if (!isAllowed) {
+                docMatcher.appendReplacement(sb, "[Unverified document - not found in vault]");
+            } else {
+                docMatcher.appendReplacement(sb, Matcher.quoteReplacement(filename));
+            }
+        }
+        docMatcher.appendTail(sb);
+
+        return sb.toString();
+    }
+
     public static boolean isObviouslyFabricated(String citation) {
         if (citation == null || citation.isBlank()) return true;
         String clean = citation.toLowerCase();
@@ -251,3 +306,4 @@ public class AuthorityFirewallSanitizer {
         return result;
     }
 }
+ 

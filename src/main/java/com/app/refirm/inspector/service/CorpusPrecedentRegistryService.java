@@ -1,6 +1,8 @@
 package com.app.refirm.inspector.service;
 
 import com.app.refirm.inspector.domain.CorpusPrecedentEntry;
+import com.app.refirm.inspector.domain.PrecedentIndexRecord;
+import com.app.refirm.inspector.repository.PrecedentIndexRepository;
 import com.app.refirm.rules.model.LegalDomain;
 import com.app.refirm.triage.domain.DraftingContext;
 import com.app.refirm.triage.domain.StatutePin;
@@ -32,14 +34,23 @@ public class CorpusPrecedentRegistryService {
     private static final String CATALOG_RESOURCE_PATH = "okf-precedents/verified_precedents_catalog.json";
 
     private final ObjectMapper objectMapper;
+    private final PrecedentIndexRepository precedentIndexRepository;
 
     private final Map<String, CorpusPrecedentEntry> idMap = new ConcurrentHashMap<>();
     private final Map<LegalDomain, List<CorpusPrecedentEntry>> domainMap = new ConcurrentHashMap<>();
     private final List<CorpusPrecedentEntry> allPrecedents = new ArrayList<>();
 
     @Autowired
-    public CorpusPrecedentRegistryService(ObjectMapper objectMapper) {
+    public CorpusPrecedentRegistryService(
+            ObjectMapper objectMapper,
+            @Autowired(required = false) PrecedentIndexRepository precedentIndexRepository
+    ) {
         this.objectMapper = objectMapper;
+        this.precedentIndexRepository = precedentIndexRepository;
+    }
+
+    public CorpusPrecedentRegistryService(ObjectMapper objectMapper) {
+        this(objectMapper, null);
     }
 
     @PostConstruct
@@ -114,6 +125,22 @@ public class CorpusPrecedentRegistryService {
             }
             if (entry.caseTitle() != null && entry.caseTitle().equalsIgnoreCase(authorityId.trim())) {
                 return Optional.of(entry);
+            }
+        }
+
+        // DB Read-Through Bridge via PrecedentIndexRepository Table 1
+        if (precedentIndexRepository != null) {
+            try {
+                Optional<PrecedentIndexRecord> dbRecord = precedentIndexRepository.findByAuthorityId(authorityId.trim());
+                if (dbRecord.isPresent()) {
+                    return Optional.of(dbRecord.get().toCorpusPrecedentEntry(List.of()));
+                }
+                List<PrecedentIndexRecord> matches = precedentIndexRepository.findCandidateMatchesForText(authorityId.trim(), 1);
+                if (!matches.isEmpty()) {
+                    return Optional.of(matches.get(0).toCorpusPrecedentEntry(List.of()));
+                }
+            } catch (Exception e) {
+                log.warn("CorpusPrecedentRegistryService DB fallback lookup failed for '{}': {}", authorityId, e.getMessage());
             }
         }
 

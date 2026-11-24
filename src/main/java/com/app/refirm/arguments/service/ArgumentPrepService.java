@@ -4,10 +4,12 @@ import com.app.refirm.arguments.domain.*;
 import com.app.refirm.arguments.entity.WorkspaceArgumentSheet;
 import com.app.refirm.arguments.repository.WorkspaceArgumentSheetRepository;
 import com.app.refirm.triage.domain.DraftingContext;
+import com.app.refirm.triage.domain.LegalDomain;
 import com.app.refirm.triage.domain.StatutePin;
 import com.app.refirm.workspace.domain.CaseFactLedger;
 import com.app.refirm.workspace.domain.DocumentType;
 import com.app.refirm.workspace.domain.PartyPerspective;
+import com.app.refirm.workspace.domain.WorkspaceMode;
 import com.app.refirm.workspace.entity.LegalWorkspace;
 import com.app.refirm.workspace.entity.WorkspaceDocument;
 import com.app.refirm.workspace.repository.LegalWorkspaceRepository;
@@ -17,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired   ;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,8 @@ import com.app.refirm.workspace.util.JsonFenceSanitizer;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * Core orchestrator for Courtroom Argument Preparation, Adversary Rebuttal Matrix,
@@ -39,6 +43,8 @@ public class ArgumentPrepService {
     private final WorkspaceDocumentRepository documentRepository;
     private final WorkspaceArgumentSheetRepository argumentSheetRepository;
     private final PrecedentAuthorityProvider precedentProvider;
+    public static final int MAX_CLUSTERS_PER_WORKSPACE = 4;
+    private final Map<UUID, LinkedList<TopicCluster>> workspaceTopicClusters = new ConcurrentHashMap<>();
     private final AuthorityFirewallSanitizer firewallSanitizer;
     private final ArgumentMarkdownRenderer markdownRenderer;
     private final ChatClient chatClient;
@@ -53,7 +59,7 @@ public class ArgumentPrepService {
             PrecedentAuthorityProvider precedentProvider,
             AuthorityFirewallSanitizer firewallSanitizer,
             ArgumentMarkdownRenderer markdownRenderer,
-            @Qualifier("conversationChatClient") ChatClient chatClient,
+            @Qualifier("reasoningChatClient") ChatClient chatClient,
             ObjectMapper objectMapper,
             @Autowired(required = false) LegalRetrievalService legalRetrievalService
     ) {
@@ -107,26 +113,33 @@ public class ArgumentPrepService {
         LegalWorkspace workspace = workspaceRepository.findByWorkspaceIdAndClerkUserId(workspaceId, clerkUserId)
                 .orElseThrow(() -> new IllegalArgumentException("Workspace not found: " + workspaceId));
 
-        PartyPerspective targetPerspective = overridePerspective != null
-                ? overridePerspective
-                : workspace.getPartyPerspective();
+        PartyPerspective targetPerspective = resolveEffectivePerspective(
+                overridePerspective,
+                customFocusInstruction,
+                workspace
+        );
 
         CaseFactLedger ledger = workspace.getFactLedger();
         int sourceFactLedgerVersion = ledger != null ? ledger.version() : 0;
 
+        // Guard against cross-query fact bleed: in QUICK_CONSULT mode, if the new prompt
+        // introduces a completely different scenario (zero keyword overlap with existing narrative),
+        // do NOT append userNarrative, stale title, or stale statutes into effectiveQuery / allowedStatutes.
+        boolean standaloneNewScenario = isStandaloneNewScenario(customFocusInstruction, workspace);
+
         DraftingContext context = workspace.getLatestDraftingContext();
         List<StatutePin> allowedStatutes = new ArrayList<>();
-        if (context != null && context.statutePack() != null) {
+        if (!standaloneNewScenario && context != null && context.statutePack() != null) {
             allowedStatutes.addAll(context.statutePack());
         }
 
         String effectiveQuery = ((customFocusInstruction != null && !customFocusInstruction.isBlank()) ? customFocusInstruction + " " : "")
-                + (workspace.getTitle() != null ? workspace.getTitle() : "") + " "
-                + (context != null && context.userNarrative() != null ? context.userNarrative() : "");
+                + (!standaloneNewScenario && workspace.getTitle() != null ? workspace.getTitle() : "") + " "
+                + (!standaloneNewScenario && context != null && context.userNarrative() != null ? context.userNarrative() : "");
 
         List<String> triggeredBarDirectives = new ArrayList<>();
         if (legalRetrievalService != null) {
-            String factLedgerText = (ledger != null && ledger.extractedFacts() != null)
+            String factLedgerText = (!standaloneNewScenario && ledger != null && ledger.extractedFacts() != null)
                     ? ledger.extractedFacts().toString()
                     : "";
 
@@ -162,10 +175,35 @@ public class ArgumentPrepService {
                 ? allDocs.stream().filter(d -> d.getDocumentType() != DocumentType.JUDGMENT_PRECEDENT).toList()
                 : List.of();
 
-        List<VerifiedPrecedentAuthority> precedents = precedentProvider.resolveVerifiedPrecedents(workspace);
+        // Look up latest existing sheet for stateful versioning & prompt cache alignment.
+        List<WorkspaceArgumentSheet> existingSheets =
+                argumentSheetRepository.findByWorkspaceIdAndClerkUserIdOrderByUpdatedAtDesc(workspaceId, clerkUserId);
+        WorkspaceArgumentSheet latestExistingSheet = existingSheets.isEmpty() ? null : existingSheets.get(0);
+        int nextVersion = (latestExistingSheet != null) ? latestExistingSheet.getVersion() + 1 : 1;
+
+        // Extract resolved statutory tuples for Tier 1 Additive Precedent Search
+        List<String> resolvedTuples = new ArrayList<>();
+        for (StatutePin pin : allowedStatutes) {
+            if (pin.actName() != null && pin.sectionNumber() != null) {
+                resolvedTuples.add(pin.actName() + ":" + pin.sectionNumber());
+            }
+        }
+
+        List<VerifiedPrecedentAuthority> rawPrecedents = precedentProvider.resolveVerifiedPrecedents(
+                workspace, customFocusInstruction, resolvedTuples, standaloneNewScenario);
+        List<VerifiedPrecedentAuthority> precedents = applyPromptCacheAlignment(
+                workspace != null ? workspace.getWorkspaceId() : (latestExistingSheet != null ? latestExistingSheet.getWorkspaceId() : null),
+                rawPrecedents,
+                latestExistingSheet,
+                resolvedTuples,
+                standaloneNewScenario);
+
+        // Resolve deterministic generation plan
+        ArgumentGenerationPlan plan = resolveGenerationPlan(customFocusInstruction);
 
         // Build prompts for ChatClient
-        String systemPrompt = buildAdvocacySystemPrompt(targetPerspective, allowedStatutes, precedents, context, triggeredBarDirectives);
+        DraftingContext effectiveContext = standaloneNewScenario ? null : context;
+        String systemPrompt = buildAdvocacySystemPrompt(targetPerspective, allowedStatutes, precedents, effectiveContext, triggeredBarDirectives, plan);
         StringBuilder userPrompt = buildAdvocacyUserPrompt(
                 workspace,
                 targetPerspective,
@@ -173,81 +211,117 @@ public class ArgumentPrepService {
                 precedents,
                 activeEvidenceDocs,
                 customFocusInstruction,
-                triggeredBarDirectives
+                triggeredBarDirectives,
+                plan
         );
 
-        ArgumentDossier rawDossier = null;
+        // ── TERRA GROUNDING PIPELINE ──
+
+        // Build Terra grounded user prompt (static-to-dynamic ordering for prompt cache alignment)
+        StringBuilder terraUserPrompt = buildTerraGroundedUserPrompt(
+                workspace, targetPerspective, allowedStatutes, precedents,
+                activeEvidenceDocs, triggeredBarDirectives, customFocusInstruction,
+                latestExistingSheet, standaloneNewScenario
+        );
+
+        String title;
+        String renderedMarkdown;
+        ArgumentDossier sanitizedDossier;
+        boolean usedTerraPath = false;
+
         if (chatClient != null) {
+            String terraMarkdown = null;
             try {
-                rawDossier = chatClient.prompt()
-                        .system(systemPrompt)
-                        .user(userPrompt.toString())
+                terraMarkdown = chatClient.prompt()
+                        .system(STATIC_TERRA_SYSTEM_PROMPT)
+                        .user(terraUserPrompt.toString())
                         .call()
-                        .entity(ArgumentDossier.class);
+                        .content();
             } catch (Exception e) {
-                log.warn("Direct entity extraction from ChatClient failed: {}. Attempting content parse...", e.getMessage());
-                try {
-                    String rawContent = chatClient.prompt()
-                            .system(systemPrompt)
-                            .user(userPrompt.toString())
-                            .call()
-                            .content();
-                    if (rawContent != null && !rawContent.isBlank()) {
-                        rawDossier = parseDossierJson(rawContent);
-                    }
-                } catch (Exception ex) {
-                    log.warn("Raw content extraction also failed: {}", ex.getMessage());
-                }
+                log.warn("Terra markdown call failed: {}. Falling back to entity extraction.", e.getMessage());
             }
+
+            if (terraMarkdown != null && !terraMarkdown.isBlank() && !terraMarkdown.trim().startsWith("{")) {
+                // ── TERRA PATH: free-flowing markdown response ──
+                log.info("Terra path activated for workspace '{}'", workspaceId);
+                usedTerraPath = true;
+
+                sanitizedDossier = buildDossierFromTerraMarkdown(terraMarkdown, allowedStatutes, precedents);
+                sanitizedDossier = enforceGenerationPlan(sanitizedDossier, plan);
+
+                boolean isTacticalHearingNote = terraMarkdown.contains("Strategic Advisory");
+                title = isTacticalHearingNote
+                        ? "Tactical Hearing Note & Counter-Submissions"
+                        : (targetPerspective == PartyPerspective.CLAIMANT_PETITIONER
+                        ? "Claimant Courtroom Argument Sheet"
+                        : (targetPerspective == PartyPerspective.OPPOSITE_PARTY_RESPONDENT
+                        ? "Respondent Defense Argument Sheet"
+                        : "Neutral Court Evaluation Sheet"));
+
+                // Sanitize the raw markdown using the firewall (strips fabricated citations)
+                String sanitizedMarkdown = firewallSanitizer.sanitizeMarkdown(
+                        terraMarkdown, allowedStatutes, precedents, activeEvidenceDocs);
+
+                // Universal Post-Terra Statute Resolution across 159-Act catalog
+                resolveTerraCitedStatutesFromCatalog(sanitizedMarkdown, allowedStatutes);
+
+                // Enrich Terra markdown with Statute Table 2B header
+                renderedMarkdown = markdownRenderer.enrichTerraMarkdownWithStatuteTable(
+                        title, targetPerspective, sanitizedMarkdown,
+                        sanitizedDossier, false, allowedStatutes, effectiveQuery.trim());
+            } else {
+                // ── ENTITY FALLBACK PATH: standard JSON dossier extraction ──
+                log.info("Terra path skipped (JSON response or blank), using entity extraction for workspace '{}'", workspaceId);
+                sanitizedDossier = extractDossierViaEntityPath(
+                        chatClient, systemPrompt, userPrompt,
+                        workspace, targetPerspective, allowedStatutes,
+                        precedents, activeEvidenceDocs, triggeredBarDirectives, plan);
+
+                boolean isTacticalHearingNote = sanitizedDossier != null
+                        && sanitizedDossier.openingPitch60Seconds() != null
+                        && sanitizedDossier.openingPitch60Seconds().contains("Strategic Advisory");
+                title = isTacticalHearingNote
+                        ? "Tactical Hearing Note & Counter-Submissions"
+                        : (targetPerspective == PartyPerspective.CLAIMANT_PETITIONER
+                        ? "Claimant Courtroom Argument Sheet"
+                        : (targetPerspective == PartyPerspective.OPPOSITE_PARTY_RESPONDENT
+                        ? "Respondent Defense Argument Sheet"
+                        : "Neutral Court Evaluation Sheet"));
+
+                renderedMarkdown = markdownRenderer.renderToMarkdown(
+                        title, targetPerspective, sanitizedDossier,
+                        false, allowedStatutes, effectiveQuery.trim());
+            }
+        } else {
+            // No chatClient — deterministic fallback (keeps all mocked tests passing)
+            ArgumentDossier rawDossier = buildDeterministicFallbackDossier(
+                    workspace, targetPerspective, allowedStatutes,
+                    precedents, activeEvidenceDocs, triggeredBarDirectives);
+            sanitizedDossier = firewallSanitizer.sanitizeDossier(rawDossier, allowedStatutes, precedents, activeEvidenceDocs);
+            sanitizedDossier = enforceGenerationPlan(sanitizedDossier, plan);
+
+            boolean isTacticalHearingNote = sanitizedDossier != null
+                    && sanitizedDossier.openingPitch60Seconds() != null
+                    && sanitizedDossier.openingPitch60Seconds().contains("Strategic Advisory");
+            title = isTacticalHearingNote
+                    ? "Tactical Hearing Note & Counter-Submissions"
+                    : (targetPerspective == PartyPerspective.CLAIMANT_PETITIONER
+                    ? "Claimant Courtroom Argument Sheet"
+                    : (targetPerspective == PartyPerspective.OPPOSITE_PARTY_RESPONDENT
+                    ? "Respondent Defense Argument Sheet"
+                    : "Neutral Court Evaluation Sheet"));
+
+            renderedMarkdown = markdownRenderer.renderToMarkdown(
+                    title, targetPerspective, sanitizedDossier,
+                    false, allowedStatutes, effectiveQuery.trim());
         }
-
-        if (rawDossier == null) {
-            rawDossier = buildDeterministicFallbackDossier(
-                    workspace,
-                    targetPerspective,
-                    allowedStatutes,
-                    precedents,
-                    activeEvidenceDocs,
-                    triggeredBarDirectives
-            );
-        }
-
-        // Apply strict Authority Firewall sanitization
-        ArgumentDossier sanitizedDossier = firewallSanitizer.sanitizeDossier(
-                rawDossier,
-                allowedStatutes,
-                precedents,
-                activeEvidenceDocs
-        );
-
-        boolean isTacticalHearingNote = sanitizedDossier != null
-                && sanitizedDossier.openingPitch60Seconds() != null
-                && sanitizedDossier.openingPitch60Seconds().contains("Strategic Advisory");
-
-        String title = isTacticalHearingNote
-                ? "Tactical Hearing Note & Counter-Submissions"
-                : (targetPerspective == PartyPerspective.CLAIMANT_PETITIONER
-                ? "Claimant Courtroom Argument Sheet"
-                : (targetPerspective == PartyPerspective.OPPOSITE_PARTY_RESPONDENT
-                ? "Respondent Defense Argument Sheet"
-                : "Neutral Court Evaluation Sheet"));
-
-        // Pass the statute pack and customFocusInstruction into the overloaded renderer so Section 2B and Source Coverage render
-        String renderedMarkdown = markdownRenderer.renderToMarkdown(
-                title,
-                targetPerspective,
-                sanitizedDossier,
-                false,
-                allowedStatutes,
-                effectiveQuery.trim()
-        );
 
         WorkspaceArgumentSheet sheet = new WorkspaceArgumentSheet();
         sheet.setWorkspaceId(workspaceId);
         sheet.setClerkUserId(clerkUserId);
         sheet.setTitle(title);
         sheet.setPartyPerspective(targetPerspective);
-        sheet.setVersion(1);
+        sheet.setVersion(nextVersion);
         sheet.setSourceFactLedgerVersion(sourceFactLedgerVersion);
         sheet.setArgumentDossier(sanitizedDossier);
         sheet.setLockedSubmissionIds(new LinkedHashSet<>());
@@ -255,7 +329,8 @@ public class ArgumentPrepService {
         sheet.setCreatedAt(Instant.now());
         sheet.setUpdatedAt(Instant.now());
 
-        log.info("Generated argument sheet v1 for workspace '{}' with perspective '{}'", workspaceId, targetPerspective);
+        log.info("Generated argument sheet v{} for workspace '{}' with perspective '{}' (terra={})",
+                nextVersion, workspaceId, targetPerspective, usedTerraPath);
         return argumentSheetRepository.save(sheet);
     }
 
@@ -306,7 +381,14 @@ public class ArgumentPrepService {
                 log.warn("Dynamic cross-statute lookup failed for contention '{}': {}", oppositePartyContention, e.getMessage());
             }
         }
-        List<VerifiedPrecedentAuthority> precedents = precedentProvider.resolveVerifiedPrecedents(workspace);
+        List<String> rebuttalTuples = new ArrayList<>();
+        for (StatutePin pin : allowedStatutes) {
+            if (pin.actName() != null && pin.sectionNumber() != null) {
+                rebuttalTuples.add(pin.actName() + ":" + pin.sectionNumber());
+            }
+        }
+        List<VerifiedPrecedentAuthority> precedents = precedentProvider.resolveVerifiedPrecedents(
+                workspace, oppositePartyContention, rebuttalTuples, false);
 
         List<WorkspaceDocument> allDocs = documentRepository
                 .findByWorkspaceIdAndClerkUserIdAndIncludedInCaseContextTrueOrderByCreatedAtAsc(workspaceId, clerkUserId);
@@ -508,11 +590,44 @@ public class ArgumentPrepService {
 
     // ─── PROMPT BUILDERS ───
 
-    private String resolveForumCalibrationInstruction(DraftingContext context) {
+    private String resolveForumCalibrationInstruction(
+            DraftingContext context,
+            LegalWorkspace workspace,
+            String query,
+            List<StatutePin> allowedStatutes
+    ) {
         if (context == null) return "";
         String forum = context.forumAnalysis();
         if (forum == null || forum.isBlank()) return "";
         String lower = forum.toLowerCase();
+
+        // Guard against stale / incorrect "Civil Court" forum injection on criminal queries
+        if (lower.contains("civil court")) {
+            boolean isCriminalDomain = (workspace != null && workspace.getPrimaryDomain() == LegalDomain.CRIMINAL);
+            String combinedText = ((query != null ? query : "") + " "
+                    + (context.userNarrative() != null ? context.userNarrative() : "") + " "
+                    + (workspace != null && workspace.getTitle() != null ? workspace.getTitle() : "")).toLowerCase();
+            boolean mentionsCriminal = combinedText.contains("ipc")
+                    || combinedText.contains("crpc")
+                    || combinedText.contains("bns")
+                    || combinedText.contains("bnss")
+                    || combinedText.contains("bail")
+                    || combinedText.contains("fir")
+                    || combinedText.contains("cognizable")
+                    || combinedText.contains("custodial")
+                    || combinedText.contains("arrest")
+                    || combinedText.contains("police")
+                    || combinedText.contains("criminal");
+            boolean hasCriminalStatutes = allowedStatutes != null && allowedStatutes.stream().anyMatch(pin -> {
+                String act = pin.actName() != null ? pin.actName().toLowerCase() : "";
+                return act.contains("penal") || act.contains("criminal") || act.contains("nyaya") || act.contains("nagarik");
+            });
+
+            if (isCriminalDomain || mentionsCriminal || hasCriminalStatutes) {
+                return "";
+            }
+        }
+
         boolean isAppellateOrTribunal = lower.contains("high court")
                 || lower.contains("supreme court")
                 || lower.contains("appellate")
@@ -534,6 +649,24 @@ public class ArgumentPrepService {
                     Adopt a fact-and-chronology-driven, exhibit-anchored courtroom style. Focus on foundational pleadings, sequence of events, primary receipts/invoices/reports, and prima facie burden shifting.
                     """.formatted(forum);
         }
+    }
+
+    private String resolveForumCalibrationInstruction(DraftingContext context) {
+        return resolveForumCalibrationInstruction(context, null, null, null);
+    }
+
+    private boolean isCriminalContext(String query, String narrative, List<StatutePin> allowedStatutes) {
+        String combined = ((query != null ? query : "") + " " + (narrative != null ? narrative : "")).toLowerCase();
+        if (combined.contains("ipc") || combined.contains("crpc") || combined.contains("bns")
+                || combined.contains("bnss") || combined.contains("bail") || combined.contains("fir")
+                || combined.contains("cognizable") || combined.contains("custodial")
+                || combined.contains("arrest") || combined.contains("police") || combined.contains("criminal")) {
+            return true;
+        }
+        return allowedStatutes != null && allowedStatutes.stream().anyMatch(pin -> {
+            String act = pin.actName() != null ? pin.actName().toLowerCase() : "";
+            return act.contains("penal") || act.contains("criminal") || act.contains("nyaya") || act.contains("nagarik");
+        });
     }
 
     private String buildAdvocacySystemPrompt(
@@ -560,18 +693,26 @@ public class ArgumentPrepService {
             DraftingContext context,
             List<String> triggeredBarDirectives
     ) {
+        return buildAdvocacySystemPrompt(perspective, allowedStatutes, precedents, context, triggeredBarDirectives, ArgumentGenerationPlan.fullDossier());
+    }
+
+    private String buildAdvocacySystemPrompt(
+            PartyPerspective perspective,
+            List<StatutePin> allowedStatutes,
+            List<VerifiedPrecedentAuthority> precedents,
+            DraftingContext context,
+            List<String> triggeredBarDirectives,
+            ArgumentGenerationPlan plan
+    ) {
         String rolePosture = perspective == PartyPerspective.CLAIMANT_PETITIONER
                 ? """
                 ADVOCACY POSTURE: CLAIMANT / PETITIONER
                 - Write openingPitch60Seconds and all coreSubmissions in INSTITUTIONAL COUNSEL ADVOCACY VOICE
-                  ready to be delivered aloud to the Bench on behalf of the Complainant / Petitioner:
-                  "May it please this Hon'ble Forum / Court, it is respectfully submitted on behalf of the Complainant that under Section 2(7)(ii)..."
-                  "The Complainant respectfully submits that Opposite Party No. 1 and No. 2 are jointly and severally liable..."
+                  ready to be delivered aloud to the Bench on behalf of the Complainant / Petitioner / Prosecution:
+                  "May it please this Hon'ble Forum / Court, it is respectfully submitted on behalf of the Complainant/Petitioner that under Section..."
                   NEVER speak in first-person litigant voice ("I", "my", "me", "mine").
                   NEVER use third-person advisory prose such as "The claimant should prove..." or "Plead territorial jurisdiction...".
-                - Frame affirmative submissions establishing: (1) Locus standi & maintainability, (2) Compliance with
-                  statutory limitation, (3) Prima facie ingredients of statutory violation, (4) Direct causation of
-                  financial or material injury, and (5) Specific, quantified reliefs with statutory interest.
+                - Frame affirmative submissions calibrated strictly to the proceeding posture (e.g. establishing maintainability and ingredients of statutory violation for trials, or establishing threshold necessity / custodial interrogation / statutory grounds for bail opposition and interim motions).
                 - Anticipate aggressive maintainability challenges and formulate robust counter-rebuttals.
                 - IMPORTANT: Do NOT suggest that a third-party credit-card holder or account holder be made a
                   co-complainant unless explicitly instructed. Frame such a person strictly as a pro-forma witness
@@ -581,14 +722,12 @@ public class ArgumentPrepService {
                 ? """
                 ADVOCACY POSTURE: OPPOSITE PARTY / RESPONDENT
                 - Write openingPitch60Seconds and all coreSubmissions in INSTITUTIONAL COUNSEL DEFENSE VOICE
-                  ready to be delivered aloud to the Bench on behalf of the Respondent / Opposite Party:
-                  "May it please this Hon'ble Forum / Court, the Respondent respectfully submits that the present proceedings are
+                  ready to be delivered aloud to the Bench on behalf of the Respondent / Opposite Party / Corporate Debtor / Accused:
+                  "May it please this Hon'ble Forum / Court, the Respondent respectfully submits that the present proceedings/application are
                    entirely misconceived and barred at the threshold..."
                   NEVER speak in first-person litigant voice ("I", "my", "me", "mine").
                   NEVER use third-person advisory prose.
-                - Frame razor-sharp defense submissions attacking: (1) Threshold maintainability bars & non-joinder,
-                  (2) Absence of cause of action, (3) Statutory safe harbours / immunities, (4) Absence of expert
-                  evidence, and (5) Speculative and unmitigated damages claims.
+                - Frame razor-sharp defense submissions calibrated strictly to the proceeding posture (e.g. attacking threshold maintainability bars, non-joinder, absence of prima facie case, statutory immunities/safe harbours, or disproportionate interim relief).
                 - Anticipate emotional or generalized hardship arguments and rebut them strictly on legal grounds.
                 """
                 : """
@@ -616,11 +755,14 @@ public class ArgumentPrepService {
                 %s
                 %s
                 
-                OUTPUT SCOPE DETERMINATION:
-                Analyze the user's prompt. You MUST still return the standard JSON object, but adapt the content density of the JSON fields based on the query type:
-                - SCOPE 1 (TACTICAL_HEARING_NOTE): If the prompt is for an interim application, procedural challenge, or interlocutory defense (e.g., opposing a reference, stay, or injunction): Address ONLY the contested motion. Limit 'framedIssues' to 1-3 targeted procedural issues. Do not pad 'coreSubmissions' with unrelated trial thresholds. Connect admissions across issues (e.g., a balance-sheet admission negates an arbitration dispute).
-                - SCOPE 2 (PROPOSITION_NOTE): If the prompt is a single legal question without a factual dispute: Provide a crisp legal proposition, controlling ratios, and adverse distinctions.
-                - SCOPE 3 (FULL_ARGUMENT_DOSSIER): If the prompt is an open-ended dispute narrative or full trial brief: Populate all fields comprehensively.
+                ACTIVE DOSSIER COMPONENT CONFIGURATION:
+                - openingPitch60Seconds: %s
+                - framedIssues: %s
+                - coreSubmissions: %s
+                - rebuttalMatrix: %s
+                - benchGrillQuestions: %s
+                - preHearingEvidenceChecklist: %s
+                For any component marked EXCLUDED, return "" or [] in the output JSON.
 
                 STRATEGIC COUNSEL ADVISORY (CANDOUR DIRECTIVE):
                 - STRATEGIC COUNSEL ADVISORY: If the user's prompt explicitly instructs an absolute, high-risk, or legally vulnerable stance (e.g., claiming a statute flatly extinguishes another regime when established jurisprudence prescribes a nuanced rule of sequencing/harmonisation), do NOT silently weaken the argument without notice. Instead, prepend a blockquote starting with "> **Strategic Advisory & Framing Note:**" at the very beginning of the 'openingPitch60Seconds' JSON string, stating: "You instructed to argue [Goal]. However, advancing an unqualified assertion risks resistance under [Jurisprudence]. The stronger strategy is [Recommended Framing]." If the requested argument is legally sound, omit this advisory entirely.
@@ -671,7 +813,17 @@ public class ArgumentPrepService {
                 5. Do NOT repeat the phrase "no relevant evidence is in the uploaded vault" or similar noise across
                    every submission. Consolidate evidence gaps in preHearingEvidenceChecklist only.
                 6. Output strictly JSON conforming to the ArgumentDossier schema.
-                """.formatted(rolePosture, forumCalibration, barDirectiveInstruction);
+                """.formatted(
+                rolePosture,
+                forumCalibration,
+                barDirectiveInstruction,
+                (plan == null || plan.includePitch()) ? "ENABLED" : "EXCLUDED (return \"\")",
+                (plan == null || plan.includeIssues()) ? "ENABLED" : "EXCLUDED (return [])",
+                (plan == null || plan.includeSubmissions()) ? "ENABLED" : "EXCLUDED (return [])",
+                (plan == null || plan.includeRebuttals()) ? "ENABLED" : "EXCLUDED (return [])",
+                (plan == null || plan.includeBenchGrill()) ? "ENABLED" : "EXCLUDED (return [])",
+                (plan == null || plan.includeChecklist()) ? "ENABLED" : "EXCLUDED (return [])"
+        );
     }
 
     private StringBuilder buildAdvocacyUserPrompt(
@@ -693,6 +845,19 @@ public class ArgumentPrepService {
             List<WorkspaceDocument> activeEvidenceDocs,
             String customFocusInstruction,
             List<String> triggeredBarDirectives
+    ) {
+        return buildAdvocacyUserPrompt(workspace, perspective, allowedStatutes, precedents, activeEvidenceDocs, customFocusInstruction, triggeredBarDirectives, ArgumentGenerationPlan.fullDossier());
+    }
+
+    private StringBuilder buildAdvocacyUserPrompt(
+            LegalWorkspace workspace,
+            PartyPerspective perspective,
+            List<StatutePin> allowedStatutes,
+            List<VerifiedPrecedentAuthority> precedents,
+            List<WorkspaceDocument> activeEvidenceDocs,
+            String customFocusInstruction,
+            List<String> triggeredBarDirectives,
+            ArgumentGenerationPlan plan
     ) {
         StringBuilder sb = new StringBuilder();
         sb.append("### CASE TITLE: ").append(workspace.getTitle()).append("\n");
@@ -754,14 +919,29 @@ public class ArgumentPrepService {
             sb.append("\n### ADVOCATE SPECIFIC INSTRUCTION:\n").append(customFocusInstruction.trim()).append("\n");
         }
 
-        sb.append("\nGenerate the complete courtroom ArgumentDossier now in JSON format:\n");
-        sb.append("OUTPUT SCOPE DETERMINATION: Adapt content density in the JSON object (SCOPE 1: TACTICAL_HEARING_NOTE for interim/procedural motions with 1-3 targeted issues; SCOPE 2: PROPOSITION_NOTE for legal questions; SCOPE 3: FULL_ARGUMENT_DOSSIER for full briefs). All list fields must remain non-null (use empty lists [] if intentionally shortened).\n");
-        sb.append("STRATEGIC COUNSEL ADVISORY: If instructed to argue an absolute, high-risk, or legally vulnerable stance, do not silently weaken it; prepend a blockquote starting with '> **Strategic Advisory & Framing Note:** You instructed to argue [Goal]. However, advancing an unqualified assertion risks resistance under [Jurisprudence]. The stronger strategy is [Recommended Framing].\\n\\n' to openingPitch60Seconds.\n");
-        sb.append("IMPORTANT: Write strictly from the institutional perspective of Counsel representing the party (e.g. 'The Complainant submits...', 'May it please this Hon'ble Forum/Court...'). NEVER use first-person singular pronouns ('I', 'my', 'me', 'mine'). State submissions affirmatively and persuasively without self-sabotaging hedging. Confine evidence gaps strictly to preHearingEvidenceChecklist.\n");
-        sb.append("Write clean, fluent courtroom prose without inline [Verify from Record: ...] bracket clutter in Sections 1–5. Consolidate evidentiary gaps strictly into Section 6.\n");
+        ArgumentGenerationPlan effPlan = (plan != null) ? plan : ArgumentGenerationPlan.fullDossier();
+        sb.append("\nACTIVE JSON FIELD DIRECTIVE FOR THIS DOSSIER:\n");
+        sb.append("You MUST return the standard JSON object conforming to ArgumentDossier with the following active field configuration:\n");
+        sb.append("- openingPitch60Seconds: ").append(effPlan.includePitch() ? "POPULATE in crisp, natural spoken courtroom English ready to read straight to the Bench." : "RETURN \"\" (empty string).").append("\n");
+        sb.append("- framedIssues: ").append(effPlan.includeIssues() ? "POPULATE with crisp threshold questions and governing standards." : "RETURN [] (empty list).").append("\n");
+        sb.append("- coreSubmissions: ").append(effPlan.includeSubmissions() ? "POPULATE affirmative institutional counsel submissions." : "RETURN [] (empty list).").append("\n");
+        sb.append("- rebuttalMatrix: ").append(effPlan.includeRebuttals() ? "POPULATE targeted counter-rebuttals using the 2-fold Senior Advocate structure." : "RETURN [] (empty list).").append("\n");
+        sb.append("- benchGrillQuestions: ").append(effPlan.includeBenchGrill() ? "POPULATE strategic weak points, timing traps, and authoritative courtroom answers." : "RETURN [] (empty list).").append("\n");
+        sb.append("- preHearingEvidenceChecklist: ").append(effPlan.includeChecklist() ? "POPULATE capped at max 6 concrete documentary exhibits needed." : "RETURN [] (empty list).").append("\n");
+        sb.append("All list fields in the JSON must remain non-null (use empty lists [] for excluded components).\n");
+
+        if (effPlan.includePitch()) {
+            sb.append("STRATEGIC COUNSEL ADVISORY: If instructed to argue an absolute, high-risk, or legally vulnerable stance, do not silently weaken it; prepend a blockquote starting with '> **Strategic Advisory & Framing Note:** You instructed to argue [Goal]. However, advancing an unqualified assertion risks resistance under [Jurisprudence]. The stronger strategy is [Recommended Framing].\\n\\n' to openingPitch60Seconds.\n");
+        }
+        sb.append("IMPORTANT: Write strictly from the institutional perspective of Counsel representing the party (e.g. 'The Complainant submits...', 'May it please this Hon'ble Forum/Court...'). NEVER use first-person singular pronouns ('I', 'my', 'me', 'mine'). State submissions affirmatively and persuasively without self-sabotaging hedging.\n");
+        sb.append("Write clean, fluent courtroom prose without inline [Verify from Record: ...] bracket clutter.\n");
         sb.append("Only include alternative pleas where a genuine legal or fallback exists; do not repeat stock boilerplate phrases across submissions.\n");
-        sb.append("Identify hardest strategic weak points and bench traps in benchGrillQuestions.\n");
-        sb.append("Cap preHearingEvidenceChecklist to a maximum of 6 high-priority, concrete documentary items.\n");
+        if (effPlan.includeBenchGrill()) {
+            sb.append("Identify hardest strategic weak points and bench traps in benchGrillQuestions.\n");
+        }
+        if (effPlan.includeChecklist()) {
+            sb.append("Cap preHearingEvidenceChecklist to a maximum of 6 high-priority, concrete documentary items.\n");
+        }
         return sb;
     }
 
@@ -922,6 +1102,313 @@ public class ArgumentPrepService {
         return new ArgumentDossier(pitch, issues, submissions, rebuttals, benchQuestions, checklist);
     }
 
+    /**
+     * Returns true when a QUICK_CONSULT prompt introduces a brand-new factual scenario
+     * with zero keyword overlap with the workspace's existing userNarrative — indicating
+     * the user switched topics and prior case facts must NOT be bled into the new query.
+     */
+    boolean isStandaloneNewScenario(String customFocusInstruction, LegalWorkspace workspace) {
+        if (workspace == null || workspace.getMode() != WorkspaceMode.QUICK_CONSULT) return false;
+        if (customFocusInstruction == null) return false;
+        String[] promptWords = customFocusInstruction.trim().split("\\s+");
+        if (promptWords.length < 12) return false;
+
+        DraftingContext ctx = workspace.getLatestDraftingContext();
+        if (ctx == null || ctx.userNarrative() == null || ctx.userNarrative().isBlank()) return false;
+
+        Set<String> promptSignificant = significantWords(customFocusInstruction);
+        Set<String> narrativeSignificant = significantWords(ctx.userNarrative());
+
+        // If there is NO overlap between the two significant-word sets -> standalone new scenario
+        return Collections.disjoint(promptSignificant, narrativeSignificant);
+    }
+
+    private static final Set<String> LEGAL_STOPWORDS = Set.of(
+            "section", "under", "that", "this", "with", "from", "have", "been", "will",
+            "shall", "their", "there", "where", "which", "about", "would", "could", "court",
+            "legal", "matter", "case", "above", "below", "order", "filed", "made", "also"
+    );
+
+    private static Set<String> significantWords(String text) {
+        if (text == null || text.isBlank()) return Set.of();
+        Set<String> result = new HashSet<>();
+        for (String w : text.toLowerCase().split("[^a-z]+")) {
+            if (w.length() > 4 && !LEGAL_STOPWORDS.contains(w)) {
+                result.add(w);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Entity-fallback path: extracts ArgumentDossier via .entity(ArgumentDossier.class),
+     * with content-parse fallback and deterministic fallback if both fail.
+     * Preserves ALL existing mocked unit test paths.
+     */
+    private ArgumentDossier extractDossierViaEntityPath(
+            ChatClient client,
+            String systemPrompt,
+            StringBuilder userPrompt,
+            LegalWorkspace workspace,
+            PartyPerspective targetPerspective,
+            List<StatutePin> allowedStatutes,
+            List<VerifiedPrecedentAuthority> precedents,
+            List<WorkspaceDocument> activeEvidenceDocs,
+            List<String> triggeredBarDirectives,
+            ArgumentGenerationPlan plan
+    ) {
+        ArgumentDossier rawDossier = null;
+        if (client != null) {
+            try {
+                rawDossier = client.prompt()
+                        .system(systemPrompt)
+                        .user(userPrompt.toString())
+                        .call()
+                        .entity(ArgumentDossier.class);
+            } catch (Exception e) {
+                log.warn("Entity extraction failed: {}. Attempting content parse...", e.getMessage());
+                try {
+                    String rawContent = client.prompt()
+                            .system(systemPrompt)
+                            .user(userPrompt.toString())
+                            .call()
+                            .content();
+                    if (rawContent != null && !rawContent.isBlank()) {
+                        rawDossier = parseDossierJson(rawContent);
+                    }
+                } catch (Exception ex) {
+                    log.warn("Raw content extraction also failed: {}", ex.getMessage());
+                }
+            }
+        }
+        if (rawDossier == null) {
+            rawDossier = buildDeterministicFallbackDossier(
+                    workspace, targetPerspective, allowedStatutes,
+                    precedents, activeEvidenceDocs, triggeredBarDirectives);
+        }
+        ArgumentDossier sanitized = firewallSanitizer.sanitizeDossier(
+                rawDossier, allowedStatutes, precedents, activeEvidenceDocs);
+        return enforceGenerationPlan(sanitized, plan);
+    }
+
+    // ─── TERRA GROUNDING ENGINE ───
+
+    /**
+     * Static Terra system prompt — zero dynamic interpolation, enabling OpenAI prompt caching.
+     * Role: Senior Advocate, courtroom strategist in India.
+     * Outputs adaptive free-flowing markdown, NOT rigid 1-to-6 JSON template.
+     */
+    public static final String STATIC_TERRA_SYSTEM_PROMPT = """
+        You are a Senior Advocate and courtroom strategist in India.
+        
+        1. NATURAL STRUCTURE & PROPORTIONALITY:
+           - You have complete freedom to structure, format, and title your response naturally based on what best serves the lawyer's exact query and proceeding stage.
+           - Match your depth and structure proportionally to the query: answer narrow tactical questions directly and concisely; for motion or hearing preparation, provide a practical courtroom strategy framework.
+           - State each substantive argument once (cross-referencing rather than repeating across sections), always specify the Act name/acronym alongside section numbers when multiple statutes are in play, and include a realistic alternative/fallback prayer where appropriate.
+        
+        2. STRICT LEGAL & FACT GROUNDING (NO INVENTION):
+           - Never invent case-specific facts, dates, amounts, party names, or uploaded document filenames. Use only the facts in the prompt and Workspace Case Record, and naturally indicate where specific dates or record particulars should be inserted by counsel.
+           - Represent strictly the party specified in REPRESENTATION POSTURE.
+           - From the optional Bare Act Reference Library and Triggered Maintainability Bars, use ONLY provisions directly governing the motion and silently ignore tangential sections.
+           - When examining any statutory provision or application, check both external statutory interplay/sequencing (distinguishing pre-admission inquiry from post-admission status without overclaiming flat ouster) AND internal compliance with the sub-sections/preconditions of the invoked provision itself (such as filing timing, waiver, notice, or mandatory annexures).
+           - Whenever an IPC, CrPC, or Indian Evidence Act provision is cited (or vice versa), state the exact corresponding BNS, BNSS, or BSA section number alongside it.
+           - Prioritize Verified Precedent Authorities from the workspace corpus (marked [Verified in Corpus]). For other authorities, cite only settled, foundational Supreme Court rulings where you are 100% certain of the case name and ratio, and never guess pinpoint paragraph numbers.
+        
+        3. OPTIONAL CLARIFICATIONS:
+           - Only when key factual particulars are missing and would materially change the legal strategy, append 2–3 brief questions at the very end under "### Clarifications to Sharpen This Brief".
+        """;
+
+    /**
+     * Builds the Terra grounded user prompt with strictly static-to-dynamic ordering
+     * to maximise OpenAI prompt cache hit rate.
+     * Block 1 (semi-static): case title, ledger facts, statute library, precedents, vault docs.
+     * Block 2 (dynamic): posture, forum, existing sheet context, advocate's current instruction.
+     */
+    public StringBuilder buildTerraGroundedUserPrompt(
+            LegalWorkspace workspace,
+            PartyPerspective perspective,
+            List<StatutePin> allowedStatutes,
+            List<VerifiedPrecedentAuthority> precedents,
+            List<WorkspaceDocument> activeEvidenceDocs,
+            List<String> triggeredBarDirectives,
+            String customFocusInstruction,
+            WorkspaceArgumentSheet latestSheet,
+            boolean standaloneNewScenario
+    ) {
+        StringBuilder sb = new StringBuilder();
+
+        // ── BLOCK 1: SEMI-STATIC (maximise cache hit) ──
+
+        // Case title and verified ledger facts
+        sb.append("### CASE TITLE & VERIFIED LEDGER FACTS\n");
+        sb.append("Case: ").append(workspace.getTitle() != null ? workspace.getTitle() : "Untitled Matter").append("\n");
+        if (!standaloneNewScenario && workspace.getFactLedger() != null) {
+            com.app.refirm.workspace.domain.CaseFactLedger ledger = workspace.getFactLedger();
+            if (ledger.extractedFacts() != null) {
+                sb.append("Verified Ledger Facts (v").append(ledger.version()).append("):\n");
+                sb.append(ledger.extractedFacts().toString()).append("\n");
+            }
+        } else if (standaloneNewScenario) {
+            sb.append("[Standalone query — prior case facts excluded to prevent fact bleed]\n");
+        }
+        sb.append("\n");
+
+        // Available Bare Act Reference Library (3-Bucket OKF pack)
+        if (allowedStatutes != null && !allowedStatutes.isEmpty()) {
+            sb.append("### OPTIONAL BARE ACT REFERENCE LIBRARY (Use ONLY provisions directly relevant to the user's specific motion; ignore tangential sections):\n");
+            for (StatutePin pin : allowedStatutes) {
+                sb.append("- ").append(pin.actName());
+                if (pin.sectionNumber() != null && !pin.sectionNumber().isBlank()) {
+                    sb.append(", Section ").append(pin.sectionNumber());
+                }
+                if (pin.parentContext() != null && !pin.parentContext().isBlank()) {
+                    sb.append(" (").append(pin.parentContext()).append(")");
+                }
+                sb.append("\n");
+            }
+            sb.append("\n");
+        }
+
+        // Verified Precedent Authorities
+        if (precedents != null && !precedents.isEmpty()) {
+            sb.append("### VERIFIED PRECEDENT AUTHORITIES\n");
+            for (VerifiedPrecedentAuthority p : precedents) {
+                sb.append("- ").append(p.caseTitleAndCitation());
+                if (p.ratioSummary() != null && !p.ratioSummary().isBlank()) {
+                    sb.append(" — ").append(p.ratioSummary());
+                }
+                sb.append(" [Verified in Corpus]\n");
+            }
+            sb.append("\n");
+        }
+
+        // Uploaded Evidentiary Vault Documents
+        List<WorkspaceDocument> relevantDocs = filterRelevantVaultDocuments(activeEvidenceDocs, workspace);
+        if (relevantDocs != null && !relevantDocs.isEmpty()) {
+            sb.append("### UPLOADED EVIDENTIARY VAULT DOCUMENTS\n");
+            for (WorkspaceDocument doc : relevantDocs) {
+                sb.append("- ").append(doc.getFileName());
+                if (doc.getDocumentType() != null) {
+                    sb.append(" [").append(doc.getDocumentType()).append("]");
+                }
+                sb.append("\n");
+            }
+            sb.append("\n");
+        }
+
+        // ── BLOCK 2: DYNAMIC ──
+
+        // Representation Posture
+        sb.append("### REPRESENTATION POSTURE\n");
+        String postureLabel = perspective == PartyPerspective.CLAIMANT_PETITIONER
+                ? "CLAIMANT / PETITIONER / COMPLAINANT"
+                : (perspective == PartyPerspective.OPPOSITE_PARTY_RESPONDENT
+                ? "OPPOSITE PARTY / RESPONDENT / ACCUSED"
+                : "NEUTRAL EVALUATOR");
+        sb.append(postureLabel).append("\n\n");
+
+        // Forum Calibration + Triggered Bar Directives
+        DraftingContext ctx = workspace.getLatestDraftingContext();
+        if (ctx != null && ctx.targetForum() != null && ctx.targetForum().forumName() != null && !ctx.targetForum().forumName().isBlank()) {
+            String targetForum = ctx.targetForum().forumName();
+            boolean isCivilCourt = targetForum.toLowerCase().contains("civil court");
+            boolean isCriminal = (workspace.getPrimaryDomain() == LegalDomain.CRIMINAL)
+                    || isCriminalContext(customFocusInstruction, ctx.userNarrative(), allowedStatutes);
+            if (!isCivilCourt || !isCriminal) {
+                sb.append("### FORUM\n").append(targetForum).append("\n\n");
+            }
+        }
+        if (triggeredBarDirectives != null && !triggeredBarDirectives.isEmpty()) {
+            sb.append("### TRIGGERED BAR DIRECTIVES (must address in brief)\n");
+            triggeredBarDirectives.forEach(d -> sb.append("- ").append(d).append("\n"));
+            sb.append("\n");
+        }
+
+        // Existing Argument Sheet & Recent Turn (stateful context — skip if standaloneNewScenario)
+        if (!standaloneNewScenario) {
+            if (latestSheet != null && latestSheet.getRenderedMarkdown() != null
+                    && !latestSheet.getRenderedMarkdown().isBlank()) {
+                String priorMarkdown = latestSheet.getRenderedMarkdown();
+                if (priorMarkdown.length() > 4000) {
+                    priorMarkdown = priorMarkdown.substring(0, 4000) + "\n[...truncated for context window...]";
+                }
+                sb.append("### EXISTING ARGUMENT SHEET (v").append(latestSheet.getVersion()).append(")\n");
+                sb.append(priorMarkdown).append("\n\n");
+            }
+            // Last 2 chat history turns as recent context
+            if (workspace.getChatHistory() != null && workspace.getChatHistory().size() >= 2) {
+                int size = workspace.getChatHistory().size();
+                sb.append("### RECENT CONVERSATION TURNS\n");
+                for (int i = Math.max(0, size - 4); i < size; i++) {
+                    com.app.refirm.triage.entities.ConversationTurn turn = workspace.getChatHistory().get(i);
+                    sb.append(turn.getRole()).append(": ").append(turn.getMessage()).append("\n");
+                }
+                sb.append("\n");
+            }
+        }
+
+        // Advocate's Current Instruction
+        sb.append("### ADVOCATE'S CURRENT INSTRUCTION\n");
+        if (customFocusInstruction != null && !customFocusInstruction.isBlank()) {
+            sb.append(customFocusInstruction.trim());
+        } else {
+            sb.append("Prepare a comprehensive courtroom argument brief for the above matter.");
+        }
+        sb.append("\n");
+
+        return sb;
+    }
+
+    /**
+     * Extracts a minimal ArgumentDossier wrapper from Terra free-flowing markdown.
+     * Extracts first paragraph as pitch, cited (Act, Section) tuples for statute pins,
+     * and builds skeletal submissions from main headings — so sheet.getArgumentDossier()
+     * is non-null for InspectorService compatibility.
+     */
+    public ArgumentDossier buildDossierFromTerraMarkdown(
+            String markdown,
+            List<StatutePin> allowedStatutes,
+            List<VerifiedPrecedentAuthority> precedents
+    ) {
+        if (markdown == null || markdown.isBlank()) return ArgumentDossier.empty();
+
+        // Extract first non-heading paragraph as the opening pitch
+        String pitch = "";
+        for (String line : markdown.split("\n")) {
+            String trimmed = line.trim();
+            if (!trimmed.isEmpty() && !trimmed.startsWith("#") && !trimmed.startsWith("|") && !trimmed.startsWith("-")) {
+                pitch = trimmed.length() > 500 ? trimmed.substring(0, 500) : trimmed;
+                break;
+            }
+        }
+
+        // Extract sections as skeletal ArgumentSubmissions
+        List<ArgumentSubmission> submissions = new ArrayList<>();
+        java.util.regex.Matcher headingMatcher = Pattern.compile("^#{2,4}\\s+(.+)$", java.util.regex.Pattern.MULTILINE).matcher(markdown);
+        int subIdx = 1;
+        List<String> allowedPrecedentTitles = precedents != null
+                ? precedents.stream().map(VerifiedPrecedentAuthority::caseTitleAndCitation).filter(s -> s != null && !s.isBlank()).toList()
+                : List.of();
+        while (headingMatcher.find() && subIdx <= 8) {
+            String heading = headingMatcher.group(1).trim();
+            if (heading.startsWith("Clarifications")) continue;
+            List<String> pinnedStatutes = allowedStatutes != null
+                    ? allowedStatutes.stream().limit(2).map(p -> p.actName() + " " + p.sectionNumber()).toList()
+                    : List.of();
+            submissions.add(new ArgumentSubmission(
+                    "SUB_" + subIdx++,
+                    heading,
+                    "",   // proposition left blank — Terra markdown is the source of truth
+                    pinnedStatutes,
+                    allowedPrecedentTitles.stream().limit(2).toList(),
+                    "NONE_UPLOADED",
+                    null
+            ));
+        }
+
+        return new ArgumentDossier(pitch, List.of(), submissions, List.of(), List.of(), List.of());
+    }
+
     private ArgumentDossier parseDossierJson(String json) {
         try {
             String clean = JsonFenceSanitizer.sanitizeJson(json);
@@ -953,5 +1440,515 @@ public class ArgumentPrepService {
         if (sec == null) return "";
         String s = sec.toLowerCase().replace("section", "").replace("sec", "").replace("_", "").replace(".md", "");
         return s.replaceAll("[^a-z0-9]", "");
+    }
+
+    /**
+     * Deterministic plan for argument sheet generation specifying which components are enabled.
+     */
+    record ArgumentGenerationPlan(
+            boolean includePitch,
+            boolean includeIssues,
+            boolean includeSubmissions,
+            boolean includeRebuttals,
+            boolean includeBenchGrill,
+            boolean includeChecklist
+    ) {
+        static ArgumentGenerationPlan fullDossier() {
+            return new ArgumentGenerationPlan(true, true, true, true, true, true);
+        }
+    }
+
+    /**
+     * Resolves the effective party perspective dynamically from user cues in customFocusInstruction
+     * before falling back to the workspace perspective.
+     */
+    PartyPerspective resolveEffectivePerspective(
+            PartyPerspective overridePerspective,
+            String customFocusInstruction,
+            LegalWorkspace workspace
+    ) {
+        // Priority 1: Inspect customFocusInstruction for explicit party representation cues
+        // BEFORE falling back to overridePerspective (which WorkspacePromptRouterService always passes
+        // as workspace.getPartyPerspective(), potentially masking prompt-level perspective signals).
+        if (customFocusInstruction != null && !customFocusInstruction.isBlank()) {
+            String text = customFocusInstruction.trim();
+
+            // Check Claimant / Petitioner cues first for explicit oppositions or creditor/prosecution stances
+            if (text.matches("(?is).*\\b(oppos(?:e|ing)\\s+(?:a\\s+)?section\\s+8|oppos(?:e|ing)\\s+(?:anticipatory\\s+|regular\\s+)?bail|oppos(?:e|ing)\\s+(?:the\\s+)?(?:respondent|opposite\\s+party|corporate\\s+debtor|defendant|accused)|as\\s+(?:claimant|petitioner|complainant|(?:financial\\s+|operational\\s+)?creditor|prosecution)|on\\s+behalf\\s+of\\s+(?:the\\s+)?(?:claimant|petitioner|complainant|(?:financial\\s+|operational\\s+)?creditor|prosecution))\\b.*")) {
+                return PartyPerspective.CLAIMANT_PETITIONER;
+            }
+
+            // Check Respondent / Opposite Party / Accused cues
+            if (text.matches("(?is).*\\b(as\\s+(?:the\\s+)?(?:respondent|opposite\\s+party|corporate\\s+debtor|defendant|accused)|on\\s+behalf\\s+of\\s+(?:the\\s+)?(?:respondent|opposite\\s+party|corporate\\s+debtor|defendant|accused)|(?:prepare\\s+)?(?:our\\s+)?defen[cs]e\\s+as\\s+(?:the\\s+)?(?:respondent|opposite\\s+party|corporate\\s+debtor|accused)|defend\\s+(?:the\\s+)?corporate\\s+debtor|seeking\\s+(?:anticipatory\\s+|regular\\s+)?bail|bail\\s+application)\\b.*")) {
+                return PartyPerspective.OPPOSITE_PARTY_RESPONDENT;
+            }
+        }
+
+        // Priority 2: Fall back to explicit overridePerspective (if non-null and not a default workspace value
+        // that was blindly passed by the router)
+        if (overridePerspective != null) {
+            return overridePerspective;
+        }
+
+        // Priority 3: Fall back to workspace-level party perspective
+        return workspace != null && workspace.getPartyPerspective() != null
+                ? workspace.getPartyPerspective()
+                : PartyPerspective.CLAIMANT_PETITIONER;
+    }
+
+    /**
+     * Resolves the ArgumentGenerationPlan using Additive Component Resolution.
+     */
+    ArgumentGenerationPlan resolveGenerationPlan(String customFocusInstruction) {
+        if (customFocusInstruction == null || customFocusInstruction.isBlank()) {
+            return ArgumentGenerationPlan.fullDossier();
+        }
+
+        String text = customFocusInstruction.trim();
+
+        // Full Dossier Trigger: explicitly requests a full/complete sheet
+        if (text.matches("(?is).*\\b(full\\s+(?:argument\\s+)?(?:dossier|sheet|brief|notes?)|complete\\s+(?:argument\\s+)?(?:dossier|sheet)|all\\s+sections|comprehensive\\s+dossier)\\b.*")) {
+            return ArgumentGenerationPlan.fullDossier();
+        }
+
+        // Component Intent Detection on customFocusInstruction:
+        boolean wantsPitch = Pattern.compile("\\b(pitch|opening|intro|introduction)\\w*\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean wantsIssues = Pattern.compile("\\b(framed\\s+issues?|issues?\\s+for\\s+determination|frame\\s+(?:the\\s+)?issues?)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean wantsSubmissions = Pattern.compile("\\b(arguments?|submissions?|defen[cs]e|oppos\\w*|support\\w*|pleas?|grounds?|points?|notes?|hearing\\s+note|brief)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean wantsRebuttals = Pattern.compile("\\b(rebuttals?|counter[- ]?(?:arguments?|submissions?|rebuttals?)|rebuttal\\s+matrix|anticipate\\s+oppos\\w*)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean wantsBench = Pattern.compile("\\b(bench|judge|grill\\w*|traps?|questions?\\s+from\\s+(?:the\\s+)?(?:bench|judge|court))\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean wantsChecklist = Pattern.compile("\\b(checklist|documents?\\s+needed|evidence\\s+needed|annexures?\\s+needed|pre[- ]?hearing\\s+checklist)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+
+        // Explicit Negative Exclusions:
+        boolean excludePitch = Pattern.compile("\\b(?:without|no|skip|omit)\\s+(?:the\\s+)?(?:pitch|opening|intro)\\w*\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean excludeIssues = Pattern.compile("\\b(?:without|no|skip|omit)\\s+(?:the\\s+)?(?:framed\\s+)?issues?\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean excludeSubmissions = Pattern.compile("\\b(?:without|no|skip|omit)\\s+(?:the\\s+)?(?:arguments?|submissions?|points?|grounds?)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean excludeRebuttals = Pattern.compile("\\b(?:without|no|skip|omit)\\s+(?:the\\s+)?(?:rebuttals?|counter[- ]?(?:arguments?|submissions?|rebuttals?)|rebuttal\\s+matrix)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean excludeBench = Pattern.compile("\\b(?:without|no|skip|omit)\\s+(?:the\\s+)?(?:bench|judge|grill\\w*|traps?|questions?\\s+from\\s+(?:the\\s+)?(?:bench|judge|court))\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+        boolean excludeChecklist = Pattern.compile("\\b(?:without|no|skip|omit)\\s+(?:the\\s+)?(?:checklist|documents?\\s+needed|evidence\\s+needed|annexures?\\s+needed|pre[- ]?hearing\\s+checklist)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find();
+
+        if (excludePitch) wantsPitch = false;
+        if (excludeIssues) wantsIssues = false;
+        if (excludeSubmissions) wantsSubmissions = false;
+        if (excludeRebuttals) wantsRebuttals = false;
+        if (excludeBench) wantsBench = false;
+        if (excludeChecklist) wantsChecklist = false;
+
+        // Universal Composition Rules:
+        // If the user asked for specific non-submission module(s) ONLY: enable ONLY the requested module(s)
+        if (!wantsSubmissions && (wantsPitch || wantsIssues || wantsRebuttals || wantsBench || wantsChecklist)) {
+            return new ArgumentGenerationPlan(
+                    wantsPitch,
+                    wantsIssues,
+                    false,
+                    wantsRebuttals,
+                    wantsBench,
+                    wantsChecklist
+            );
+        }
+
+        // Otherwise (when the lawyer asks to prepare arguments, defense, opposition, or a focused topic):
+        return new ArgumentGenerationPlan(
+                !excludePitch,
+                wantsIssues,
+                !excludeSubmissions,
+                wantsRebuttals,
+                wantsBench,
+                wantsChecklist
+        );
+    }
+
+    /**
+     * Deterministic post-sanitization generation plan enforcement.
+     * Enforces that fields excluded by the generation plan are strictly zeroed out ("" or empty list).
+     */
+    ArgumentDossier enforceGenerationPlan(ArgumentDossier dossier, ArgumentGenerationPlan plan) {
+        if (dossier == null || plan == null) {
+            return dossier;
+        }
+
+        String resolvedPitch = plan.includePitch() && dossier.openingPitch60Seconds() != null
+                ? dossier.openingPitch60Seconds()
+                : "";
+        List<FramedLegalIssue> resolvedIssues = plan.includeIssues() && dossier.framedIssues() != null
+                ? dossier.framedIssues()
+                : List.of();
+        List<ArgumentSubmission> resolvedSubmissions = plan.includeSubmissions() && dossier.coreSubmissions() != null
+                ? dossier.coreSubmissions()
+                : List.of();
+        List<RebuttalMatrixItem> resolvedRebuttals = plan.includeRebuttals() && dossier.rebuttalMatrix() != null
+                ? dossier.rebuttalMatrix()
+                : List.of();
+        List<BenchQuestionItem> resolvedBench = plan.includeBenchGrill() && dossier.benchGrillQuestions() != null
+                ? dossier.benchGrillQuestions()
+                : List.of();
+        List<String> resolvedChecklist = plan.includeChecklist() && dossier.preHearingEvidenceChecklist() != null
+                ? dossier.preHearingEvidenceChecklist()
+                : List.of();
+
+        return new ArgumentDossier(
+                resolvedPitch,
+                resolvedIssues,
+                resolvedSubmissions,
+                resolvedRebuttals,
+                resolvedBench,
+                resolvedChecklist
+        );
+    }
+
+    /**
+     * Resolves all statutes cited by Terra in its free-flowing markdown against the 159-Act
+     * local OKF catalog via LegalRetrievalService and dynamically enriches allowedStatutes.
+     */
+    public void resolveTerraCitedStatutesFromCatalog(String sanitizedMarkdown, List<StatutePin> allowedStatutes) {
+        if (legalRetrievalService == null || sanitizedMarkdown == null || sanitizedMarkdown.isBlank() || allowedStatutes == null) {
+            return;
+        }
+
+        Set<ArgumentMarkdownRenderer.ActSectionRef> citedRefs =
+                ArgumentMarkdownRenderer.extractCitedActSectionRefs(null, sanitizedMarkdown);
+
+        for (ArgumentMarkdownRenderer.ActSectionRef ref : citedRefs) {
+            if (ref.sectionNumber().isBlank()) {
+                continue;
+            }
+
+            // CRITICAL: NEVER call findStatuteFile when ref.actKey() is null or blank!
+            // If a section reference has no explicit Act key, do NOT search across all 159 Acts.
+            if (ref.actKey() == null || ref.actKey().isBlank()) {
+                continue;
+            }
+
+            String targetSec = ArgumentMarkdownRenderer.extractBaseSectionNumber(ref.sectionNumber());
+            if (targetSec.isBlank()) {
+                continue;
+            }
+
+            boolean alreadyPresent = allowedStatutes.stream().anyMatch(pin -> {
+                String pinSec = ArgumentMarkdownRenderer.resolveBaseSectionNumber(pin);
+                if (!pinSec.equalsIgnoreCase(targetSec)) return false;
+                return ArgumentMarkdownRenderer.isActMatch(ref.actKey(), pin.actName());
+            });
+
+            if (!alreadyPresent) {
+                Optional<LegalRetrievalService.StatuteFile> optFile =
+                        legalRetrievalService.findStatuteFile(ref.actKey(), targetSec);
+                if (optFile.isPresent()) {
+                    LegalRetrievalService.StatuteFile foundFile = optFile.get();
+                    if (ArgumentMarkdownRenderer.isActMatch(ref.actKey(), foundFile.statuteName())) {
+                        String cleanActName = foundFile.statuteName().replace('_', ' ');
+                        StatutePin newPin = new StatutePin(cleanActName, foundFile.sectionNumber(), com.app.refirm.triage.domain.StatuteType.OPERATIVE, foundFile.heading(), foundFile.content());
+                        allowedStatutes.add(newPin);
+                        log.info("[Post-Terra Catalog] Resolved and added verified OKF pin: {} Section {}", cleanActName, foundFile.sectionNumber());
+                    }
+                }
+            }
+        }
+    }
+
+
+    public record TopicCluster(
+            String clusterKey,
+            Set<String> statutorySignature,
+            List<String> orderedAuthorityIds,
+            Set<String> previouslyCitedTokens
+    ) {
+        public TopicCluster {
+            statutorySignature = statutorySignature != null ? Set.copyOf(statutorySignature) : Set.of();
+            orderedAuthorityIds = orderedAuthorityIds != null ? List.copyOf(orderedAuthorityIds) : List.of();
+            previouslyCitedTokens = previouslyCitedTokens != null ? Set.copyOf(previouslyCitedTokens) : Set.of();
+        }
+    }
+
+    public List<VerifiedPrecedentAuthority> applyPromptCacheAlignment(
+            List<VerifiedPrecedentAuthority> freshPrecedents,
+            WorkspaceArgumentSheet latestExistingSheet,
+            boolean isStandalone
+    ) {
+        return applyPromptCacheAlignment(
+                latestExistingSheet != null ? latestExistingSheet.getWorkspaceId() : null,
+                freshPrecedents,
+                latestExistingSheet,
+                List.of(),
+                isStandalone
+        );
+    }
+
+    /**
+     * Quality-First N-Cluster Prompt Cache Alignment:
+     * 1. Output Quality First: Never overwrites newly enriched IRAC_ENRICHED text with stale CATALOG_STUB text.
+     *    Always uses the latest VerifiedPrecedentAuthority data, only pinning the relative ordering.
+     * 2. Topic-Cluster Isolation: Maintains up to N = 4 topic clusters per workspace/tab:
+     *    - Same-Topic Refinement: If current turn's statutory tuples overlap with a prior cluster (or are empty
+     *      on a conversational follow-up), pin the matching authorities from that cluster first (Group 1, in their
+     *      exact prior order) and append newly discovered authorities below them (Group 2).
+     *    - Topic Switch in Same Tab: If the lawyer introduces a new set of (Act, Section) tuples that has zero
+     *      overlap with prior statutory clusters, starts a clean cluster bucket so 100% of precedent slots are
+     *      dedicated to the new topic. If the lawyer later returns to the earlier topic, restores that cluster's ordering.
+     */
+    public List<VerifiedPrecedentAuthority> applyPromptCacheAlignment(
+            UUID workspaceId,
+            List<VerifiedPrecedentAuthority> freshPrecedents,
+            WorkspaceArgumentSheet latestExistingSheet,
+            Collection<String> currentTuples,
+            boolean isStandalone
+    ) {
+        if (isStandalone || freshPrecedents == null || freshPrecedents.isEmpty()) {
+            return freshPrecedents != null ? freshPrecedents : List.of();
+        }
+
+        if (workspaceId == null && latestExistingSheet != null) {
+            workspaceId = latestExistingSheet.getWorkspaceId();
+        }
+
+        // 1. Compute current turn's statutory signature
+        Set<String> currentSig = computeStatutorySignature(currentTuples);
+
+        // 2. Retrieve recent topic clusters for this workspace (max 4)
+        LinkedList<TopicCluster> clusters = (workspaceId != null)
+                ? workspaceTopicClusters.computeIfAbsent(workspaceId, k -> new LinkedList<>())
+                : new LinkedList<>();
+
+        // 3. Find matching cluster
+        TopicCluster matchedCluster = null;
+
+        if (currentSig.isEmpty()) {
+            // Conversational follow-up (e.g. 'make submission 2 stronger'): match most recent cluster
+            if (!clusters.isEmpty()) {
+                matchedCluster = clusters.peekFirst();
+            }
+        } else {
+            // Check for overlap against existing clusters in LRU order
+            for (TopicCluster c : clusters) {
+                if (!Collections.disjoint(currentSig, c.statutorySignature())) {
+                    matchedCluster = c;
+                    break;
+                }
+            }
+        }
+
+        // Also inspect latestExistingSheet if clusters is empty (e.g. fresh turn after server restart)
+        if (matchedCluster == null && latestExistingSheet != null && clusters.isEmpty()) {
+            Set<String> sheetSig = extractSheetStatutorySignature(latestExistingSheet);
+            boolean overlapWithSheet = currentSig.isEmpty() || sheetSig.isEmpty() || !Collections.disjoint(currentSig, sheetSig);
+            if (overlapWithSheet) {
+                matchedCluster = createClusterFromSheet(latestExistingSheet, sheetSig);
+                clusters.addFirst(matchedCluster);
+            }
+        }
+
+        // 4. Handle Topic Switch vs Same-Topic Refinement
+        if (matchedCluster == null && !currentSig.isEmpty()) {
+            // TOPIC SWITCH IN SAME TAB:
+            // Zero overlap with prior clusters. Start a clean cluster for the new topic.
+            // 100% of precedent slots are dedicated to fresh precedents for the new topic.
+            List<String> newOrderIds = freshPrecedents.stream().map(VerifiedPrecedentAuthority::authorityId).toList();
+            TopicCluster newCluster = new TopicCluster(
+                    "cluster_" + System.currentTimeMillis(),
+                    currentSig,
+                    newOrderIds,
+                    extractTokensFromAuthorities(freshPrecedents)
+            );
+            addClusterToWorkspace(clusters, newCluster);
+            return freshPrecedents;
+        }
+
+        if (matchedCluster == null) {
+            return freshPrecedents;
+        }
+
+        // 5. SAME-TOPIC REFINEMENT:
+        // Group 1: Pin matching authorities from matchedCluster in their exact prior relative order.
+        // Group 2: Append newly discovered authorities below them.
+        // NEVER overwrite newly enriched IRAC_ENRICHED text with stale stub text! Always use the latest auth instance.
+        List<VerifiedPrecedentAuthority> aligned = new ArrayList<>();
+        List<VerifiedPrecedentAuthority> newlyDiscovered = new ArrayList<>();
+        Set<String> seenIds = new HashSet<>();
+
+        List<String> priorOrderIds = matchedCluster.orderedAuthorityIds();
+        Set<String> priorTokens = matchedCluster.previouslyCitedTokens();
+
+        Map<String, VerifiedPrecedentAuthority> freshById = new LinkedHashMap<>();
+        for (VerifiedPrecedentAuthority a : freshPrecedents) {
+            freshById.put(a.authorityId(), a);
+        }
+
+        // Group 1: Fresh authorities matching prior cluster order
+        for (String priorId : priorOrderIds) {
+            VerifiedPrecedentAuthority matchedAuth = freshById.get(priorId);
+            if (matchedAuth != null && seenIds.add(priorId)) {
+                aligned.add(matchedAuth); // Fresh instance with latest ratioSummary and posture!
+            }
+        }
+
+        // Also check any fresh authorities matching prior cited tokens that weren't captured by ID
+        for (VerifiedPrecedentAuthority auth : freshPrecedents) {
+            if (!seenIds.contains(auth.authorityId())) {
+                String titleLower = auth.caseTitleAndCitation().toLowerCase(Locale.ROOT);
+                String idLower = auth.authorityId().toLowerCase(Locale.ROOT);
+                boolean matchedToken = priorTokens.stream().anyMatch(tok ->
+                        titleLower.contains(tok) || tok.contains(idLower) || tok.contains(titleLower));
+                if (matchedToken && seenIds.add(auth.authorityId())) {
+                    aligned.add(auth);
+                }
+            }
+        }
+
+        // Group 2: All remaining fresh authorities appended below
+        for (VerifiedPrecedentAuthority auth : freshPrecedents) {
+            if (seenIds.add(auth.authorityId())) {
+                newlyDiscovered.add(auth);
+            }
+        }
+
+        aligned.addAll(newlyDiscovered);
+
+        // Update the cluster's order and move to head of LRU queue
+        List<String> updatedOrderIds = aligned.stream().map(VerifiedPrecedentAuthority::authorityId).toList();
+        Set<String> updatedTokens = new LinkedHashSet<>(priorTokens);
+        updatedTokens.addAll(extractTokensFromAuthorities(aligned));
+        Set<String> mergedSig = new LinkedHashSet<>(matchedCluster.statutorySignature());
+        mergedSig.addAll(currentSig);
+
+        TopicCluster updatedCluster = new TopicCluster(
+                matchedCluster.clusterKey(),
+                mergedSig,
+                updatedOrderIds,
+                updatedTokens
+        );
+
+        clusters.remove(matchedCluster);
+        clusters.addFirst(updatedCluster);
+        while (clusters.size() > MAX_CLUSTERS_PER_WORKSPACE) {
+            clusters.removeLast();
+        }
+
+        return aligned;
+    }
+
+    private static void addClusterToWorkspace(LinkedList<TopicCluster> clusters, TopicCluster newCluster) {
+        clusters.addFirst(newCluster);
+        while (clusters.size() > MAX_CLUSTERS_PER_WORKSPACE) {
+            clusters.removeLast();
+        }
+    }
+
+    public static Set<String> computeStatutorySignature(Collection<String> tuples) {
+        if (tuples == null || tuples.isEmpty()) {
+            return Set.of();
+        }
+        Set<String> sig = new LinkedHashSet<>();
+        for (String t : tuples) {
+            if (t == null || t.isBlank()) continue;
+            String clean = t.trim().toUpperCase(Locale.ROOT);
+            String[] parts = clean.split(":");
+            if (parts.length >= 2) {
+                String actPart = canonicalizeActToken(parts[0]);
+                String secPart = parts[1].replaceAll("[^A-Z0-9()]", "");
+                sig.add(actPart + ":" + secPart);
+                sig.add(actPart);
+                addPariMateriaFamilyTokens(actPart, sig);
+            } else {
+                String actPart = canonicalizeActToken(clean);
+                sig.add(actPart);
+                addPariMateriaFamilyTokens(actPart, sig);
+            }
+        }
+        return sig;
+    }
+
+    private static void addPariMateriaFamilyTokens(String actToken, Set<String> sig) {
+        if ("CRPC".equals(actToken) || "BNSS".equals(actToken)) {
+            sig.add("CRIMINAL_PROCEDURE_FAMILY");
+        } else if ("IPC".equals(actToken) || "BNS".equals(actToken)) {
+            sig.add("PENAL_FAMILY");
+        } else if ("IEA".equals(actToken) || "BSA".equals(actToken)) {
+            sig.add("EVIDENCE_FAMILY");
+        } else if ("CPA1986".equals(actToken) || "CPA2019".equals(actToken) || "CONSUMER".equals(actToken)) {
+            sig.add("CONSUMER_FAMILY");
+        }
+    }
+
+    public static String canonicalizeActToken(String rawAct) {
+        if (rawAct == null) return "";
+        String upper = rawAct.toUpperCase(Locale.ROOT);
+        if (upper.contains("CRIMINAL PROCEDURE") || upper.contains("CRPC") || upper.contains("CR.P.C")) return "CRPC";
+        if (upper.contains("NAGARIK SURAKSHA") || upper.contains("BNSS")) return "BNSS";
+        if (upper.contains("PENAL CODE") || upper.contains("IPC") || upper.contains("I.P.C")) return "IPC";
+        if (upper.contains("NYAYA SANHITA") || upper.contains("BNS")) return "BNS";
+        if (upper.contains("EVIDENCE ACT") || upper.contains("IEA") || upper.contains("I.E.A")) return "IEA";
+        if (upper.contains("SAKSHYA") || upper.contains("BSA")) return "BSA";
+        if (upper.contains("NEGOTIABLE") || upper.contains("NI ACT") || upper.contains("NI_ACT")) return "NI_ACT";
+        if (upper.contains("INSOLVENCY") || upper.contains("BANKRUPTCY") || upper.contains("IBC")) return "IBC";
+        if (upper.contains("ARBITRATION")) return "ARBITRATION";
+        if (upper.contains("CONSUMER")) return "CONSUMER";
+        return upper.replaceAll("[^A-Z0-9_]", "_").replaceAll("_+", "_");
+    }
+
+    private static Set<String> extractTokensFromAuthorities(Collection<VerifiedPrecedentAuthority> authorities) {
+        Set<String> tokens = new LinkedHashSet<>();
+        if (authorities == null) return tokens;
+        for (VerifiedPrecedentAuthority auth : authorities) {
+            if (auth.authorityId() != null && !auth.authorityId().isBlank()) {
+                tokens.add(auth.authorityId().toLowerCase(Locale.ROOT));
+            }
+            if (auth.caseTitleAndCitation() != null && !auth.caseTitleAndCitation().isBlank()) {
+                tokens.add(auth.caseTitleAndCitation().toLowerCase(Locale.ROOT));
+            }
+        }
+        return tokens;
+    }
+
+    private static Set<String> extractSheetStatutorySignature(WorkspaceArgumentSheet sheet) {
+        Set<String> sig = new LinkedHashSet<>();
+        if (sheet == null || sheet.getArgumentDossier() == null) return sig;
+        ArgumentDossier dossier = sheet.getArgumentDossier();
+        if (dossier.coreSubmissions() != null) {
+            for (var sub : dossier.coreSubmissions()) {
+                if (sub.pinnedStatutes() != null) {
+                    for (String stat : sub.pinnedStatutes()) {
+                        sig.addAll(computeStatutorySignature(List.of(stat)));
+                    }
+                }
+            }
+        }
+        if (dossier.benchGrillQuestions() != null) {
+            for (var qa : dossier.benchGrillQuestions()) {
+                if (qa.authorityPin() != null && !qa.authorityPin().isBlank()) {
+                    sig.addAll(computeStatutorySignature(List.of(qa.authorityPin())));
+                }
+            }
+        }
+        return sig;
+    }
+
+    private static TopicCluster createClusterFromSheet(WorkspaceArgumentSheet sheet, Set<String> sheetSig) {
+        List<String> orderedIds = new ArrayList<>();
+        Set<String> tokens = new LinkedHashSet<>();
+        if (sheet == null || sheet.getArgumentDossier() == null) {
+            return new TopicCluster("sheet_cluster", sheetSig, orderedIds, tokens);
+        }
+        ArgumentDossier dossier = sheet.getArgumentDossier();
+        if (dossier.coreSubmissions() != null) {
+            for (var sub : dossier.coreSubmissions()) {
+                if (sub.pinnedPrecedents() != null) {
+                    for (String pin : sub.pinnedPrecedents()) {
+                        if (pin != null && !pin.isBlank()) {
+                            String trimmed = pin.trim().toLowerCase(Locale.ROOT);
+                            tokens.add(trimmed);
+                            orderedIds.add(trimmed);
+                        }
+                    }
+                }
+            }
+        }
+        if (dossier.benchGrillQuestions() != null) {
+            for (var qa : dossier.benchGrillQuestions()) {
+                if (qa.authorityPin() != null && !qa.authorityPin().isBlank()) {
+                    tokens.add(qa.authorityPin().trim().toLowerCase(Locale.ROOT));
+                }
+            }
+        }
+        return new TopicCluster("sheet_" + sheet.getSheetId(), sheetSig, orderedIds, tokens);
     }
 }

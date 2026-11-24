@@ -38,3 +38,9 @@ src/main/resources/okf-bundles/
 .env
 .env.*
 .env.backup
+
+# Python Precedent ETL
+precedent-etl/.venv/
+precedent-etl/.cache/
+precedent-etl/__pycache__/
+*.parquet

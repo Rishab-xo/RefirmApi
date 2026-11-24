@@ -159,6 +159,13 @@
 			<version>4.12.0</version>
 		</dependency>
 
+		<!-- AWS SDK v2 S3 for Cloudflare R2 Precedent Storage -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.29.35</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-starter-model-ollama</artifactId>

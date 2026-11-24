@@ -1,0 +1,409 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Data-driven bidirectional Pari Materia statutory crosswalk and canonical Act alias registry for Refirm Step 5.",
+  "actAliases": {
+    "IPC": ["IPC", "INDIAN PENAL CODE", "INDIAN PENAL CODE 1860", "PENAL CODE"],
+    "BNS": ["BNS", "BHARATIYA NYAYA SANHITA", "BHARATIYA NYAYA SANHITA 2023"],
+    "CRPC": ["CRPC", "CR.P.C.", "CR.P.C", "CODE OF CRIMINAL PROCEDURE", "CODE OF CRIMINAL PROCEDURE 1973", "CRIMINAL PROCEDURE CODE"],
+    "BNSS": ["BNSS", "BHARATIYA NAGARIK SURAKSHA SANHITA", "BHARATIYA NAGARIK SURAKSHA SANHITA 2023"],
+    "IEA": ["IEA", "INDIAN EVIDENCE ACT", "INDIAN EVIDENCE ACT 1872", "EVIDENCE ACT"],
+    "BSA": ["BSA", "BHARATIYA SAKSHYA ADHINIYAM", "BHARATIYA SAKSHYA ADHINIYAM 2023"],
+    "CPA_1986": ["CPA 1986", "CONSUMER PROTECTION ACT 1986"],
+    "CPA_2019": ["CPA", "CPA 2019", "CONSUMER PROTECTION ACT", "CONSUMER PROTECTION ACT 2019"],
+    "CPC": ["CPC", "C.P.C.", "CODE OF CIVIL PROCEDURE", "CODE OF CIVIL PROCEDURE 1908", "CIVIL PROCEDURE CODE"],
+    "IBC": ["IBC", "I&B CODE", "INSOLVENCY AND BANKRUPTCY CODE", "INSOLVENCY AND BANKRUPTCY CODE 2016"],
+    "NI_ACT": ["NI ACT", "N.I. ACT", "NEGOTIABLE INSTRUMENTS ACT", "NEGOTIABLE INSTRUMENTS ACT 1881"],
+    "ARBITRATION_ACT": ["ARBITRATION ACT", "ARBITRATION AND CONCILIATION ACT", "ARBITRATION AND CONCILIATION ACT 1996", "A&C ACT"],
+    "SARFAESI": ["SARFAESI", "SARFAESI ACT", "SECURITISATION AND RECONSTRUCTION OF FINANCIAL ASSETS AND ENFORCEMENT OF SECURITY INTEREST ACT 2002"],
+    "LIMITATION_ACT": ["LIMITATION ACT", "LIMITATION ACT 1963"],
+    "CONTRACT_ACT": ["CONTRACT ACT", "INDIAN CONTRACT ACT", "INDIAN CONTRACT ACT 1872"],
+    "SPECIFIC_RELIEF_ACT": ["SRA", "SPECIFIC RELIEF ACT", "SPECIFIC RELIEF ACT 1963"],
+    "TPA": ["TPA", "TRANSFER OF PROPERTY ACT", "TRANSFER OF PROPERTY ACT 1882"],
+    "RERA": ["RERA", "REAL ESTATE REGULATION AND DEVELOPMENT ACT", "REAL ESTATE (REGULATION AND DEVELOPMENT) ACT 2016"],
+    "HMA": ["HMA", "HINDU MARRIAGE ACT", "HINDU MARRIAGE ACT 1955"],
+    "NDPS": ["NDPS", "NDPS ACT", "NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT", "NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT 1985"],
+    "PMLA": ["PMLA", "PREVENTION OF MONEY LAUNDERING ACT", "PREVENTION OF MONEY LAUNDERING ACT 2002"],
+    "UAPA": ["UAPA", "UNLAWFUL ACTIVITIES PREVENTION ACT", "UNLAWFUL ACTIVITIES (PREVENTION) ACT 1967"],
+    "IT_ACT": ["IT ACT", "INFORMATION TECHNOLOGY ACT", "INFORMATION TECHNOLOGY ACT 2000"],
+    "COMPANIES_ACT": ["COMPANIES ACT", "COMPANIES ACT 2013"],
+    "COMMERCIAL_COURTS_ACT": ["COMMERCIAL COURTS ACT", "COMMERCIAL COURTS ACT 2015"],
+    "GENERAL_CLAUSES_ACT": ["GENERAL CLAUSES ACT", "GENERAL CLAUSES ACT 1897"],
+    "CONSTITUTION": ["CONSTITUTION", "CONSTITUTION OF INDIA", "ART", "ARTICLE"]
+  },
+  "actDisplayLabels": {
+    "IPC": "IPC",
+    "BNS": "BNS",
+    "CRPC": "CrPC",
+    "BNSS": "BNSS",
+    "IEA": "Indian Evidence Act",
+    "BSA": "BSA",
+    "CPA_1986": "CPA 1986",
+    "CPA_2019": "CPA 2019",
+    "CPC": "CPC",
+    "IBC": "IBC",
+    "NI_ACT": "NI Act",
+    "ARBITRATION_ACT": "Arbitration Act",
+    "SARFAESI": "SARFAESI Act",
+    "LIMITATION_ACT": "Limitation Act",
+    "CONTRACT_ACT": "Contract Act",
+    "SPECIFIC_RELIEF_ACT": "Specific Relief Act",
+    "TPA": "Transfer of Property Act",
+    "RERA": "RERA",
+    "HMA": "Hindu Marriage Act",
+    "NDPS": "NDPS Act",
+    "PMLA": "PMLA",
+    "UAPA": "UAPA",
+    "IT_ACT": "IT Act",
+    "COMPANIES_ACT": "Companies Act",
+    "COMMERCIAL_COURTS_ACT": "Commercial Courts Act",
+    "GENERAL_CLAUSES_ACT": "General Clauses Act",
+    "CONSTITUTION": "Constitution of India"
+  },
+  "crosswalkMappings": [
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "41",
+      "modernAct": "BNSS",
+      "modernSection": "35",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Arrest Without Warrant & Notice of Appearance"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "41A",
+      "modernAct": "BNSS",
+      "modernSection": "35(3)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Notice of Appearance Before Police Officer (Arnesh Kumar Mandate)"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "154",
+      "modernAct": "BNSS",
+      "modernSection": "173",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Registration of FIR, Zero FIR & Preliminary Inquiry"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "156(3)",
+      "modernAct": "BNSS",
+      "modernSection": "175(3)",
+      "mappingType": "MODIFIED_PROVISO",
+      "topicLabel": "Magistrate Direction for Police Investigation"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "167(2)",
+      "modernAct": "BNSS",
+      "modernSection": "187(3)",
+      "mappingType": "MODIFIED_PROVISO",
+      "topicLabel": "Default / Statutory Bail & Police Custody Remand"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "173",
+      "modernAct": "BNSS",
+      "modernSection": "193",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Police Report / Chargesheet & Further Investigation"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "197",
+      "modernAct": "BNSS",
+      "modernSection": "218",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Prior Sanction for Prosecution of Public Servants"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "200",
+      "modernAct": "BNSS",
+      "modernSection": "223",
+      "mappingType": "MODIFIED_PROVISO",
+      "topicLabel": "Examination of Complainant & Pre-Cognizance Hearing of Accused"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "227",
+      "modernAct": "BNSS",
+      "modernSection": "250",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Discharge in Sessions Trial"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "239",
+      "modernAct": "BNSS",
+      "modernSection": "262",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Discharge in Warrant Cases"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "311",
+      "modernAct": "BNSS",
+      "modernSection": "348",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Power to Summon Material Witness or Recall Witness"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "313",
+      "modernAct": "BNSS",
+      "modernSection": "351",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Examination of Accused"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "389",
+      "modernAct": "BNSS",
+      "modernSection": "430",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Suspension of Sentence Pending Appeal"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "436A",
+      "modernAct": "BNSS",
+      "modernSection": "479",
+      "mappingType": "MODIFIED_PROVISO",
+      "topicLabel": "Maximum Period of Detention for Undertrial Prisoners"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "437",
+      "modernAct": "BNSS",
+      "modernSection": "480",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Regular Bail in Non-Bailable Offences Before Magistrate"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "438",
+      "modernAct": "BNSS",
+      "modernSection": "482",
+      "mappingType": "MODIFIED_PROVISO",
+      "topicLabel": "Anticipatory Bail / Direction for Grant of Bail on Apprehension of Arrest"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "439",
+      "modernAct": "BNSS",
+      "modernSection": "483",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Special Powers of High Court or Court of Session Regarding Regular Bail"
+    },
+    {
+      "legacyAct": "CRPC",
+      "legacySection": "482",
+      "modernAct": "BNSS",
+      "modernSection": "528",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Saving of Inherent Powers of High Court (Quashing of FIR / Proceedings)"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "34",
+      "modernAct": "BNS",
+      "modernSection": "3(5)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Acts Done by Several Persons in Furtherance of Common Intention"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "120B",
+      "modernAct": "BNS",
+      "modernSection": "61(2)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Punishment of Criminal Conspiracy"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "302",
+      "modernAct": "BNS",
+      "modernSection": "103(1)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Punishment for Murder"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "304B",
+      "modernAct": "BNS",
+      "modernSection": "80",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Dowry Death"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "306",
+      "modernAct": "BNS",
+      "modernSection": "108",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Abetment of Suicide"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "376",
+      "modernAct": "BNS",
+      "modernSection": "64",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Punishment for Rape"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "406",
+      "modernAct": "BNS",
+      "modernSection": "316(2)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Criminal Breach of Trust"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "409",
+      "modernAct": "BNS",
+      "modernSection": "316(5)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Criminal Breach of Trust by Public Servant, Banker, Merchant or Agent"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "420",
+      "modernAct": "BNS",
+      "modernSection": "318(4)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Cheating and Dishonestly Inducing Delivery of Property"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "467",
+      "modernAct": "BNS",
+      "modernSection": "338",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Forgery of Valuable Security or Will"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "468",
+      "modernAct": "BNS",
+      "modernSection": "336(3)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Forgery for Purpose of Cheating"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "471",
+      "modernAct": "BNS",
+      "modernSection": "340(2)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Using as Genuine a Forged Document or Electronic Record"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "498A",
+      "modernAct": "BNS",
+      "modernSection": "85",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Cruelty by Husband or Relatives of Husband"
+    },
+    {
+      "legacyAct": "IPC",
+      "legacySection": "499",
+      "modernAct": "BNS",
+      "modernSection": "356",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Defamation"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "27",
+      "modernAct": "BSA",
+      "modernSection": "23(2)",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Discovery of Fact Pursuant to Information Received from Accused in Custody"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "32",
+      "modernAct": "BSA",
+      "modernSection": "26",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Dying Declaration / Statements by Persons Who Cannot Be Called as Witnesses"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "45",
+      "modernAct": "BSA",
+      "modernSection": "39",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Opinions of Experts"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "65B",
+      "modernAct": "BSA",
+      "modernSection": "63",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Admissibility of Electronic Records & Certificate Requirement"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "65B(4)",
+      "modernAct": "BSA",
+      "modernSection": "63(4)",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Mandatory Certificate for Electronic Evidence"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "101",
+      "modernAct": "BSA",
+      "modernSection": "104",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Burden of Proof"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "106",
+      "modernAct": "BSA",
+      "modernSection": "109",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Burden of Proving Fact Especially Within Knowledge"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "113B",
+      "modernAct": "BSA",
+      "modernSection": "118",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Presumption as to Dowry Death"
+    },
+    {
+      "legacyAct": "IEA",
+      "legacySection": "114",
+      "modernAct": "BSA",
+      "modernSection": "119",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Court May Presume Existence of Certain Facts"
+    },
+    {
+      "legacyAct": "CPA_1986",
+      "legacySection": "2(1)(d)",
+      "modernAct": "CPA_2019",
+      "modernSection": "2(7)",
+      "mappingType": "EXPANDED_SCOPE",
+      "topicLabel": "Definition of Consumer & Commercial Purpose Exclusion"
+    },
+    {
+      "legacyAct": "CPA_1986",
+      "legacySection": "24A",
+      "modernAct": "CPA_2019",
+      "modernSection": "69",
+      "mappingType": "EXACT_PARI_MATERIA",
+      "topicLabel": "Limitation Period for Filing Consumer Complaint"
+    }
+  ]
+}
+

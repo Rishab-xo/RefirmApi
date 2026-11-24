@@ -39,11 +39,37 @@ public final class InspectorDTOs {
             Integer paragraphNumberInDraft,
             String summary,
             List<String> keyPropositions,
-            boolean savedToMatter
+            boolean savedToMatter,
+            Integer citedByCount,
+            List<String> actSectionTuples,
+            Integer decisionYear
     ) {
+        public JudgmentAuthorityCard(
+                String authorityId,
+                String caseTitle,
+                String courtName,
+                String judgmentDate,
+                String primaryCitation,
+                List<String> equivalentCitations,
+                String sourceType,
+                UUID sourceDocumentId,
+                String snippetInDraft,
+                Integer paragraphNumberInDraft,
+                String summary,
+                List<String> keyPropositions,
+                boolean savedToMatter
+        ) {
+            this(authorityId, caseTitle, courtName, judgmentDate, primaryCitation, equivalentCitations,
+                    sourceType, sourceDocumentId, snippetInDraft, paragraphNumberInDraft, summary,
+                    keyPropositions, savedToMatter, 0, Collections.emptyList(), 0);
+        }
+
         public JudgmentAuthorityCard {
             equivalentCitations = equivalentCitations != null ? equivalentCitations : Collections.emptyList();
             keyPropositions = keyPropositions != null ? keyPropositions : Collections.emptyList();
+            actSectionTuples = actSectionTuples != null ? actSectionTuples : Collections.emptyList();
+            citedByCount = citedByCount != null ? citedByCount : 0;
+            decisionYear = decisionYear != null ? decisionYear : 0;
         }
     }
 

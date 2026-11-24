@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.app.refirm.triage.domain.LegalDomain;
 import com.app.refirm.triage.domain.StatutePin;
 import com.app.refirm.triage.domain.StatuteType;
+import com.app.refirm.arguments.service.ArgumentMarkdownRenderer;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -152,13 +153,29 @@ public class LegalRetrievalService {
         public List<StatutePin> toStatutePins() {
             if (selectedFiles == null) return List.of();
             return selectedFiles.stream()
-                    .map(f -> new StatutePin(
-                            f.statuteName(),
-                            f.sectionNumber() != null && !f.sectionNumber().isBlank() ? "Section " + f.sectionNumber() : f.filename(),
-                            StatuteType.OPERATIVE,
-                            f.heading(),
-                            f.content()
-                    ))
+                    .map(f -> {
+                        String rawSec = f.sectionNumber() != null && !f.sectionNumber().isBlank()
+                                ? f.sectionNumber().trim()
+                                : "";
+                        String secLabel;
+                        if (!rawSec.isBlank()) {
+                            String prefix = ArgumentMarkdownRenderer.formatProvisionPrefix(
+                                    f.statuteName(),
+                                    f.filename() != null && !f.filename().isBlank() ? f.filename() : rawSec
+                            );
+                            String cleanNum = rawSec.replaceAll("(?i)^(?:sections?|articles?|sec\\.?|art\\.?)[ _-]*", "").trim();
+                            secLabel = prefix + cleanNum;
+                        } else {
+                            secLabel = f.filename();
+                        }
+                        return new StatutePin(
+                                f.statuteName(),
+                                secLabel,
+                                StatuteType.OPERATIVE,
+                                f.heading(),
+                                f.content()
+                        );
+                    })
                     .toList();
         }
 
@@ -400,6 +417,11 @@ public class LegalRetrievalService {
                 indexCatalogFolder(normTitle, folderRes);
                 indexCatalogFolder(actSlug.toLowerCase(), folderRes);
                 indexCatalogFolder(actSlug, folderRes);
+                for (Map.Entry<String, String> acrEntry : CANONICAL_ACRONYMS.entrySet()) {
+                    if (normSlug.contains(acrEntry.getValue()) || normTitle.contains(acrEntry.getValue())) {
+                        indexCatalogFolder(acrEntry.getKey(), folderRes);
+                    }
+                }
             }
         } catch (Exception ignored) {}
     }
@@ -419,17 +441,54 @@ public class LegalRetrievalService {
         }
     }
 
+    private static final Map<String, String> CANONICAL_ACRONYMS = Map.ofEntries(
+            Map.entry("ipc", "indianpenalcode"),
+            Map.entry("crpc", "codeofcriminalprocedure"),
+            Map.entry("cpc", "codeofcivilprocedure"),
+            Map.entry("ibc", "insolvencyandbankruptcycode"),
+            Map.entry("bns", "bharatiyanyayasanhita"),
+            Map.entry("bnss", "bharatiyanagariksurakshasanhita"),
+            Map.entry("bsa", "bharatiyasakshyaadhiniyam"),
+            Map.entry("iea", "indianevidenceact"),
+            Map.entry("cpa", "consumerprotectionact"),
+            Map.entry("niact", "negotiableinstrumentsact"),
+            Map.entry("nia", "negotiableinstrumentsact"),
+            Map.entry("itact", "informationtechnologyact"),
+            Map.entry("ita", "informationtechnologyact"),
+            Map.entry("tpa", "transferofpropertyact"),
+            Map.entry("hma", "hindumarriageact"),
+            Map.entry("ica", "indiancontractact"),
+            Map.entry("rera", "realestate"),
+            Map.entry("sarfaesi", "securitisation"),
+            Map.entry("pmla", "preventionofmoneylaunderingact"),
+            Map.entry("ndps", "narcoticdrugsandpsychotropicsubstancesact")
+    );
+
+    public static String expandAcronymOrNormalizeAct(String actName) {
+        if (actName == null || actName.isBlank()) return "";
+        String clean = actName.trim().toLowerCase().replaceAll("[^a-z0-9]", "");
+        String mapped = CANONICAL_ACRONYMS.get(clean);
+        if (mapped != null) {
+            return mapped;
+        }
+        return clean;
+    }
+
     private static String normalizeActKey(String s) {
-        if (s == null) return "";
-        return s.toLowerCase().replaceAll("[^a-z0-9]", "");
+        return expandAcronymOrNormalizeAct(s);
     }
 
     public List<Resource> getCandidateFolders(String actName, String primaryDomain) {
         ensureClasspathCatalogInitialized();
         if (actName == null || actName.isBlank()) return List.of();
 
-        String norm = normalizeActKey(actName);
-        List<Resource> candidates = actFolderCatalog.get(norm);
+        String clean = actName.trim().toLowerCase().replaceAll("[^a-z0-9]", "");
+        String expanded = expandAcronymOrNormalizeAct(actName);
+
+        List<Resource> candidates = actFolderCatalog.get(clean);
+        if (candidates == null || candidates.isEmpty()) {
+            candidates = actFolderCatalog.get(expanded);
+        }
         if (candidates == null || candidates.isEmpty()) {
             candidates = actFolderCatalog.get(actName.toLowerCase());
         }
@@ -438,7 +497,7 @@ public class LegalRetrievalService {
         }
         if (candidates == null || candidates.isEmpty()) {
             for (Map.Entry<String, List<Resource>> entry : actFolderCatalog.entrySet()) {
-                if (entry.getKey().contains(norm) || norm.contains(entry.getKey())) {
+                if (entry.getKey().contains(expanded) || expanded.contains(entry.getKey())) {
                     candidates = entry.getValue();
                     break;
                 }
@@ -687,8 +746,7 @@ public class LegalRetrievalService {
         return heading.contains("limitation period")
                 || heading.contains("bar of limitation")
                 || heading.contains("limitation of actions")
-                || heading.equals("limitation")
-                || heading.contains("cognizance of offence");
+                || heading.equals("limitation");
     }
 
     private static boolean isJurisdictionOrVenueStatic(String content) {
@@ -696,8 +754,7 @@ public class LegalRetrievalService {
         return heading.contains("jurisdiction of district commission")
                 || heading.contains("jurisdiction")
                 || heading.contains("place of suing")
-                || heading.contains("territorial")
-                || heading.contains("cognizance of offence");
+                || heading.contains("territorial");
     }
 
     private static boolean isOverridingOrAdditionalRemedyStatic(String content) {
@@ -731,6 +788,27 @@ public class LegalRetrievalService {
         }
         return "Unknown";
     }
+
+    private static final Map<String, List<String>> STATUTE_ACRONYM_MAP = Map.ofEntries(
+            Map.entry("ipc", List.of("indian penal code")),
+            Map.entry("crpc", List.of("code of criminal procedure", "criminal procedure code")),
+            Map.entry("cpc", List.of("code of civil procedure", "civil procedure code")),
+            Map.entry("ibc", List.of("insolvency and bankruptcy code")),
+            Map.entry("bns", List.of("bharatiya nyaya sanhita")),
+            Map.entry("bnss", List.of("bharatiya nagarik suraksha sanhita")),
+            Map.entry("bsa", List.of("bharatiya sakshya adhiniyam")),
+            Map.entry("cpa", List.of("consumer protection act")),
+            Map.entry("ni act", List.of("negotiable instruments act")),
+            Map.entry("nia", List.of("negotiable instruments act")),
+            Map.entry("it act", List.of("information technology act")),
+            Map.entry("sarfaesi", List.of("securitisation")),
+            Map.entry("rera", List.of("real estate")),
+            Map.entry("hma", List.of("hindu marriage act")),
+            Map.entry("tpa", List.of("transfer of property act")),
+            Map.entry("ica", List.of("indian contract act", "contract act")),
+            Map.entry("pmla", List.of("prevention of money laundering act")),
+            Map.entry("ndps", List.of("narcotic drugs and psychotropic substances act"))
+    );
 
     private InternalSelection evaluateAndSelectFiles(LegalCategory domain, List<String> keyTriggers, ExtractedFactsDTO facts) {
         String prompt = (keyTriggers != null && !keyTriggers.isEmpty()) ? String.join(" ", keyTriggers) : "";
@@ -808,8 +886,10 @@ public class LegalRetrievalService {
                 .distinct()
                 .toList();
 
-        // Stage 1B: Macro-Statute Scoring
+        // Stage 1B: Macro-Statute Scoring (Keyword & Acronym Matching)
         Map<String, Integer> statuteScores = new HashMap<>();
+        String promptLower = (rawPrompt != null ? rawPrompt : "").toLowerCase();
+
         for (String statute : candidateStatutes) {
             int score = 0;
             String cleanStatuteName = statute.toLowerCase().replace('_', ' ');
@@ -817,6 +897,21 @@ public class LegalRetrievalService {
             for (String term : searchTerms) {
                 if (cleanStatuteName.contains(term)) {
                     score += 1000;
+                }
+            }
+
+            if (!promptLower.isBlank()) {
+                for (Map.Entry<String, List<String>> entry : STATUTE_ACRONYM_MAP.entrySet()) {
+                    String acronym = entry.getKey();
+                    Pattern p = Pattern.compile("\\b" + Pattern.quote(acronym) + "\\b", Pattern.CASE_INSENSITIVE);
+                    if (p.matcher(promptLower).find()) {
+                        for (String expanded : entry.getValue()) {
+                            if (cleanStatuteName.contains(expanded)) {
+                                score += 1000;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -956,9 +1051,29 @@ public class LegalRetrievalService {
         boolean explicitlyPleadsProductLiability = normalizedTriggers.stream()
                 .anyMatch(t -> "PRODUCT_LIABILITY_ACTION".equalsIgnoreCase(t.trim()));
 
+        // Extract explicit section numbers mentioned in rawPrompt
+        Set<String> promptSectionNumbers = new HashSet<>();
+        if (rawPrompt != null && !rawPrompt.isBlank()) {
+            Matcher secMatcher = Pattern.compile("(?i)(?:sections?|sec\\.?|articles?|art\\.?)\\s+(\\d+[A-Za-z]?)").matcher(rawPrompt);
+            while (secMatcher.find()) {
+                promptSectionNumbers.add(secMatcher.group(1).toLowerCase());
+            }
+        }
+
+        String rawPromptLower = (rawPrompt != null) ? rawPrompt.toLowerCase() : "";
+        boolean promptHasFiling = rawPromptLower.contains("filing") || rawPromptLower.contains("complaint") || rawPromptLower.contains("institute") || rawPromptLower.contains("institution");
+        boolean promptHasLimitation = rawPromptLower.contains("limitation") || rawPromptLower.contains("time-barred") || rawPromptLower.contains("time barred") || rawPromptLower.contains("delay");
+        boolean promptHasJurisdiction = rawPromptLower.contains("jurisdiction") || rawPromptLower.contains("venue") || rawPromptLower.contains("territorial") || rawPromptLower.contains("pecuniary");
+
         Map<StatuteFile, Integer> fileScores = new HashMap<>();
         for (StatuteFile file : eligibleFiles) {
             int score = 0;
+
+            // 0. Explicit section number match in rawPrompt (+200)
+            String fileSec = file.sectionNumber() != null ? file.sectionNumber().trim().toLowerCase() : "";
+            if (!fileSec.isBlank() && promptSectionNumbers.contains(fileSec)) {
+                score += 200;
+            }
 
             // 1. Demote Central/State Government regulatory power sections (e.g., CPA Section 94)
             if (file.isRegulatoryOrAdmin()) {
@@ -999,7 +1114,7 @@ public class LegalRetrievalService {
 
             // 4. Layer 3 Baseline Anchor for Complaint Filing (Sec 35) & Reliefs (Sec 39(1)) & Limitation
             if (file.isFilingSection()) {
-                score += 35;
+                score += promptHasFiling ? 35 : 15;
                 String filingPin = "Section " + file.sectionNumber() + " [" + file.heading() + "]";
                 if (!pinnedClauseDirectives.contains(filingPin)) {
                     pinnedClauseDirectives.add(filingPin);
@@ -1013,14 +1128,14 @@ public class LegalRetrievalService {
                 }
             }
             if (isLimitationStatic(file.content())) {
-                score += 30;
+                score += promptHasLimitation ? 30 : 15;
                 String limitPin = "Section " + file.sectionNumber() + " [" + file.heading() + "]";
                 if (!pinnedClauseDirectives.contains(limitPin)) {
                     pinnedClauseDirectives.add(limitPin);
                 }
             }
             if (isJurisdictionOrVenueStatic(file.content())) {
-                score += 30;
+                score += promptHasJurisdiction ? 30 : 15;
                 String venuePin = "Section " + file.sectionNumber() + " [" + file.heading() + "]";
                 if (!pinnedClauseDirectives.contains(venuePin)) {
                     pinnedClauseDirectives.add(venuePin);
@@ -1037,9 +1152,20 @@ public class LegalRetrievalService {
             // 5. True Heading & Clean Body Match (YAML Frontmatter Stripped)
             String cleanHeading = file.heading();
             String cleanBody = file.cleanBodyLower();
+            String[] headingWords = cleanHeading.split("[\\s_\\-,.:;()]+");
             for (String term : searchTerms) {
                 if (cleanHeading.contains(term)) {
-                    score += 10;
+                    score += 45;
+                    boolean exactWord = false;
+                    for (String hw : headingWords) {
+                        if (hw.equalsIgnoreCase(term)) {
+                            exactWord = true;
+                            break;
+                        }
+                    }
+                    if (exactWord) {
+                        score += 25;
+                    }
                 }
                 if (cleanBody.contains(term)) {
                     score += 2;
@@ -1222,14 +1348,18 @@ public class LegalRetrievalService {
         String fsec = f.sectionNumber() != null ? f.sectionNumber().toLowerCase() : "";
         String fact = f.statuteName() != null ? f.statuteName().toLowerCase() : "";
 
-        String normFact = fact.replaceAll("[^a-z0-9]", "");
-        String normAct = (actName != null) ? actName.toLowerCase().replaceAll("[^a-z0-9]", "") : "";
-
-        boolean actMatches = (actName == null || actName.isBlank())
-                || normFact.contains(normAct)
-                || normAct.contains(normFact)
-                || fact.contains(actName.toLowerCase().replace("_", " "))
-                || fact.contains(actName.toLowerCase());
+        boolean actMatches;
+        if (actName == null || actName.isBlank()) {
+            actMatches = false; // Never match across random acts when actName is blank
+        } else {
+            String normFact = expandAcronymOrNormalizeAct(fact);
+            String normAct = expandAcronymOrNormalizeAct(actName);
+            actMatches = normFact.contains(normAct)
+                    || normAct.contains(normFact)
+                    || fact.contains(actName.toLowerCase().replace("_", " "))
+                    || fact.contains(actName.toLowerCase())
+                    || com.app.refirm.arguments.service.ArgumentMarkdownRenderer.isActMatch(actName, f.statuteName());
+        }
 
         String normFname = fname.replace(".md", "").replaceAll("[^a-z0-9]", "");
         String normSec = cleanSec.replace(".md", "").replaceAll("[^a-z0-9]", "");

@@ -92,12 +92,22 @@ public class BriefGenerationService {
 
     private final ChatClient chatClient;
     private final LegalRetrievalService retrievalService;
+    private final String reasoningModel;
 
     public BriefGenerationService(
             @Qualifier("reasoningChatClient") ChatClient chatClient,
             LegalRetrievalService retrievalService) {
+        this(chatClient, retrievalService, "gpt-5.6-terra");
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public BriefGenerationService(
+            @Qualifier("reasoningChatClient") ChatClient chatClient,
+            LegalRetrievalService retrievalService,
+            @org.springframework.beans.factory.annotation.Value("${refirm.ai.models.reasoning:gpt-5.6-terra}") String reasoningModel) {
         this.chatClient = chatClient;
         this.retrievalService = retrievalService;
+        this.reasoningModel = reasoningModel;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -211,8 +221,7 @@ public class BriefGenerationService {
         );
 
         OpenAiChatOptions chatOptions = OpenAiChatOptions.builder()
-                .model("o3-mini")
-                .temperature(1.0)
+                .model(reasoningModel)
                 .build();
 
         String draft = chatClient.prompt()
@@ -255,8 +264,7 @@ public class BriefGenerationService {
         String userPrompt = buildUserPrompt(facts, retrievedContext, List.of());
 
         OpenAiChatOptions chatOptions = OpenAiChatOptions.builder()
-                .model("o3-mini")
-                .temperature(1.0)
+                .model(reasoningModel)
                 .build();
 
         String draft = chatClient.prompt()
@@ -300,8 +308,7 @@ public class BriefGenerationService {
     private String callLlm(String userPrompt) {
         try {
             OpenAiChatOptions chatOptions = OpenAiChatOptions.builder()
-                    .model("o3-mini")
-                    .temperature(1.0)
+                    .model(reasoningModel)
                     .build();
 
             String rawOutput = chatClient.prompt()

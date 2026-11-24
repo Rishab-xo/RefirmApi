@@ -25,6 +25,9 @@ import java.util.stream.Collectors;
 @Component
 public class ArgumentMarkdownRenderer {
 
+    public static final String INDIAN_STATUTORY_ACRONYMS = "(?:IBC|IPC|CrPC|CPC|BNS|BNSS|BSA|CPA|TPA|HMA|ICA|RERA|NI\\s+Act|IT\\s+Act|SARFAESI|PMLA|NDPS)";
+    public static final String SECTION_LIST_TOKEN_PATTERN = "[0-9a-zA-Z\\(\\)]+(?:\\s*(?:,|&|\\band\\b|\\bor\\b|/|-|\\u2013)\\s*(?:(?i:(?:sections?|sec\\.?|articles?|art\\.?))\\s+)?[0-9a-zA-Z\\(\\)]+)*";
+
     // ─── PRIMARY ENTRY POINTS (convenience and backward-compatible signatures) ───
 
     public String renderToMarkdown(ArgumentDossier dossier) {
@@ -90,23 +93,34 @@ public class ArgumentMarkdownRenderer {
             return sb.toString();
         }
 
+        boolean hasPitch = dossier.openingPitch60Seconds() != null && !dossier.openingPitch60Seconds().isBlank();
+        boolean hasIssues = dossier.framedIssues() != null && !dossier.framedIssues().isEmpty();
+        boolean hasSubmissions = dossier.coreSubmissions() != null && !dossier.coreSubmissions().isEmpty();
+        boolean hasRebuttals = dossier.rebuttalMatrix() != null && !dossier.rebuttalMatrix().isEmpty();
+        boolean hasBench = dossier.benchGrillQuestions() != null && !dossier.benchGrillQuestions().isEmpty();
+        boolean hasChecklist = dossier.preHearingEvidenceChecklist() != null && !dossier.preHearingEvidenceChecklist().isEmpty();
+
+        boolean hasAnyContent = hasPitch || hasIssues || hasSubmissions || hasRebuttals || hasBench || hasChecklist;
+
         // ─── 1. 60-SECOND OPENING PITCH ───
-        sb.append("### 1. 60-SECOND OPENING COURTROOM PITCH\n\n");
-        if (dossier.openingPitch60Seconds() != null && !dossier.openingPitch60Seconds().isBlank()) {
+        if (hasPitch) {
+            sb.append("### 1. 60-SECOND OPENING COURTROOM PITCH\n\n");
             sb.append(dossier.openingPitch60Seconds().trim()).append("\n\n");
-        } else {
+        } else if (!hasAnyContent) {
+            sb.append("### 1. 60-SECOND OPENING COURTROOM PITCH\n\n");
             sb.append("*[Opening pitch pending generation]*\n\n");
         }
 
         // ─── 2. ISSUES FRAMED ───
-        sb.append("### 2. ISSUES FRAMED FOR DETERMINATION\n\n");
-        if (dossier.framedIssues() != null && !dossier.framedIssues().isEmpty()) {
+        if (hasIssues) {
+            sb.append("### 2. ISSUES FRAMED FOR DETERMINATION\n\n");
             for (FramedLegalIssue issue : dossier.framedIssues()) {
                 sb.append("- **[").append(issue.issueId()).append("]** ")
                         .append(issue.questionFramed()).append("\n")
                         .append("  *Onus & Governing Standard:* ").append(issue.burdenOfProof()).append("\n\n");
             }
-        } else {
+        } else if (!hasAnyContent) {
+            sb.append("### 2. ISSUES FRAMED FOR DETERMINATION\n\n");
             sb.append("*[No framed legal issues]*\n\n");
         }
 
@@ -137,9 +151,9 @@ public class ArgumentMarkdownRenderer {
         }
 
         // ─── 3. CORE SUBMISSIONS ───
-        sb.append("### 3. CORE LEGAL & FACTUAL SUBMISSIONS\n\n");
+        if (hasSubmissions) {
+            sb.append("### 3. CORE LEGAL & FACTUAL SUBMISSIONS\n\n");
 
-        if (dossier.coreSubmissions() != null && !dossier.coreSubmissions().isEmpty()) {
             boolean anyVerifiedEvidence = dossier.coreSubmissions().stream()
                     .anyMatch(sub -> !isUnverifiedOrIrrelevantAnchor(sub.verifiedEvidenceAnchor()));
 
@@ -171,13 +185,14 @@ public class ArgumentMarkdownRenderer {
 
                 sb.append("\n");
             }
-        } else {
+        } else if (!hasAnyContent) {
+            sb.append("### 3. CORE LEGAL & FACTUAL SUBMISSIONS\n\n");
             sb.append("*[No core submissions recorded]*\n\n");
         }
 
         // ─── 4. REBUTTAL MATRIX (3-Column Scannable Table) ───
-        sb.append("### 4. OPPOSITE-PARTY REBUTTAL MATRIX\n\n");
-        if (dossier.rebuttalMatrix() != null && !dossier.rebuttalMatrix().isEmpty()) {
+        if (hasRebuttals) {
+            sb.append("### 4. OPPOSITE-PARTY REBUTTAL MATRIX\n\n");
             sb.append("| Opponent's Likely Point | Our Courtroom Response | Authority / Evidence to Have Ready |\n");
             sb.append("| :--- | :--- | :--- |\n");
             for (RebuttalMatrixItem reb : dossier.rebuttalMatrix()) {
@@ -196,13 +211,14 @@ public class ArgumentMarkdownRenderer {
                         .append(" |\n");
             }
             sb.append("\n");
-        } else {
+        } else if (!hasAnyContent) {
+            sb.append("### 4. OPPOSITE-PARTY REBUTTAL MATRIX\n\n");
             sb.append("*[Rebuttal matrix empty]*\n\n");
         }
 
         // ─── 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR ───
-        sb.append("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR\n\n");
-        if (dossier.benchGrillQuestions() != null && !dossier.benchGrillQuestions().isEmpty()) {
+        if (hasBench) {
+            sb.append("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR\n\n");
             int qIndex = 1;
             for (BenchQuestionItem bq : dossier.benchGrillQuestions()) {
                 sb.append("**Q").append(qIndex++).append(" (From the Bench):** *\"")
@@ -212,13 +228,14 @@ public class ArgumentMarkdownRenderer {
                         .append("**Authority Pin:** `").append(bq.authorityPin()).append("`\n\n")
                         .append("---\n\n");
             }
-        } else {
+        } else if (!hasAnyContent) {
+            sb.append("### 5. STRATEGIC WEAK POINTS & BENCH TRAPS TO PREPARE FOR\n\n");
             sb.append("*[Bench grill questions empty]*\n\n");
         }
 
         // ─── 6. FACTS & DOCUMENTS NEEDED TO FINALISE (capped at 6, deduplicated) ───
-        sb.append("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE\n\n");
-        if (dossier.preHearingEvidenceChecklist() != null && !dossier.preHearingEvidenceChecklist().isEmpty()) {
+        if (hasChecklist) {
+            sb.append("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE\n\n");
             List<String> dedupedChecklist = dossier.preHearingEvidenceChecklist().stream()
                     .filter(item -> item != null && !item.isBlank())
                     .distinct()
@@ -229,11 +246,59 @@ public class ArgumentMarkdownRenderer {
                 sb.append("- [ ] ").append(item).append("\n");
             }
             sb.append("\n");
-        } else {
+        } else if (!hasAnyContent) {
+            sb.append("### 6. FACTS & DOCUMENTS NEEDED TO FINALISE\n\n");
             sb.append("*[No checklist items]*\n\n");
         }
 
         return scrubLegacyVaultSentences(sb.toString());
+    }
+
+    public String enrichTerraMarkdownWithStatuteTable(
+            String title,
+            PartyPerspective perspective,
+            String terraMarkdown,
+            ArgumentDossier dossier,
+            boolean isStale,
+            List<StatutePin> allowedStatutes,
+            String userQuery
+    ) {
+        if (terraMarkdown == null || terraMarkdown.isBlank()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        // 1. Stale warning (only if isStale is true and not already in markdown)
+        if (isStale && !terraMarkdown.contains("STALE WARNING")) {
+            sb.append("> ⚠️ **STALE WARNING**: The underlying case facts or party perspective have changed since this argument sheet was generated. Re-generate to synchronize with the latest ledger.\n\n");
+        }
+
+        // 2. Terra's natural markdown content renders cleanly from line 1
+        sb.append(terraMarkdown.trim());
+
+        // 3. Extract cited (Act, Section) tuples from dossier + terraMarkdown
+        Set<ActSectionRef> citedRefs = extractCitedActSectionRefs(dossier, terraMarkdown);
+
+        // 4. Filter allowedStatutes to actively cited OKF pins
+        List<StatutePin> citedOkfPins = filterToActivelyCitedStatutes(allowedStatutes, citedRefs);
+
+        // 5. At the very bottom, if actively cited OKF pins exist, append 1-line Statutory Source Coverage
+        if (!citedOkfPins.isEmpty()) {
+            String coverageBlock = renderStatutorySourceCoverage(citedOkfPins, userQuery, dossier);
+            if (!coverageBlock.isBlank()) {
+                sb.append("\n\n").append(coverageBlock);
+            }
+        }
+
+        // 6. Case Law Coverage (transparent model recall vs verified corpus disclaimer)
+        String caseLawBlock = renderCaseLawCoverage(terraMarkdown);
+        if (!caseLawBlock.isBlank()) {
+            sb.append("\n").append(caseLawBlock);
+        }
+
+        sb.append("\n");
+        return sb.toString();
     }
 
     // ─── FORMATTING HELPERS FOR TABLE 2B ───
@@ -250,6 +315,30 @@ public class ArgumentMarkdownRenderer {
         return com.app.refirm.inspector.service.InspectorService.humanizeActTitle(act);
     }
 
+    public static String formatProvisionPrefix(String actName, String rawSecOrFile) {
+        String sec = rawSecOrFile != null ? rawSecOrFile.trim().toLowerCase() : "";
+        String act = actName != null ? actName.trim().toLowerCase() : "";
+
+        if (sec.startsWith("article") || sec.startsWith("schedule_articles") || sec.startsWith("schedule_article")) {
+            return "Article ";
+        }
+        if (act.contains("constitution")) {
+            return "Article ";
+        }
+        if (act.contains("limitation")) {
+            Matcher m = Pattern.compile("(\\d+)").matcher(sec);
+            if (m.find()) {
+                try {
+                    int num = Integer.parseInt(m.group(1));
+                    if (num > 32) {
+                        return "Article ";
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return "Section ";
+    }
+
     public static String formatProvisionForTableCell(StatutePin pin) {
         if (pin == null) return "Applicable Provision";
         String rawSec = pin.sectionNumber() != null ? pin.sectionNumber().trim() : "";
@@ -260,11 +349,14 @@ public class ArgumentMarkdownRenderer {
             com.app.refirm.inspector.service.InspectorService.ParsedStatuteMetadata parsed =
                     com.app.refirm.inspector.service.InspectorService.parseStatutePin(pin);
             String secNum = parsed.sectionNumber();
+        String actName = pin.actName() != null ? pin.actName() : "";
+        String prefix = formatProvisionPrefix(actName, rawSec);
+        secNum = extractBaseSectionNumber(secNum);
             String heading = parsed.sectionHeading();
             if (heading != null && !heading.isBlank()) {
-                return "Section " + secNum + " — " + heading;
+                return prefix + secNum + " — " + heading;
             } else {
-                return "Section " + secNum;
+                return prefix + secNum;
             }
         }
         return rawSec;
@@ -649,6 +741,41 @@ public class ArgumentMarkdownRenderer {
         return "";
     }
 
+    public static String renderCaseLawCoverage(String markdown) {
+        if (markdown == null || markdown.isBlank()) {
+            return "";
+        }
+
+        // Check for case law citations
+        boolean hasCitations = markdown.contains(" v. ") || markdown.contains(" vs. ")
+                || markdown.contains(" v ") || markdown.contains(" vs ")
+                || markdown.contains(" SCC ") || markdown.contains(" AIR ")
+                || markdown.contains("[Verified in Corpus]");
+
+        if (!hasCitations) {
+            return "";
+        }
+
+        // Extract [Verified in Corpus] authorities
+        List<String> verified = new ArrayList<>();
+        Pattern pVerified = Pattern.compile("(?i)([A-Za-z0-9\\s\\.\\-'\"()]+?)\\s*\\[Verified in Corpus\\]");
+        Matcher m = pVerified.matcher(markdown);
+        while (m.find()) {
+            String title = m.group(1).replaceAll("^[\\*\\-_#\\s]+", "").trim();
+            if (!title.isBlank() && !verified.contains(title)) {
+                verified.add(title);
+            }
+        }
+
+        if (!verified.isEmpty()) {
+            String verList = String.join("; ", verified);
+            return "> **Case Law Coverage:** **Verified in Workspace Corpus:** " + verList +
+                    ". Other cited decisions are recalled from model knowledge \u2014 *verify reporter copy and pinpoint paragraphs before filing.*";
+        }
+
+        return "> **Case Law Coverage:** Authorities marked **[Verified in Corpus]** are verified against your workspace precedent registry; other cited decisions are recalled from model knowledge \u2014 *verify reporter copy and pinpoint paragraphs before filing.*";
+    }
+
     public static String renderStatutorySourceCoverage(
             List<StatutePin> effectiveStatutePack,
             String userQuery,
@@ -661,18 +788,26 @@ public class ArgumentMarkdownRenderer {
         // 1. Group verified statutes by Act name
         Map<String, List<String>> verifiedByAct = new LinkedHashMap<>();
         for (StatutePin pin : effectiveStatutePack) {
-            String actTitle = formatActNameForTableCell(pin);
-            String sec = pin.sectionNumber() != null ? pin.sectionNumber().trim() : "";
-            if (sec.toLowerCase().startsWith("section_")) {
-                sec = "Section " + sec.substring(8);
-            } else if (sec.toLowerCase().startsWith("sec_")) {
-                sec = "Section " + sec.substring(4);
-            } else if (sec.matches("^\\d+[A-Za-z]?$")) {
-                sec = "Section " + sec;
-            } else if (!sec.toLowerCase().startsWith("section") && !sec.toLowerCase().startsWith("article") && !sec.toLowerCase().startsWith("schedule")) {
-                sec = "Section " + sec;
+            String baseSec = resolveBaseSectionNumber(pin);
+            String rawSec = pin.sectionNumber() != null ? pin.sectionNumber().trim() : "";
+            // Filter out any pin where section number is blank - NEVER print (Section )
+            if (baseSec.isBlank() && rawSec.isBlank()) {
+                continue;
             }
-            verifiedByAct.computeIfAbsent(actTitle, k -> new ArrayList<>()).add(sec);
+            String actTitle = formatActNameForTableCell(pin);
+            String actName = pin.actName() != null ? pin.actName() : actTitle;
+            String rawProvision = !rawSec.isBlank() ? rawSec : baseSec;
+            String prefix = formatProvisionPrefix(actName, rawProvision);
+
+            String secNum = !baseSec.isBlank() ? baseSec : extractBaseSectionNumber(rawSec);
+            if (secNum.isBlank()) {
+                secNum = rawSec.replaceAll("(?i)^(?:sections?|articles?|sec\\.?|art\\.?|section_|sec_|schedule_articles_?)[ _-]*", "").trim();
+            }
+
+            if (!secNum.isBlank() && !secNum.equalsIgnoreCase("Section") && !secNum.equalsIgnoreCase("Article")) {
+                String sec = prefix + secNum;
+                verifiedByAct.computeIfAbsent(actTitle, k -> new ArrayList<>()).add(sec);
+            }
         }
 
         List<String> verifiedSummary = new ArrayList<>();
@@ -738,6 +873,7 @@ public class ArgumentMarkdownRenderer {
                 if ((actNorm.contains("niact") || actNorm.contains("negotiableinstruments")) && bundledActsContains(bundledActsNormalized, "negotiableinstruments")) actFound = true;
                 if ((actNorm.contains("cpa") || actNorm.contains("consumerprotection")) && bundledActsContains(bundledActsNormalized, "consumerprotection")) actFound = true;
                 if ((actNorm.contains("limitation")) && bundledActsContains(bundledActsNormalized, "limitation")) actFound = true;
+                if ((actNorm.contains("constitution")) && bundledActsContains(bundledActsNormalized, "constitution")) actFound = true;
                 if ((actNorm.contains("evidence") || actNorm.contains("sakshya") || actNorm.contains("bsa")) && (bundledActsContains(bundledActsNormalized, "sakshya") || bundledActsContains(bundledActsNormalized, "evidence"))) actFound = true;
                 if ((actNorm.contains("contract")) && bundledActsContains(bundledActsNormalized, "contract")) actFound = true;
                 if ((actNorm.contains("arbitration")) && bundledActsContains(bundledActsNormalized, "arbitration")) actFound = true;
@@ -747,7 +883,9 @@ public class ArgumentMarkdownRenderer {
 
             if (!actFound || !secFound) {
                 String displayAct = cleanActDisplayTitle(actRaw);
-                String displaySec = !secNorm.isBlank() ? "Section " + secRaw.replaceAll("(?i)^section[ _-]*", "").trim() : "";
+                String cleanNum = !secNorm.isBlank() ? secRaw.replaceAll("(?i)^(?:sections?|articles?|sec\\.?|art\\.?|section_|sec_)[ _-]*", "").trim() : "";
+                String prefix = formatProvisionPrefix(actRaw, secRaw);
+                String displaySec = !cleanNum.isBlank() ? prefix + cleanNum : "";
                 String item = !displaySec.isBlank() ? displayAct + " (" + displaySec + ")" : displayAct;
                 unbundled.add(item);
             }
@@ -942,6 +1080,12 @@ public class ArgumentMarkdownRenderer {
         if (cleanA.startsWith("the ")) cleanA = cleanA.substring(4).trim();
         if (cleanB.startsWith("the ")) cleanB = cleanB.substring(4).trim();
         if (cleanA.equals(cleanB)) return true;
+
+        String expA = cleanActDisplayTitle(a).toLowerCase();
+        String expB = cleanActDisplayTitle(b).toLowerCase();
+        if (!expA.equals(a) || !expB.equals(b)) {
+            if (isActMatch(expA, expB)) return true;
+        }
 
         // Strip trailing 4-digit years (e.g. 1872, 1908, 1963, 1996, 2013, 2016, 2019, 2023)
         String strippedA = cleanA.replaceAll("\\b(18|19|20)\\d{2}\\b", "").trim().replaceAll("\\s+", " ");
@@ -1138,7 +1282,7 @@ public class ArgumentMarkdownRenderer {
             }
 
             // Pattern B: Section(s) followed by "of / under / in / read with" and Act Name
-            Pattern pSecOfAct = Pattern.compile("(?i)(?:sections?|sec\\.?|articles?|art\\.?)\\s+([0-9a-zA-Z\\(\\),\\s–\\-&/]+?)\\s+(?:of|under|in|read\\s+with|r/w)\\s+(?:the\\s+)?([A-Za-z0-9\\s,–\\-'\"]+?(?:Act|Code|Sanhita|Adhiniyam|Rules)(?:,\\s*\\d{4})?)");
+        Pattern pSecOfAct = Pattern.compile("(?i)(?:sections?|sec\\.?|articles?|art\\.?)\\s+(" + SECTION_LIST_TOKEN_PATTERN + ")\\s+(?:of|under|in|read\\s+with|r/w)\\s+(?:the\\s+)?((?:\\b" + INDIAN_STATUTORY_ACRONYMS + "\\b)|(?:(?:Constitution\\s+of\\s+India|Code\\s+of\\s+Criminal\\s+Procedure|Code\\s+of\\s+Civil\\s+Procedure|[A-Za-z0-9\\s,–\\-'\"]+?(?:Act|Code|Sanhita|Adhiniyam|Rules|Constitution))(?:,\\s*\\d{4})?))");
             Matcher mSecOf = pSecOfAct.matcher(seg);
             boolean foundSecOf = false;
             while (mSecOf.find()) {
@@ -1150,21 +1294,21 @@ public class ArgumentMarkdownRenderer {
             if (foundSecOf) continue;
 
             // Pattern C: Section followed by Act acronym / short name
-            Pattern pSecAcr = Pattern.compile("(?:(?i)sections?|sec\\.?)\\s+([0-9a-zA-Z]+(?:\\([0-9a-zA-Z]+\\))*)\\s+((?-i:[A-Z]{2,6}|[A-Z][a-z]?[A-Z]{1,4})|(?i:[A-Za-z0-9\\s,–\\-'\"]+?\\s+(?:Act|Code|Rules|Sanhita|Adhiniyam)))");
+            Pattern pSecAcr = Pattern.compile("(?:(?i)sections?|sec\\.?|articles?|art\\.?)\\s+(" + SECTION_LIST_TOKEN_PATTERN + ")\\s+(?!(?i:of|under|in|read|the)\\b)((?:\\b" + INDIAN_STATUTORY_ACRONYMS + "\\b)|(?-i:[A-Z]{2,6}|[A-Z][a-z]?[A-Z]{1,4})|(?i:[A-Za-z0-9\\s,\\u2013\\-'\"]+?\\s+(?:Act|Code|Rules|Sanhita|Adhiniyam)))");
             Matcher mAcr = pSecAcr.matcher(seg);
             boolean foundAcr = false;
             while (mAcr.find()) {
                 String actPart = mAcr.group(2).trim();
-                String baseSec = extractBaseSectionNumber(mAcr.group(1));
+                String secPart = mAcr.group(1).trim();
                 if (!isStopWord(actPart)) {
                     foundAcr = true;
-                    out.add(new ActSectionRef(actPart, baseSec));
+                    extractBaseSections(secPart).forEach(sec -> out.add(new ActSectionRef(actPart, sec)));
                 }
             }
             if (foundAcr) continue;
 
             // Pattern D: Bare sections e.g. "Section 7", "Sections 34(1), 35(1) and 100"
-            Pattern pBare = Pattern.compile("(?i)\\b(?:sections?|sec\\.?)\\s+([0-9a-zA-Z\\(\\),\\s–\\-&/]+?)(?=[.?;!\\n\\r]|$)");
+        Pattern pBare = Pattern.compile("(?i)\\b(?:sections?|sec\\.?|articles?|art\\.?)\\s+([0-9a-zA-Z\\(\\),\\s?\\-&/]+?)(?=[.?;!\\n\\r]|$)");
             Matcher mBare = pBare.matcher(seg);
             while (mBare.find()) {
                 String secPart = mBare.group(1).trim();
@@ -1193,7 +1337,7 @@ public class ArgumentMarkdownRenderer {
         if (text == null || text.isBlank()) return;
 
         // 1. "Section(s) X of/under Act"
-        Pattern pSecOfAct = Pattern.compile("(?i)(?:sections?|sec\\.?|articles?|art\\.?)\\s+([0-9a-zA-Z\\(\\),\\s–\\-&/]+?)\\s+(?:of|under|in|read\\s+with|r/w)\\s+(?:the\\s+)?([A-Za-z0-9\\s,–\\-'\"]+?(?:Act|Code|Sanhita|Adhiniyam|Rules)(?:,\\s*\\d{4})?)");
+        Pattern pSecOfAct = Pattern.compile("(?i)(?:sections?|sec\\.?|articles?|art\\.?)\\s+(" + SECTION_LIST_TOKEN_PATTERN + ")\\s+(?:of|under|in|read\\s+with|r/w)\\s+(?:the\\s+)?((?:\\b" + INDIAN_STATUTORY_ACRONYMS + "\\b)|(?:(?:Constitution\\s+of\\s+India|Code\\s+of\\s+Criminal\\s+Procedure|Code\\s+of\\s+Civil\\s+Procedure|[A-Za-z0-9\\s,–\\-'\"]+?(?:Act|Code|Sanhita|Adhiniyam|Rules|Constitution))(?:,\\s*\\d{4})?))");
         Matcher mSecOf = pSecOfAct.matcher(text);
         while (mSecOf.find()) {
             String secPart = mSecOf.group(1).trim();
@@ -1211,13 +1355,13 @@ public class ArgumentMarkdownRenderer {
         }
 
         // 3. Section acronym e.g. "Section 34(2) CPA", "Section 7 IBC"
-        Pattern pSecAcr = Pattern.compile("(?:(?i)sections?|sec\\.?)\\s+([0-9a-zA-Z]+(?:\\([0-9a-zA-Z]+\\))*)\\s+((?-i:[A-Z]{2,6}|[A-Z][a-z]?[A-Z]{1,4})|(?i:[A-Za-z0-9\\s,–\\-'\"]+?\\s+(?:Act|Code|Rules|Sanhita|Adhiniyam)))");
+            Pattern pSecAcr = Pattern.compile("(?:(?i)sections?|sec\\.?|articles?|art\\.?)\\s+(" + SECTION_LIST_TOKEN_PATTERN + ")\\s+(?!(?i:of|under|in|read|the)\\b)((?:\\b" + INDIAN_STATUTORY_ACRONYMS + "\\b)|(?-i:[A-Z]{2,6}|[A-Z][a-z]?[A-Z]{1,4})|(?i:[A-Za-z0-9\\s,\\u2013\\-'\"]+?\\s+(?:Act|Code|Rules|Sanhita|Adhiniyam)))");
         Matcher mAcr = pSecAcr.matcher(text);
         while (mAcr.find()) {
             String actPart = mAcr.group(2).trim();
-            String baseSec = extractBaseSectionNumber(mAcr.group(1));
+            String secPart = mAcr.group(1).trim();
             if (!isStopWord(actPart)) {
-                out.add(new ActSectionRef(actPart, baseSec));
+                extractBaseSections(secPart).forEach(sec -> out.add(new ActSectionRef(actPart, sec)));
             }
         }
 
@@ -1228,7 +1372,7 @@ public class ArgumentMarkdownRenderer {
         }
 
         // 5. Bare sections e.g. "Section 7", "Section 2(7)", "Section 34"
-        Pattern pBareSec = Pattern.compile("(?i)\\b(?:sections?|sec\\.?)\\s+([0-9a-zA-Z]+(?:\\([0-9a-zA-Z]+\\))*)");
+        Pattern pBareSec = Pattern.compile("(?i)\\b(?:sections?|sec\\.?|articles?|art\\.?)\\s+([0-9a-zA-Z]+(?:\\([0-9a-zA-Z]+\\))*)");
         Matcher mBareSec = pBareSec.matcher(text);
         while (mBareSec.find()) {
             String base = extractBaseSectionNumber(mBareSec.group(1));
@@ -1236,6 +1380,13 @@ public class ArgumentMarkdownRenderer {
                 out.add(new ActSectionRef("", base));
             }
         }
+
+        // Remove ghost bare section references if that section number was explicitly attributed to an Act
+        Set<String> claimedSections = out.stream()
+                .filter(r -> !r.actKey().isBlank())
+                .map(ActSectionRef::sectionNumber)
+                .collect(Collectors.toSet());
+        out.removeIf(r -> r.actKey().isBlank() && claimedSections.contains(r.sectionNumber()));
     }
 
     private static List<String> extractBaseSections(String secPart) {
@@ -1265,7 +1416,7 @@ public class ArgumentMarkdownRenderer {
             }
 
             // 2. Section / Sections / Sec / Sec. phrases e.g. "Section 34", "Sections 34(1), 35(1) and 100", "Sections 2(17), 2(42), 2(11) & 100"
-            Matcher secPhraseMatcher = Pattern.compile("(?i)\\b(?:sections?|sec\\.?)\\s+([0-9a-zA-Z\\(\\),\\s–\\-&/]+?)(?=[.?;!\\n\\r]|\\b(?:of|under|in|read|r/w|with|the|act)\\b|$)").matcher(text);
+            Matcher secPhraseMatcher = Pattern.compile("(?i)\\b(?:sections?|sec\\.?|articles?|art\\.?)\\s+([0-9a-zA-Z\\(\\),\\s–\\-&/]+?)(?=[.?;!\\n\\r]|\\b(?:of|under|in|read|r/w|with|the|act)\\b|$)").matcher(text);
             while (secPhraseMatcher.find()) {
                 String phrase = secPhraseMatcher.group(1);
                 String[] tokens = phrase.split(",|\\band\\b|&|\\bor\\b|/");
@@ -1279,7 +1430,7 @@ public class ArgumentMarkdownRenderer {
             }
 
             // 3. Universal single section matcher
-            Matcher singleSecMatcher = Pattern.compile("(?i)\\bsections?\\s+(\\d+[A-Za-z]?)").matcher(text);
+            Matcher singleSecMatcher = Pattern.compile("(?i)\\b(?:sections?|articles?)\\s+(\\d+[A-Za-z]?)").matcher(text);
             while (singleSecMatcher.find()) {
                 cited.add(singleSecMatcher.group(1));
             }
@@ -1350,10 +1501,10 @@ public class ArgumentMarkdownRenderer {
     public static String extractBaseSectionNumber(String rawSec) {
         if (rawSec == null || rawSec.isBlank()) return "";
         String s = rawSec.trim();
-        Matcher m = Pattern.compile("(?i)(?:section[ _-]*)?(\\d+[A-Za-z]?)").matcher(s);
+        Matcher m = Pattern.compile("(?i)(?:(?:sections?|articles?|sec\\.?|art\\.?)[ _-]*)?(\\d+[A-Za-z]?)").matcher(s);
         if (m.find()) {
             return m.group(1);
         }
-        return s.replaceAll("(?i)section[ _-]*", "").trim();
+        return s.replaceAll("(?i)(?:sections?|articles?|sec\\.?|art\\.?)[ _-]*", "").trim();
     }
 }
