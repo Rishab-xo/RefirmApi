@@ -40,7 +40,11 @@ public record PrecedentIndexRecord(
         String r2ObjectKey,
         String r2Url,
         String parserVersion,
-        int citedByCount
+        int citedByCount,
+        Integer benchCount,
+        int hcCitedByCount,
+        String goodLawStatus,
+        String overruledByAuthorityId
 ) {
     public PrecedentIndexRecord {
         authorityId = authorityId != null ? authorityId : "";
@@ -70,6 +74,48 @@ public record PrecedentIndexRecord(
         r2Url = r2Url != null ? r2Url : "";
         parserVersion = (parserVersion != null && !parserVersion.isBlank()) ? parserVersion : "sc-v1.0";
         citedByCount = Math.max(citedByCount, 0);
+        hcCitedByCount = Math.max(hcCitedByCount, 0);
+        goodLawStatus = (goodLawStatus != null && !goodLawStatus.isBlank()) ? goodLawStatus : "GOOD_LAW";
+    }
+
+    public PrecedentIndexRecord(
+            String authorityId,
+            String canonicalDedupKey,
+            String parquetDocId,
+            String parquetShard,
+            String enrichmentStatus,
+            String caseTitle,
+            String courtCode,
+            String courtName,
+            int courtTierWeight,
+            String judgmentDate,
+            int decisionYear,
+            String primaryCitation,
+            List<String> equivalentCitations,
+            LegalDomain primaryDomain,
+            List<String> secondaryDomains,
+            List<String> actSectionTuples,
+            List<String> topicSlugs,
+            List<String> issueTags,
+            String supportingPosture,
+            String disposalNature,
+            String twoLineRatio,
+            List<String> legalPropositions,
+            List<String> triggerKeywords,
+            IracBrief iracBrief,
+            boolean hasFullText,
+            String r2ObjectKey,
+            String r2Url,
+            String parserVersion,
+            int citedByCount
+    ) {
+        this(authorityId, canonicalDedupKey, parquetDocId, parquetShard, enrichmentStatus,
+             caseTitle, courtCode, courtName, courtTierWeight, judgmentDate, decisionYear,
+             primaryCitation, equivalentCitations, primaryDomain, secondaryDomains,
+             actSectionTuples, topicSlugs, issueTags, supportingPosture, disposalNature,
+             twoLineRatio, legalPropositions, triggerKeywords, iracBrief,
+             hasFullText, r2ObjectKey, r2Url, parserVersion, citedByCount,
+             null, 0, "GOOD_LAW", null);
     }
 
     public PrecedentIndexRecord(

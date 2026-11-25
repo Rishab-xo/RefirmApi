@@ -1,5 +1,7 @@
 package com.app.refirm.inspector.dto;
 
+import com.app.refirm.inspector.search.RankingScoreBreakdown;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -42,8 +44,35 @@ public final class InspectorDTOs {
             boolean savedToMatter,
             Integer citedByCount,
             List<String> actSectionTuples,
-            Integer decisionYear
+            Integer decisionYear,
+            String goodLawStatus,
+            String overruledByAuthorityId,
+            RankingScoreBreakdown scoreBreakdown
     ) {
+        public JudgmentAuthorityCard(
+                String authorityId,
+                String caseTitle,
+                String courtName,
+                String judgmentDate,
+                String primaryCitation,
+                List<String> equivalentCitations,
+                String sourceType,
+                UUID sourceDocumentId,
+                String snippetInDraft,
+                Integer paragraphNumberInDraft,
+                String summary,
+                List<String> keyPropositions,
+                boolean savedToMatter,
+                Integer citedByCount,
+                List<String> actSectionTuples,
+                Integer decisionYear
+        ) {
+            this(authorityId, caseTitle, courtName, judgmentDate, primaryCitation, equivalentCitations,
+                    sourceType, sourceDocumentId, snippetInDraft, paragraphNumberInDraft, summary,
+                    keyPropositions, savedToMatter, citedByCount, actSectionTuples, decisionYear,
+                    "GOOD_LAW", null, null);
+        }
+
         public JudgmentAuthorityCard(
                 String authorityId,
                 String caseTitle,
@@ -61,7 +90,8 @@ public final class InspectorDTOs {
         ) {
             this(authorityId, caseTitle, courtName, judgmentDate, primaryCitation, equivalentCitations,
                     sourceType, sourceDocumentId, snippetInDraft, paragraphNumberInDraft, summary,
-                    keyPropositions, savedToMatter, 0, Collections.emptyList(), 0);
+                    keyPropositions, savedToMatter, 0, Collections.emptyList(), 0,
+                    "GOOD_LAW", null, null);
         }
 
         public JudgmentAuthorityCard {
@@ -70,6 +100,7 @@ public final class InspectorDTOs {
             actSectionTuples = actSectionTuples != null ? actSectionTuples : Collections.emptyList();
             citedByCount = citedByCount != null ? citedByCount : 0;
             decisionYear = decisionYear != null ? decisionYear : 0;
+            goodLawStatus = (goodLawStatus != null && !goodLawStatus.isBlank()) ? goodLawStatus : "GOOD_LAW";
         }
     }
 

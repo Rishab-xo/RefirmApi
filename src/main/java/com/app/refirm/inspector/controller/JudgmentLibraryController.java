@@ -57,7 +57,7 @@ public class JudgmentLibraryController {
 
     /**
      * GET /judgments/search:
-     * Parses statutory section references, expands into twin tuples, and runs additive SQL search.
+     * Parses statutory section references, expands into twin tuples, and runs 2-stage hybrid retrieval & legal reranking.
      */
     @GetMapping({"/judgments/search", "/api/judgments/search", "/api/v1.0/judgments/search"})
     public ResponseEntity<JudgmentSearchResponse> searchJudgments(
@@ -66,9 +66,10 @@ public class JudgmentLibraryController {
             @RequestParam(required = false) String court,
             @RequestParam(required = false) String topic,
             @RequestParam(required = false) String issue,
-            @RequestParam(defaultValue = "20") int limit
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(defaultValue = "false") boolean debug
     ) {
-        return ResponseEntity.ok(judgmentLibraryService.searchJudgments(q, domain, court, topic, issue, limit));
+        return ResponseEntity.ok(judgmentLibraryService.searchJudgments(q, domain, court, topic, issue, limit, debug));
     }
 
     /**

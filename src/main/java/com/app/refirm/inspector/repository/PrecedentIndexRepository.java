@@ -652,6 +652,28 @@ public class PrecedentIndexRepository {
             citedByCount = rs.getInt("cited_by_count");
         } catch (SQLException ignored) {}
 
+        Integer benchCount = null;
+        try {
+            int b = rs.getInt("bench_count");
+            if (!rs.wasNull()) benchCount = b;
+        } catch (SQLException ignored) {}
+
+        int hcCitedByCount = 0;
+        try {
+            hcCitedByCount = rs.getInt("hc_cited_by_count");
+        } catch (SQLException ignored) {}
+
+        String goodLawStatus = "GOOD_LAW";
+        try {
+            String gl = rs.getString("good_law_status");
+            if (gl != null && !gl.isBlank()) goodLawStatus = gl;
+        } catch (SQLException ignored) {}
+
+        String overruledByAuthorityId = null;
+        try {
+            overruledByAuthorityId = rs.getString("overruled_by_authority_id");
+        } catch (SQLException ignored) {}
+
         return new PrecedentIndexRecord(
                 authorityId,
                 canonicalDedupKey,
@@ -681,8 +703,16 @@ public class PrecedentIndexRepository {
                 r2ObjectKey,
                 r2Url,
                 parserVersion,
-                citedByCount
+                citedByCount,
+                benchCount,
+                hcCitedByCount,
+                goodLawStatus,
+                overruledByAuthorityId
         );
+    }
+
+    public RowMapper<PrecedentIndexRecord> getRowMapper() {
+        return this.rowMapper;
     }
 
     private List<String> extractArray(ResultSet rs, String column) throws SQLException {

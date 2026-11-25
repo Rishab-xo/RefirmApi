@@ -6,6 +6,8 @@ import com.app.refirm.inspector.domain.PrecedentSearchCriteria;
 import com.app.refirm.inspector.dto.InspectorDTOs.JudgmentAuthorityCard;
 import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.*;
 import com.app.refirm.inspector.repository.PrecedentIndexRepository;
+import com.app.refirm.inspector.search.PrecedentHybridSearchService;
+import com.app.refirm.inspector.search.RankingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import java.util.regex.Pattern;
 
 /**
  * Service powering the Standalone Judgments Library (Wireframe / UI:
- * Topics directory, live NARROW BY ISSUE counts, statutory Pari Materia banners, and hybrid search).
+ * Topics directory, live NARROW BY ISSUE counts, statutory Pari Materia banners, and 2-stage hybrid search).
  */
 @Service
 public class JudgmentLibraryService {
@@ -34,18 +36,21 @@ public class JudgmentLibraryService {
     private final PrecedentIndexRepository precedentIndexRepository;
     private final CorpusPrecedentRegistryService corpusRegistry;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
+    private final PrecedentHybridSearchService precedentHybridSearchService;
 
     @Autowired
     public JudgmentLibraryService(
             PariMateriaCrosswalkService crosswalkService,
             @Autowired(required = false) PrecedentIndexRepository precedentIndexRepository,
             @Autowired(required = false) CorpusPrecedentRegistryService corpusRegistry,
-            @Autowired(required = false) NamedParameterJdbcTemplate namedJdbcTemplate
+            @Autowired(required = false) NamedParameterJdbcTemplate namedJdbcTemplate,
+            @Autowired(required = false) PrecedentHybridSearchService precedentHybridSearchService
     ) {
         this.crosswalkService = crosswalkService;
         this.precedentIndexRepository = precedentIndexRepository;
         this.corpusRegistry = corpusRegistry;
         this.namedJdbcTemplate = namedJdbcTemplate;
+        this.precedentHybridSearchService = precedentHybridSearchService;
     }
 
     /**
@@ -138,7 +143,15 @@ public class JudgmentLibraryService {
         }
 
         List<JudgmentAuthorityCard> cards = new ArrayList<>();
-        if (precedentIndexRepository != null) {
+        if (precedentHybridSearchService != null) {
+            try {
+                cards = precedentHybridSearchService.search(q, null, court, topicSlug, issue, limit > 0 ? limit : 20, RankingProfile.SEARCH_LIBRARY, false);
+            } catch (Exception e) {
+                log.warn("Hybrid search notice in getTopicDetail: {}", e.getMessage());
+            }
+        }
+
+        if (cards.isEmpty() && precedentIndexRepository != null) {
             try {
                 PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(
                         List.of(),
@@ -187,7 +200,7 @@ public class JudgmentLibraryService {
 
     /**
      * GET /api/judgments/search:
-     * Parses statutory section references in q, expands them into twin tuples, and runs additive SQL search.
+     * 2-Stage Retrieval & Legal Reranking search over precedents.
      */
     @Transactional(readOnly = true)
     public JudgmentSearchResponse searchJudgments(
@@ -198,33 +211,60 @@ public class JudgmentLibraryService {
             String issue,
             int limit
     ) {
-        List<String> extractedTuples = new ArrayList<>();
-        if (q != null && !q.isBlank()) {
-            Matcher m = SECTION_PATTERN.matcher(q);
-            while (m.find()) {
-                String sec = m.group(1);
-                int start = Math.max(0, m.start() - 30);
-                int end = Math.min(q.length(), m.end() + 30);
-                String snippet = q.substring(start, end);
+        return searchJudgments(q, domain, court, topic, issue, limit, false);
+    }
 
-                String act = crosswalkService.normalizeActCode(snippet);
-                if (act.isEmpty() && domain != null && !domain.isBlank()) {
-                    act = crosswalkService.normalizeActCode(domain);
-                }
-                if (!act.isEmpty()) {
-                    String tuple = crosswalkService.toCanonicalTuple(act, sec);
-                    if (!tuple.isEmpty()) {
-                        extractedTuples.add(tuple);
-                    }
-                }
+    /**
+     * GET /api/judgments/search?debug=true:
+     * Returns ranked precedents with transparent scoring breakdown.
+     */
+    @Transactional(readOnly = true)
+    public JudgmentSearchResponse searchJudgments(
+            String q,
+            String domain,
+            String court,
+            String topic,
+            String issue,
+            int limit,
+            boolean debug
+    ) {
+        List<JudgmentAuthorityCard> results = new ArrayList<>();
+
+        if (precedentHybridSearchService != null) {
+            try {
+                results = precedentHybridSearchService.search(q, domain, court, topic, issue, limit, RankingProfile.SEARCH_LIBRARY, debug);
+            } catch (Exception e) {
+                log.warn("Hybrid search notice: {}", e.getMessage());
             }
         }
 
-        PariMateriaCrosswalkService.ExpandedTupleQuery expanded = crosswalkService.expandQueryTuples(extractedTuples);
-
-        List<JudgmentAuthorityCard> results = new ArrayList<>();
-        if (precedentIndexRepository != null) {
+        // Fallback to additive SQL search if hybrid search yielded no results
+        if (results.isEmpty() && precedentIndexRepository != null) {
             try {
+                List<String> extractedTuples = new ArrayList<>();
+                if (q != null && !q.isBlank()) {
+                    Matcher m = SECTION_PATTERN.matcher(q);
+                    while (m.find()) {
+                        String sec = m.group(1);
+                        int start = Math.max(0, m.start() - 30);
+                        int end = Math.min(q.length(), m.end() + 30);
+                        String snippet = q.substring(start, end);
+
+                        String act = crosswalkService.normalizeActCode(snippet);
+                        if (act.isEmpty() && domain != null && !domain.isBlank()) {
+                            act = crosswalkService.normalizeActCode(domain);
+                        }
+                        if (!act.isEmpty()) {
+                            String tuple = crosswalkService.toCanonicalTuple(act, sec);
+                            if (!tuple.isEmpty()) {
+                                extractedTuples.add(tuple);
+                            }
+                        }
+                    }
+                }
+
+                PariMateriaCrosswalkService.ExpandedTupleQuery expanded = crosswalkService.expandQueryTuples(extractedTuples);
+
                 PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(
                         expanded.allExpandedTuples(),
                         q,
@@ -239,7 +279,7 @@ public class JudgmentLibraryService {
                     results.add(mapRecordToCard(rec));
                 }
             } catch (Exception e) {
-                log.warn("Notice executing judgment search: {}", e.getMessage());
+                log.warn("Notice executing additive SQL fallback: {}", e.getMessage());
             }
         }
 
