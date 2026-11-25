@@ -53,5 +53,61 @@ public final class JudgmentLibraryDTOs {
             results = results != null ? results : Collections.emptyList();
         }
     }
+
+    public record RelatedJudgmentItem(
+            String authorityId,
+            String caseTitle,
+            Integer decisionYear,
+            String courtCode,
+            String primaryCitation,
+            Integer benchCount,
+            boolean isConstitutionBench,
+            int citedByCount,
+            String goodLawStatus,
+            String overruledByAuthorityId,
+            String treatmentType,
+            String treatmentSnippet,
+            String substantiveReason,
+            String paraRef,
+            String anchorQuote,
+            String twoLineRatio,
+            List<String> sharedTuples,
+            Double similarityScore
+    ) {
+        public RelatedJudgmentItem {
+            sharedTuples = sharedTuples != null ? List.copyOf(sharedTuples) : Collections.emptyList();
+        }
+    }
+
+    public record RelatedJudgmentsResponse(
+            String authorityId,
+            int citedByCount,
+            int reliesOnCount,
+            int negativeTreatmentCount,
+            List<RelatedJudgmentItem> citedBy,
+            List<RelatedJudgmentItem> reliesOn,
+            List<RelatedJudgmentItem> similarCases
+    ) {
+        public RelatedJudgmentsResponse {
+            citedBy = citedBy != null ? List.copyOf(citedBy) : Collections.emptyList();
+            reliesOn = reliesOn != null ? List.copyOf(reliesOn) : Collections.emptyList();
+            similarCases = similarCases != null ? List.copyOf(similarCases) : Collections.emptyList();
+        }
+    }
+
+    public record RelatedCitationPageResponse(
+            String authorityId,
+            String direction,
+            String treatment,
+            int totalCount,
+            int offset,
+            int limit,
+            boolean hasMore,
+            List<RelatedJudgmentItem> items
+    ) {
+        public RelatedCitationPageResponse {
+            items = items != null ? List.copyOf(items) : Collections.emptyList();
+        }
+    }
 }
 

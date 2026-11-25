@@ -2,10 +2,13 @@ package com.app.refirm.inspector.controller;
 
 import com.app.refirm.inspector.dto.InspectorDTOs.InAppJudgmentDrawerResponse;
 import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.JudgmentSearchResponse;
+import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.RelatedCitationPageResponse;
+import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.RelatedJudgmentsResponse;
 import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.TopicDetailResponse;
 import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.TopicSummaryItem;
 import com.app.refirm.inspector.service.AuthorityDrawerService;
 import com.app.refirm.inspector.service.JudgmentLibraryService;
+import com.app.refirm.inspector.service.RelatedJudgmentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +24,24 @@ public class JudgmentLibraryController {
 
     private final JudgmentLibraryService judgmentLibraryService;
     private final AuthorityDrawerService authorityDrawerService;
+    private final RelatedJudgmentsService relatedJudgmentsService;
 
     @Autowired
     public JudgmentLibraryController(
             JudgmentLibraryService judgmentLibraryService,
-            AuthorityDrawerService authorityDrawerService
+            AuthorityDrawerService authorityDrawerService,
+            RelatedJudgmentsService relatedJudgmentsService
     ) {
         this.judgmentLibraryService = judgmentLibraryService;
         this.authorityDrawerService = authorityDrawerService;
+        this.relatedJudgmentsService = relatedJudgmentsService;
+    }
+
+    public JudgmentLibraryController(
+            JudgmentLibraryService judgmentLibraryService,
+            AuthorityDrawerService authorityDrawerService
+    ) {
+        this(judgmentLibraryService, authorityDrawerService, null);
     }
 
     /**
@@ -81,6 +94,43 @@ public class JudgmentLibraryController {
             @PathVariable String authorityId
     ) {
         return ResponseEntity.ok(authorityDrawerService.getCorpusAuthorityDrawer(authorityId));
+    }
+
+    /**
+     * GET /judgments/{authorityId}/related:
+     * Returns true citation counts plus top N rows for Cited By, Relies On, and Anti-Drift Similar Cases.
+     */
+    @GetMapping({
+            "/judgments/{authorityId}/related",
+            "/api/judgments/{authorityId}/related",
+            "/api/v1.0/judgments/{authorityId}/related"
+    })
+    public ResponseEntity<RelatedJudgmentsResponse> getRelatedJudgments(
+            @PathVariable String authorityId,
+            @RequestParam(defaultValue = "15") int limit
+    ) {
+        return ResponseEntity.ok(relatedJudgmentsService.getRelatedJudgments(authorityId, limit));
+    }
+
+    /**
+     * GET /judgments/{authorityId}/related/citations:
+     * Returns paginated and treatment-filtered Cited By or Relies On rows without re-running vector ANN.
+     */
+    @GetMapping({
+            "/judgments/{authorityId}/related/citations",
+            "/api/judgments/{authorityId}/related/citations",
+            "/api/v1.0/judgments/{authorityId}/related/citations"
+    })
+    public ResponseEntity<RelatedCitationPageResponse> getRelatedCitationsPage(
+            @PathVariable String authorityId,
+            @RequestParam(defaultValue = "CITED_BY") String direction,
+            @RequestParam(defaultValue = "ALL") String treatment,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        return ResponseEntity.ok(
+                relatedJudgmentsService.getRelatedCitationsPage(authorityId, direction, treatment, offset, limit)
+        );
     }
 }
 

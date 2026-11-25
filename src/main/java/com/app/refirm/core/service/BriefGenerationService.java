@@ -97,14 +97,14 @@ public class BriefGenerationService {
     public BriefGenerationService(
             @Qualifier("reasoningChatClient") ChatClient chatClient,
             LegalRetrievalService retrievalService) {
-        this(chatClient, retrievalService, "gpt-5.6-terra");
+        this(chatClient, retrievalService, "gpt-6.1-terra");
     }
 
     @org.springframework.beans.factory.annotation.Autowired
     public BriefGenerationService(
             @Qualifier("reasoningChatClient") ChatClient chatClient,
             LegalRetrievalService retrievalService,
-            @org.springframework.beans.factory.annotation.Value("${refirm.ai.models.reasoning:gpt-5.6-terra}") String reasoningModel) {
+            @org.springframework.beans.factory.annotation.Value("${refirm.ai.models.reasoning:gpt-6.1-terra}") String reasoningModel) {
         this.chatClient = chatClient;
         this.retrievalService = retrievalService;
         this.reasoningModel = reasoningModel;

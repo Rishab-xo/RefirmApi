@@ -715,16 +715,29 @@ public class PrecedentIndexRepository {
         return this.rowMapper;
     }
 
-    private List<String> extractArray(ResultSet rs, String column) throws SQLException {
+    /**
+     * Safely decodes a PostgreSQL TEXT[] column into an immutable List&lt;String&gt;, returning an empty list on NULL.
+     */
+    public static List<String> extractTextArray(ResultSet rs, String column) throws SQLException {
         Array arr = rs.getArray(column);
         if (arr == null) {
             return List.of();
         }
         Object obj = arr.getArray();
         if (obj instanceof String[] strings) {
-            return List.of(strings);
+            List<String> cleaned = new ArrayList<>(strings.length);
+            for (String s : strings) {
+                if (s != null) {
+                    cleaned.add(s);
+                }
+            }
+            return List.copyOf(cleaned);
         }
         return List.of();
+    }
+
+    private List<String> extractArray(ResultSet rs, String column) throws SQLException {
+        return extractTextArray(rs, column);
     }
 
     private static String toPgArrayLiteral(List<String> list) {
