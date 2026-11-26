@@ -2,10 +2,17 @@ package com.app.refirm.inspector.search;
 
 import com.app.refirm.inspector.domain.PrecedentIndexRecord;
 import com.app.refirm.inspector.domain.PrecedentSearchCriteria;
+import com.app.refirm.inspector.service.PariMateriaCrosswalkService;
 import com.app.refirm.rules.model.LegalDomain;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.embedding.EmbeddingRequest;
+import org.springframework.ai.embedding.EmbeddingResponse;
+import org.springframework.ai.embedding.Embedding;
 
 import java.util.*;
 
@@ -83,7 +90,8 @@ class PrecedentHybridRankingTest {
         assertEquals(QueryIntent.KNOWN_ITEM, q2.intent());
 
         SanitizedPrecedentQuery q3 = sanitizer.sanitize("Kesavananda Bharati", List.of(), List.of());
-        assertEquals(QueryIntent.KNOWN_ITEM, q3.intent(), "Short proper-noun <= 4 words should be KNOWN_ITEM");
+        assertEquals(QueryIntent.HYBRID_LEGAL, q3.intent(),
+                "Ambiguous short queries without v./citation must stay HYBRID_LEGAL so Vector ANN stays active");
     }
 
     @Test
@@ -123,8 +131,8 @@ class PrecedentHybridRankingTest {
     @DisplayName("RRF k=20 multi-channel agreement outscores single channel rank")
     void testRrfAgreementOutscoresSingleChannel() {
         double k = 20.0;
-        double wTrigram = 0.60;
-        double wBm25 = 1.25;
+        double wTrigram = 1.00;
+        double wBm25 = 1.60;
 
         double rrfCandidateA = (wTrigram * (1.0 / (k + 1))) + (wBm25 * (1.0 / (k + 2)));
         double rrfCandidateB = (wBm25 * (1.0 / (k + 1)));
@@ -367,6 +375,249 @@ class PrecedentHybridRankingTest {
 
         assertTrue(resPet.finalScore() > resResp.finalScore(),
                 "In ARGUMENT_PREP with PETITIONER preferred posture, matching precedent must rank higher than contrary precedent");
+    }
+
+    // =========================================================================
+    // 7. UNIVERSAL LAYER-1 SEARCH & RANKING IMPROVEMENTS (JLIB-SRCH-001/002/003)
+    // =========================================================================
+
+    @Test
+    @DisplayName("Canonical whitespace collapse produces identical SanitizedPrecedentQuery and Embedding LRU cache hit")
+    void testCanonicalWhitespaceCollapseAndEmbeddingCacheKey() throws Exception {
+        SanitizedPrecedentQuery single = sanitizer.sanitize("state of haryiana bhajan lal", List.of(), List.of());
+        SanitizedPrecedentQuery noisy = sanitizer.sanitize("  state   of   haryiana   bhajan   lal  ", List.of(), List.of());
+
+        assertEquals(single, noisy);
+        assertEquals("state of haryiana bhajan lal", noisy.rawQuery());
+        assertEquals("state of haryiana bhajan lal", noisy.sanitizedLexicalQuery());
+
+        EmbeddingModel mockModel = Mockito.mock(EmbeddingModel.class);
+        float[] vec = new float[512];
+        vec[0] = 0.5f;
+        EmbeddingResponse fakeResp = new EmbeddingResponse(List.of(new Embedding(vec, 0)));
+        Mockito.when(mockModel.call(Mockito.any(EmbeddingRequest.class))).thenReturn(fakeResp);
+
+        PrecedentQueryEmbeddingService embService = new PrecedentQueryEmbeddingService(mockModel);
+        String lit1 = embService.embedQueryAsync("state of haryiana bhajan lal").get();
+        String lit2 = embService.embedQueryAsync("  state   of   haryiana    bhajan   lal ").get();
+
+        assertNotNull(lit1);
+        assertEquals(lit1, lit2);
+        Mockito.verify(mockModel, Mockito.times(1)).call(Mockito.any(EmbeddingRequest.class));
+    }
+
+    @Test
+    @DisplayName("'basic structure' routes to HYBRID_LEGAL while 'A.K. Gopalan' triggers direct match floor & overruled bypass")
+    void testShortDoctrineRoutingVsDecoupledDirectKnownItemBypass() {
+        SanitizedPrecedentQuery doctrineQuery = sanitizer.sanitize("basic structure", List.of(), List.of());
+        assertEquals(QueryIntent.HYBRID_LEGAL, doctrineQuery.intent());
+
+        SanitizedPrecedentQuery gopalanQuery = sanitizer.sanitize("A.K. Gopalan", List.of(), List.of());
+        assertEquals(QueryIntent.HYBRID_LEGAL, gopalanQuery.intent());
+
+        PrecedentIndexRecord gopalanRec = createSampleRecord(
+                "ak-gopalan", "A.K. Gopalan v. State of Madras",
+                List.of("CONSTITUTION:21"), "POTENTIALLY_OVERRULED", 15, 180, 1950);
+        CandidateRecallItem item = new CandidateRecallItem(gopalanRec, 0.04, Map.of("BM25", 1));
+        PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(List.of(), "A.K. Gopalan", null, null, null, null, 10);
+
+        List<RankedPrecedent> ranked = rankingService.rankCandidates(List.of(item), gopalanQuery, criteria, RankingProfile.SEARCH_LIBRARY);
+        assertEquals(0.0, ranked.get(0).breakdown().goodLawPenalty(), "Decoupled direct match must bypass overruled penalty");
+        assertTrue(ranked.get(0).breakdown().relevancePts() >= 42.0, "Decoupled direct match must enforce 42.0 floor");
+    }
+
+    @Test
+    @DisplayName("Concept-group coverage gives 1.0 to legacy CRPC:482 and targetsModernEnactment uses rawTuples only")
+    void testConceptGroupCoverageAndUserIntentRecencyGate() {
+        PariMateriaCrosswalkService crosswalk = new PariMateriaCrosswalkService(new ObjectMapper());
+        crosswalk.init();
+
+        // User queries CrPC 482 -> expands to [CRPC:482, BNSS:528]
+        PariMateriaCrosswalkService.ExpandedTupleQuery crpcExpanded = crosswalk.expandQueryTuples(List.of("CRPC:482"));
+        SanitizedPrecedentQuery crpcQuery = sanitizer.sanitize("section 482 crpc quashing fir", List.of("section 482 crpc"), crpcExpanded);
+        assertEquals(List.of("CRPC:482"), crpcQuery.rawTuples());
+        assertEquals(1, crpcQuery.conceptGroups().size());
+        assertTrue(crpcQuery.conceptGroups().get(0).contains("BNSS:528"));
+
+        // Legacy landmark (2017) with CRPC:482 only vs 2025 transitional case with CRPC:482 + BNSS:528
+        PrecedentIndexRecord legacyRec = createFullRecord(
+                "parbatbhai", "Parbatbhai Aahir v. State of Gujarat", "[2017] 10 S.C.R. 12", List.of(),
+                List.of("CRPC:482"), "GOOD_LAW", 12, 9, 2017, "BOTH_SIDES",
+                "Principles for quashing u/s Section482 CrPC.", List.of("Quashing under Section482."));
+        PrecedentIndexRecord transitional2025 = createFullRecord(
+                "transitional-2025", "Recent Transitional Case v. State", "[2025] 1 S.C.R. 100", List.of(),
+                List.of("CRPC:482", "BNSS:528"), "GOOD_LAW", 10, 0, 2025, "BOTH_SIDES",
+                "Section482 CrPC and 528 BNSS discussed.", List.of("Procedural discussion."));
+
+        PrecedentSearchCriteria crpcCriteria = new PrecedentSearchCriteria(crpcExpanded.allExpandedTuples(), "quashing fir", null, null, null, null, 10);
+        List<RankedPrecedent> rankedCrpc = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(legacyRec, 0.08, Map.of("BM25", 10, "TUPLE", 5, "VECTOR", 10)),
+                        new CandidateRecallItem(transitional2025, 0.08, Map.of("BM25", 10, "TUPLE", 5, "VECTOR", 10))
+                ),
+                crpcQuery, crpcCriteria, RankingProfile.SEARCH_LIBRARY
+        );
+
+        RankedPrecedent resLegacy = rankedCrpc.stream().filter(r -> r.record().authorityId().equals("parbatbhai")).findFirst().orElseThrow();
+        RankedPrecedent res2025 = rankedCrpc.stream().filter(r -> r.record().authorityId().equals("transitional-2025")).findFirst().orElseThrow();
+
+        assertEquals(resLegacy.breakdown().statutePts(), res2025.breakdown().statutePts(), 0.01,
+                "Legacy CRPC:482 landmark must get equal 1.0 concept-group coverage as transitional CRPC:482+BNSS:528 case");
+        assertTrue(res2025.breakdown().recencyPts() <= 6.0,
+                "User typed crpc, so modern-act BNSS expansion must NOT raise maxRecency above 6.0");
+
+        // Now user explicitly searches BNSS 528 -> maxRecency MUST unlock up to 10.0
+        PariMateriaCrosswalkService.ExpandedTupleQuery bnssExpanded = crosswalk.expandQueryTuples(List.of("BNSS:528"));
+        SanitizedPrecedentQuery bnssQuery = sanitizer.sanitize("section 528 bnss quashing fir", List.of("section 528 bnss"), bnssExpanded);
+        List<RankedPrecedent> rankedBnss = rankingService.rankCandidates(
+                List.of(new CandidateRecallItem(transitional2025, 0.08, Map.of("TUPLE", 1))),
+                bnssQuery,
+                new PrecedentSearchCriteria(bnssExpanded.allExpandedTuples(), "quashing fir", null, null, null, null, 10),
+                RankingProfile.SEARCH_LIBRARY
+        );
+        assertTrue(rankedBnss.get(0).breakdown().recencyPts() > 6.0,
+                "Explicit bnss query must unlock 10.0 modern-act recency cap");
+    }
+
+    @Test
+    @DisplayName("Ratio-to-max RRF handles browse maxRrf=0 safely, prevents VECTOR:1/statutory BM25:1 hijack, and applies +6.0 tuple-free BM25 bonus")
+    void testRatioToMaxRrfNoHijackAndBm25Bonus() {
+        // 1. Browse mode (maxRrf = 0) -> relevancePts == 0.0 (no NaN)
+        SanitizedPrecedentQuery browseQuery = new SanitizedPrecedentQuery("", null, List.of(), QueryIntent.HYBRID_LEGAL);
+        PrecedentIndexRecord sample = createSampleRecord("b-1", "Some Precedent", List.of(), "GOOD_LAW", 10, 5, 2020);
+        List<RankedPrecedent> browseRanked = rankingService.rankCandidates(
+                List.of(new CandidateRecallItem(sample, 0.0, Map.of())),
+                browseQuery,
+                PrecedentSearchCriteria.ofTopic("bail", null, 10),
+                RankingProfile.SEARCH_LIBRARY
+        );
+        assertEquals(0.0, browseRanked.get(0).breakdown().relevancePts());
+
+        // 2. Statutory query (rawTuples non-empty): lone VECTOR:1 (low rrf) & BM25:1 get NO 42.0 floor and NO +6.0 bonus
+        SanitizedPrecedentQuery statQuery = new SanitizedPrecedentQuery(
+                "section 482 crpc quashing fir",
+                "quashing fir",
+                List.of("CRPC:482", "BNSS:528"),
+                QueryIntent.HYBRID_LEGAL,
+                false, false, null,
+                List.of("CRPC:482"),
+                List.of(Set.of("CRPC:482", "BNSS:528"))
+        );
+        PrecedentIndexRecord punjab = createSampleRecord("punjab-2011", "Punjab State Warehousing v. Durga Ji", List.of("CRPC:482"), "GOOD_LAW", 10, 0, 2011);
+        PrecedentIndexRecord parbatbhai = createSampleRecord("parbatbhai-2017", "Parbatbhai Aahir v. State of Gujarat", List.of("CRPC:482"), "GOOD_LAW", 12, 9, 2017);
+
+        List<RankedPrecedent> statRanked = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(punjab, 0.040, Map.of("VECTOR", 1)),
+                        new CandidateRecallItem(parbatbhai, 0.081, Map.of("BM25", 30, "TUPLE", 32, "VECTOR", 12))
+                ),
+                statQuery,
+                new PrecedentSearchCriteria(List.of("CRPC:482", "BNSS:528"), "quashing fir", null, null, null, null, 10),
+                RankingProfile.SEARCH_LIBRARY
+        );
+        assertEquals("parbatbhai-2017", statRanked.get(0).record().authorityId(), "3-channel landmark must beat lone VECTOR:1 with lower RRF");
+        RankedPrecedent punjabRes = statRanked.stream().filter(r -> r.record().authorityId().equals("punjab-2011")).findFirst().orElseThrow();
+        assertTrue(punjabRes.breakdown().relevancePts() < 25.0, "Lone VECTOR:1 must stay proportional (~22.2), never floored to 42.0");
+
+        // 3. Tuple-free fact-pattern query: Arnesh (BM25:1) gets +6.0 bonus and beats Kulwant (BM25:5 + Vector:3)
+        SanitizedPrecedentQuery factQuery = sanitizer.sanitize(
+                "police arresting husband in dowry harassment case without notice punishment under 7 years", List.of(), List.of());
+        PrecedentIndexRecord arnesh = createSampleRecord("arnesh", "Arnesh Kumar v. State of Bihar", List.of("CRPC:41"), "GOOD_LAW", 10, 27, 2014);
+        PrecedentIndexRecord kulwant = createSampleRecord("kulwant", "Kulwant Singh v. State of Punjab", List.of("IPC:304B"), "GOOD_LAW", 8, 0, 2013);
+        List<RankedPrecedent> factRanked = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(arnesh, 0.0762, Map.of("BM25", 1)),
+                        new CandidateRecallItem(kulwant, 0.1010, Map.of("BM25", 5, "VECTOR", 3))
+                ),
+                factQuery,
+                new PrecedentSearchCriteria(List.of(), factQuery.sanitizedLexicalQuery(), null, null, null, null, 10),
+                RankingProfile.SEARCH_LIBRARY
+        );
+        assertEquals("arnesh", factRanked.get(0).record().authorityId(), "BM25 #1 +6.0 bonus must keep Arnesh #1 on fact-pattern query");
+    }
+
+    @Test
+    @DisplayName("Space-tolerant headnote regex matches glued 'Section482' and distinctive-token extraction enforces guards")
+    void testGluedHeadnoteRegexAndDistinctiveTokenGuards() {
+        SanitizedPrecedentQuery q = sanitizer.sanitize("section 482 crpc quashing fir", List.of("section 482 crpc"), List.of("CRPC:482"));
+        List<String> sharedTuples = List.of("CRPC:482", "IPC:406", "IPC:420", "IPC:468", "IPC:471", "CONSTITUTION:21");
+        PrecedentIndexRecord gluedRec = createFullRecord(
+                "neeharika-glued", "Neeharika Infrastructure v. State of Maharashtra", "[2021] 1 S.C.R. 1", List.of(),
+                sharedTuples, "GOOD_LAW", 12, 8, 2021, "BOTH_SIDES",
+                "Interim stay pending quashing petition under Section482 Cr.P.C.",
+                List.of("High Court must exercise restraint."));
+        PrecedentIndexRecord noHeadnoteRec = createFullRecord(
+                "other-rec", "Other Case v. State", "[2021] 1 S.C.R. 2", List.of(),
+                sharedTuples, "GOOD_LAW", 12, 8, 2021, "BOTH_SIDES",
+                "Inherent powers exercised in criminal revision.",
+                List.of("Facts did not justify stay."));
+
+        List<RankedPrecedent> ranked = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(noHeadnoteRec, 0.05, Map.of("TUPLE", 1)),
+                        new CandidateRecallItem(gluedRec, 0.05, Map.of("TUPLE", 1))
+                ),
+                q,
+                new PrecedentSearchCriteria(List.of("CRPC:482"), "quashing fir", null, null, null, null, 10),
+                RankingProfile.SEARCH_LIBRARY
+        );
+        assertEquals("neeharika-glued", ranked.get(0).record().authorityId(), "Glued 'Section482' must earn headnote +6.0 prominence");
+        assertTrue(ranked.get(0).breakdown().statutePts() > ranked.get(1).breakdown().statutePts());
+
+        // Distinctive token extraction guards
+        SanitizedPrecedentQuery insuranceQuery = sanitizer.sanitize("life insurance state nominee policy", List.of(), List.of());
+        List<String> insuranceTokens = PrecedentQuerySanitizer.extractDistinctiveTitleTokens(insuranceQuery);
+        assertFalse(insuranceTokens.contains("life"), "< 5 chars skipped");
+        assertFalse(insuranceTokens.contains("insurance"), "institutional noun skipped");
+        assertFalse(insuranceTokens.contains("state"), "institutional noun skipped");
+        assertTrue(insuranceTokens.contains("nominee"));
+        assertTrue(insuranceTokens.contains("policy"));
+
+        // Long query (>7 words) returns empty distinctive tokens
+        SanitizedPrecedentQuery longQuery = sanitizer.sanitize(
+                "can a nominee in life insurance policy claim money over legal heirs", List.of(), List.of());
+        assertTrue(PrecedentQuerySanitizer.extractDistinctiveTitleTokens(longQuery).isEmpty(),
+                "Queries > 7 words must skip per-token title recall");
+
+        // Formal citation returns empty distinctive tokens
+        SanitizedPrecedentQuery formal = sanitizer.sanitize("(2014) 8 SCC 273", List.of(), List.of());
+        assertTrue(PrecedentQuerySanitizer.extractDistinctiveTitleTokens(formal).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Word-boundary guard in isDirectKnownItemMatch matches 'A.K. Gopalan' without leaking to 'Rajagopalan'")
+    void testDirectKnownItemWordBoundaryExcludesSubstringCollisions() {
+        SanitizedPrecedentQuery gopalanQuery = sanitizer.sanitize("A.K. Gopalan", List.of(), List.of());
+        PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(List.of(), "A.K. Gopalan", null, null, null, null, 10);
+
+        PrecedentIndexRecord gopalanRec = createSampleRecord(
+                "ak-gopalan-1950", "A.K. GOPALAN versus THE STATE OF MADRAS.",
+                List.of("CONSTITUTION:21"), "POTENTIALLY_OVERRULED", 15, 130, 1950);
+        PrecedentIndexRecord rajagopalanRec = createSampleRecord(
+                "rajagopalan-overruled", "P.S. RAJAGOPALAN versus STATE",
+                List.of("CONSTITUTION:14"), "POTENTIALLY_OVERRULED", 12, 14, 1963);
+        PrecedentIndexRecord rajagopalanGoodRec = createSampleRecord(
+                "rajagopalan-good", "M.K. RAJAGOPALAN versus DR. PERIASAMY PALANI GOUNDER",
+                List.of("IBC:31"), "GOOD_LAW", 10, 1, 2023);
+
+        List<RankedPrecedent> ranked = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(gopalanRec, 0.02, Map.of("TRIGRAM", 2)),
+                        new CandidateRecallItem(rajagopalanRec, 0.08, Map.of("TRIGRAM", 1)),
+                        new CandidateRecallItem(rajagopalanGoodRec, 0.03, Map.of("VECTOR", 8))
+                ),
+                gopalanQuery, criteria, RankingProfile.SEARCH_LIBRARY
+        );
+
+        RankedPrecedent resGopalan = ranked.stream().filter(r -> r.record().authorityId().equals("ak-gopalan-1950")).findFirst().orElseThrow();
+        RankedPrecedent resRajaOverruled = ranked.stream().filter(r -> r.record().authorityId().equals("rajagopalan-overruled")).findFirst().orElseThrow();
+        RankedPrecedent resRajaGood = ranked.stream().filter(r -> r.record().authorityId().equals("rajagopalan-good")).findFirst().orElseThrow();
+
+        assertEquals(42.0, resGopalan.breakdown().relevancePts(), 0.01, "True A.K. Gopalan match must receive 42.0 floor");
+        assertEquals(0.0, resGopalan.breakdown().goodLawPenalty(), "True A.K. Gopalan match must bypass -35.0 penalty");
+        assertEquals(-35.0, resRajaOverruled.breakdown().goodLawPenalty(), "Rajagopalan must NOT bypass -35.0 overruled penalty");
+        assertTrue(resRajaGood.breakdown().relevancePts() < 25.0, "Rajagopalan must NOT receive 42.0 direct-match floor");
+        assertEquals("ak-gopalan-1950", ranked.get(0).record().authorityId());
     }
 
     // =========================================================================

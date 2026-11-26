@@ -77,7 +77,7 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
     ) {
         // Individual channel result lists (ordered by channel relevance)
         List<String> trigramIds = recallChannel1Trigram(query, criteria);
-        List<String> tupleIds = recallChannel2Tuples(criteria);
+        List<String> tupleIds = recallChannel2Tuples(query, criteria);
         List<String> bm25Ids = recallChannel3BM25(query, criteria);
         List<String> vectorIds = recallChannel4Vector(query, criteria, embeddingFuture);
 
@@ -97,16 +97,16 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
                 wVector = 0.5;
             }
             case HYBRID_LEGAL -> {
-                wBm25 = 1.25;
-                wVector = 1.10;
-                wTuple = 1.15;
-                wTrigram = 0.60;
+                wBm25 = 1.60;
+                wTuple = 1.20;
+                wTrigram = 1.00;
+                wVector = 0.85;
             }
             default -> {
-                wBm25 = 1.0;
-                wVector = 1.0;
-                wTuple = 1.0;
-                wTrigram = 1.0;
+                wBm25 = 1.60;
+                wTuple = 1.20;
+                wTrigram = 1.00;
+                wVector = 0.85;
             }
         }
 
@@ -191,7 +191,8 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
             }
         }
 
-        String sql = """
+        String canonicalRaw = query.rawQuery().trim().replaceAll("\\s+", " ");
+        String fullQuerySql = """
             SELECT authority_id,
                    GREATEST(
                        similarity(case_title, :rawQuery),
@@ -212,17 +213,35 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
         """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("rawQuery", query.rawQuery().trim())
+                .addValue("rawQuery", canonicalRaw)
                 .addValue("courtFilter", criteria != null ? criteria.courtCode() : null)
                 .addValue("topicFilter", criteria != null ? criteria.topicSlug() : null)
                 .addValue("issueFilter", criteria != null ? criteria.issueTag() : null);
 
+        List<String> fullQueryHits = Collections.emptyList();
         try {
-            return namedJdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("authority_id"));
+            fullQueryHits = namedJdbcTemplate.query(fullQuerySql, params, (rs, rowNum) -> rs.getString("authority_id"));
         } catch (Exception e) {
             log.warn("Notice in Channel 1 (Trigram): {}", e.getMessage());
-            return Collections.emptyList();
         }
+
+        List<String> perTokenHits = Collections.emptyList();
+        List<String> distinctiveTokens = PrecedentQuerySanitizer.extractDistinctiveTitleTokens(query);
+        PrecedentRecallSqlSupport.SqlWithParams tokenQuery =
+                PrecedentRecallSqlSupport.buildPerTokenTrigramQuery(distinctiveTokens, criteria);
+        if (tokenQuery != null) {
+            try {
+                perTokenHits = namedJdbcTemplate.query(
+                        tokenQuery.sql(),
+                        tokenQuery.params(),
+                        (rs, rowNum) -> rs.getString("authority_id")
+                );
+            } catch (Exception e) {
+                log.warn("Notice in Channel 1 (Per-Token word_similarity): {}", e.getMessage());
+            }
+        }
+
+        return PrecedentRecallSqlSupport.mergeTrigramHits(fullQueryHits, perTokenHits);
     }
 
     private List<String> recallExactCitation(SanitizedPrecedentQuery query, PrecedentSearchCriteria criteria) {
@@ -269,32 +288,19 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
         }
     }
 
-    private List<String> recallChannel2Tuples(PrecedentSearchCriteria criteria) {
-        if (criteria == null || criteria.expandedActSectionTuples() == null || criteria.expandedActSectionTuples().isEmpty()) {
+    private List<String> recallChannel2Tuples(SanitizedPrecedentQuery query, PrecedentSearchCriteria criteria) {
+        PrecedentRecallSqlSupport.SqlWithParams tupleQuery =
+                PrecedentRecallSqlSupport.buildConceptGroupTupleQuery(query, criteria);
+        if (tupleQuery == null) {
             return Collections.emptyList();
         }
 
-        String sql = """
-            SELECT authority_id,
-                   cardinality(ARRAY(SELECT UNNEST(act_section_tuples) INTERSECT SELECT UNNEST(CAST(:queryTuples AS TEXT[])))) AS match_count
-            FROM legal_precedent_index
-            WHERE act_section_tuples && CAST(:queryTuples AS TEXT[])
-              AND (CAST(:courtFilter AS VARCHAR) IS NULL OR court_code = CAST(:courtFilter AS VARCHAR))
-              AND (CAST(:topicFilter AS VARCHAR) IS NULL OR CAST(:topicFilter AS VARCHAR) = ANY(topic_slugs))
-              AND (CAST(:issueFilter AS VARCHAR) IS NULL OR CAST(:issueFilter AS VARCHAR) = ANY(issue_tags))
-            ORDER BY match_count DESC, court_tier_weight DESC, cited_by_count DESC
-            LIMIT 80
-        """;
-
-        String[] tupleArray = criteria.expandedActSectionTuples().toArray(new String[0]);
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("queryTuples", tupleArray)
-                .addValue("courtFilter", criteria.courtCode())
-                .addValue("topicFilter", criteria.topicSlug())
-                .addValue("issueFilter", criteria.issueTag());
-
         try {
-            return namedJdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("authority_id"));
+            return namedJdbcTemplate.query(
+                    tupleQuery.sql(),
+                    tupleQuery.params(),
+                    (rs, rowNum) -> rs.getString("authority_id")
+            );
         } catch (Exception e) {
             log.warn("Notice in Channel 2 (Tuple GIN): {}", e.getMessage());
             return Collections.emptyList();

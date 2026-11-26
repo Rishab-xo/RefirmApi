@@ -89,7 +89,7 @@ public class PrecedentHybridSearchService {
         PariMateriaCrosswalkService.ExpandedTupleQuery expanded = crosswalkService.expandQueryTuples(extractedTuples);
 
         // 3. Stage 0: Query Sanitization and Intent Classification
-        SanitizedPrecedentQuery sanitized = querySanitizer.sanitize(rawQuery, extractedSpans, expanded.allExpandedTuples());
+        SanitizedPrecedentQuery sanitized = querySanitizer.sanitize(rawQuery, extractedSpans, expanded);
 
         // 4. Build criteria
         PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(

@@ -45,67 +45,76 @@ public class PrecedentRankingService {
 
         RankingProfile targetProfile = profile != null ? profile : RankingProfile.SEARCH_LIBRARY;
 
-        // Find min and max RRF scores in the pool for min-max normalization
-        double minRrf = Double.MAX_VALUE;
-        double maxRrf = Double.MIN_VALUE;
+        // Find max RRF score in the pool for ratio-to-max normalization
+        double maxRrf = 0.0;
         for (CandidateRecallItem item : candidates) {
-            double r = item.rrfScore();
-            if (r < minRrf) minRrf = r;
-            if (r > maxRrf) maxRrf = r;
+            if (item.rrfScore() > maxRrf) {
+                maxRrf = item.rrfScore();
+            }
         }
 
         List<RankedPrecedent> rankedList = new ArrayList<>(candidates.size());
 
+        boolean isBrowseQuery = (query.rawQuery() == null || query.rawQuery().isBlank())
+                && (query.rawTuples() == null || query.rawTuples().isEmpty())
+                && (query.expandedTuples() == null || query.expandedTuples().isEmpty());
+        boolean hasRawTuples = query.rawTuples() != null && !query.rawTuples().isEmpty();
+
         for (CandidateRecallItem item : candidates) {
             PrecedentIndexRecord rec = item.record();
 
-            // 1. Relevance Points (0 - 45 pts)
-            double normRrf;
-            if (maxRrf > minRrf) {
-                normRrf = (item.rrfScore() - minRrf) / (maxRrf - minRrf);
-            } else {
-                normRrf = 1.0;
-            }
-            double relevancePts = normRrf * 45.0;
+            // 1. Relevance Points (0 - 45 pts) via proportional ratio-to-max RRF
+            double relevancePts = (maxRrf > 0.0 && item.rrfScore() > 0.0)
+                    ? Math.min(45.0, (item.rrfScore() / maxRrf) * 45.0)
+                    : 0.0;
 
             boolean isDirectMatch = isDirectKnownItemMatch(rec, query);
-            if (query.intent() == QueryIntent.KNOWN_ITEM && isDirectMatch) {
+            if (isDirectMatch) {
                 relevancePts = Math.max(relevancePts, 42.0);
             }
 
-            // Rank-1 Channel Anchor Floor (Fixes Dual-Channel Runner-Up Hijacking):
-            // On non-browse queries, if candidate achieved bm25Rank == 1 OR vectorRank == 1, enforce floor 42.0
-            boolean isBrowseQuery = (query.rawQuery() == null || query.rawQuery().isBlank())
-                    && (query.expandedTuples() == null || query.expandedTuples().isEmpty());
-            if (!isBrowseQuery) {
-                Integer bm25Rank = item.channelRanks() != null ? item.channelRanks().get("BM25") : null;
-                Integer vectorRank = item.channelRanks() != null ? item.channelRanks().get("VECTOR") : null;
-                if ((bm25Rank != null && bm25Rank == 1) || (vectorRank != null && vectorRank == 1)) {
-                    relevancePts = Math.max(relevancePts, 42.0);
-                }
+            // Modest lexical-precision bonus (+6.0, capped at 45.0) ONLY on tuple-free non-browse BM25 #1
+            Integer bm25Rank = item.channelRanks() != null ? item.channelRanks().get("BM25") : null;
+            if (!isBrowseQuery && !hasRawTuples && Integer.valueOf(1).equals(bm25Rank)) {
+                relevancePts = Math.min(45.0, relevancePts + 6.0);
             }
 
-            // 2. Statutory Specificity (0 - 20 pts)
+            // 2. Statutory Specificity (0 - 20 pts) using concept-group coverage
             double statutePts = 0.0;
-            List<String> queryTuples = query.expandedTuples();
-            if (queryTuples != null && !queryTuples.isEmpty()) {
+            List<Set<String>> conceptGroups = resolveConceptGroups(query);
+            if (!conceptGroups.isEmpty()) {
                 Set<String> candTuples = new HashSet<>(rec.actSectionTuples());
-                int matched = 0;
-                for (String qt : queryTuples) {
-                    if (candTuples.contains(qt)) {
-                        matched++;
+                int matchedGroups = 0;
+                Set<String> unionQueryTuples = new LinkedHashSet<>();
+                for (Set<String> group : conceptGroups) {
+                    unionQueryTuples.addAll(group);
+                    boolean groupMatched = false;
+                    for (String candTuple : candTuples) {
+                        if (group.contains(candTuple)) {
+                            groupMatched = true;
+                            break;
+                        }
+                    }
+                    if (groupMatched) {
+                        matchedGroups++;
                     }
                 }
 
-                if (matched > 0) {
-                    double coverage = (double) matched / queryTuples.size();
-                    int unmatched = Math.max(0, candTuples.size() - matched);
-                    // Omnibus dampener: penalizes precedents reciting 40+ unrelated provisions
-                    double omnibusDampener = 1.0 / Math.log(Math.E + (unmatched * 0.25));
+                if (matchedGroups > 0) {
+                    int matchedTupleCount = 0;
+                    for (String candTuple : candTuples) {
+                        if (unionQueryTuples.contains(candTuple)) {
+                            matchedTupleCount++;
+                        }
+                    }
+                    double coverage = (double) matchedGroups / conceptGroups.size();
+                    int unmatched = Math.max(0, candTuples.size() - matchedTupleCount);
+                    // Softened omnibus dampener: avoids over-penalizing landmark guideline judgments
+                    double omnibusDampener = 1.0 / Math.log(Math.E + (unmatched * 0.12));
                     statutePts = 20.0 * coverage * omnibusDampener;
 
                     // Core headnote / proposition statute prominence bonus (+6.0 pts)
-                    if (matchesHeadnoteSectionProminence(rec, queryTuples)) {
+                    if (matchesHeadnoteSectionProminence(rec, unionQueryTuples)) {
                         statutePts = Math.min(20.0, statutePts + 6.0);
                     }
                 }
@@ -166,12 +175,12 @@ public class PrecedentRankingService {
             }
             double domainPosturePts = Math.min(10.0, domainPts + posturePts);
 
-            // 6. Good-Law Guardrail (-35 pts for OVERRULED, -4 for DISTINGUISHED)
+            // 6. Good-Law Guardrail (-35 pts for POTENTIALLY_OVERRULED, -4 for DISTINGUISHED)
             double goodLawPenalty = 0.0;
             String status = rec.goodLawStatus();
             if ("POTENTIALLY_OVERRULED".equalsIgnoreCase(status)) {
-                // BYPASS RULE: If user explicitly searched for this landmark case, do not penalize
-                if (query.intent() == QueryIntent.KNOWN_ITEM && isDirectMatch) {
+                // BYPASS RULE: If user explicitly searched for this landmark case by cite/title, do not penalize
+                if (isDirectMatch) {
                     goodLawPenalty = 0.0;
                 } else {
                     goodLawPenalty = -35.0;
@@ -212,11 +221,30 @@ public class PrecedentRankingService {
         return rankedList;
     }
 
+    private List<Set<String>> resolveConceptGroups(SanitizedPrecedentQuery query) {
+        if (query == null) {
+            return List.of();
+        }
+        if (query.conceptGroups() != null && !query.conceptGroups().isEmpty()) {
+            return query.conceptGroups();
+        }
+        if (query.expandedTuples() != null && !query.expandedTuples().isEmpty()) {
+            List<Set<String>> singletonGroups = new ArrayList<>(query.expandedTuples().size());
+            for (String tuple : query.expandedTuples()) {
+                if (tuple != null && !tuple.isBlank()) {
+                    singletonGroups.add(Set.of(tuple));
+                }
+            }
+            return singletonGroups;
+        }
+        return List.of();
+    }
+
     private boolean targetsModernEnactment(SanitizedPrecedentQuery query) {
-        if (query == null || query.expandedTuples() == null || query.expandedTuples().isEmpty()) {
+        if (query == null || query.rawTuples() == null || query.rawTuples().isEmpty()) {
             return false;
         }
-        for (String tuple : query.expandedTuples()) {
+        for (String tuple : query.rawTuples()) {
             int colonIdx = tuple.indexOf(':');
             String act = colonIdx > 0 ? tuple.substring(0, colonIdx).trim().toUpperCase(Locale.ROOT) : tuple.toUpperCase(Locale.ROOT);
             if (MODERN_ACTS.contains(act)) {
@@ -226,7 +254,7 @@ public class PrecedentRankingService {
         return false;
     }
 
-    private boolean matchesHeadnoteSectionProminence(PrecedentIndexRecord rec, List<String> queryTuples) {
+    private boolean matchesHeadnoteSectionProminence(PrecedentIndexRecord rec, Collection<String> queryTuples) {
         if (queryTuples == null || queryTuples.isEmpty()) {
             return false;
         }
@@ -254,7 +282,10 @@ public class PrecedentRankingService {
             String secNum = m.find() ? m.group(1) : sec;
 
             if (!secNum.isBlank()) {
-                Pattern p = Pattern.compile("(?<!\\d)" + Pattern.quote(secNum) + "(?!\\d)");
+                String quoted = Pattern.quote(secNum);
+                Pattern p = Pattern.compile(
+                        "(?i)(?:(?:section|sec\\.?|s\\.?|article|art\\.?)\\s*" + quoted + "|(?<!\\d)" + quoted + ")(?!\\d)"
+                );
                 if (p.matcher(headnoteText).find()) {
                     return true;
                 }
@@ -315,14 +346,15 @@ public class PrecedentRankingService {
             }
         }
 
-        // Substring token match across party names (e.g. "adm jabalpur" or "arnesh kumar")
+        // Whole-word token match across party names (e.g. "adm jabalpur", "a.k. gopalan", never "rajagopalan")
+        Set<String> titleTokens = new HashSet<>(Arrays.asList(title.split("[^a-z0-9]+")));
         String[] qTokens = q.split("[^a-z0-9]+");
         int matchCount = 0;
         int nonTrivialCount = 0;
         for (String tok : qTokens) {
             if (tok.length() >= 3 && !tok.equals("state") && !tok.equals("union") && !tok.equals("india")) {
                 nonTrivialCount++;
-                if (title.contains(tok)) {
+                if (titleTokens.contains(tok)) {
                     matchCount++;
                 }
             }

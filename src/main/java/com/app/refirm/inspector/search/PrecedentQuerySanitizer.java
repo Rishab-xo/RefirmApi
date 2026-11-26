@@ -1,5 +1,6 @@
 package com.app.refirm.inspector.search;
 
+import com.app.refirm.inspector.service.PariMateriaCrosswalkService;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -63,26 +64,65 @@ public class PrecedentQuerySanitizer {
             "its", "that", "this", "which", "no", "not"
     );
 
+    private static final Set<String> INSTITUTIONAL_LITIGANT_NOUNS = Set.of(
+            "state", "union", "india", "government", "bank", "insurance", "corporation",
+            "board", "commission", "authority", "company", "limited", "municipal",
+            "police", "court", "council", "ministry", "department"
+    );
+
+    private static final int MAX_PER_TOKEN_TITLE_QUERY_WORDS = 7;
+    private static final int MAX_DISTINCTIVE_TITLE_TOKENS = 5;
+    private static final int MIN_DISTINCTIVE_TOKEN_LENGTH = 5;
+
     /**
-     * Sanitizes raw query and classifies query intent into KNOWN_ITEM, STATUTE_ONLY, or HYBRID_LEGAL.
-     *
-     * @param rawQuery user query string (may be null/empty)
-     * @param extractedStatuteSpans raw statute text matches (may be null)
-     * @param expandedActSectionTuples canonical tuples like "crpc:438" (may be null)
-     * @return immutable SanitizedPrecedentQuery
+     * Sanitizes raw query and classifies query intent into KNOWN_ITEM, STATUTE_ONLY, or HYBRID_LEGAL,
+     * preserving user-typed rawTuples and crosswalk conceptGroups separately.
+     */
+    public SanitizedPrecedentQuery sanitize(
+            String rawQuery,
+            List<String> extractedStatuteSpans,
+            PariMateriaCrosswalkService.ExpandedTupleQuery expandedTupleQuery
+    ) {
+        List<String> rawTuples = (expandedTupleQuery != null && expandedTupleQuery.primaryTuples() != null)
+                ? expandedTupleQuery.primaryTuples()
+                : Collections.emptyList();
+        List<String> expandedTuples = (expandedTupleQuery != null && expandedTupleQuery.allExpandedTuples() != null)
+                ? expandedTupleQuery.allExpandedTuples()
+                : Collections.emptyList();
+        List<Set<String>> conceptGroups = (expandedTupleQuery != null && expandedTupleQuery.conceptGroups() != null)
+                ? expandedTupleQuery.conceptGroups()
+                : Collections.emptyList();
+        return sanitizeInternal(rawQuery, extractedStatuteSpans, expandedTuples, rawTuples, conceptGroups);
+    }
+
+    /**
+     * Backward-compatible overload treating supplied tuples directly as both raw and singleton concept groups.
      */
     public SanitizedPrecedentQuery sanitize(
             String rawQuery,
             List<String> extractedStatuteSpans,
             List<String> expandedActSectionTuples
     ) {
-        String query = rawQuery != null ? rawQuery.trim() : "";
         List<String> tuples = expandedActSectionTuples != null ? expandedActSectionTuples : Collections.emptyList();
-        boolean hasTuples = !tuples.isEmpty() || (extractedStatuteSpans != null && !extractedStatuteSpans.isEmpty());
+        return sanitizeInternal(rawQuery, extractedStatuteSpans, tuples, tuples, null);
+    }
+
+    private SanitizedPrecedentQuery sanitizeInternal(
+            String rawQuery,
+            List<String> extractedStatuteSpans,
+            List<String> expandedActSectionTuples,
+            List<String> rawTuples,
+            List<Set<String>> conceptGroups
+    ) {
+        String query = rawQuery != null ? rawQuery.trim().replaceAll("\\s+", " ") : "";
+        List<String> tuples = expandedActSectionTuples != null ? expandedActSectionTuples : Collections.emptyList();
+        List<String> userTuples = rawTuples != null ? rawTuples : Collections.emptyList();
+        boolean hasTuples = !tuples.isEmpty() || !userTuples.isEmpty()
+                || (extractedStatuteSpans != null && !extractedStatuteSpans.isEmpty());
 
         if (query.isEmpty()) {
             QueryIntent intent = hasTuples ? QueryIntent.STATUTE_ONLY : QueryIntent.HYBRID_LEGAL;
-            return new SanitizedPrecedentQuery("", null, tuples, intent, false, false, null);
+            return new SanitizedPrecedentQuery("", null, tuples, intent, false, false, null, userTuples, conceptGroups);
         }
 
         // 1. Structured Formal Reporter Citation Detection & Normalization
@@ -96,18 +136,16 @@ public class PrecedentQuerySanitizer {
                     QueryIntent.KNOWN_ITEM,
                     true,
                     true,
-                    formalMatch.normalizedCitation()
+                    formalMatch.normalizedCitation(),
+                    userTuples,
+                    conceptGroups
             );
         }
 
-        // 2. Check general KNOWN_ITEM intent (party names or general reporter cues)
+        // 2. Explicit KNOWN_ITEM intent ONLY on structural markers (reporter cues or v./vs./versus)
         boolean matchesReporter = GENERAL_REPORTER_PATTERN.matcher(query).find();
         boolean matchesVs = VS_PATTERN.matcher(query).find();
-
-        String[] words = query.split("\\s+");
-        boolean isShortProperNoun = words.length <= 4 && !hasTuples && !containsGenericLegalTerms(words);
-
-        boolean isKnownItem = matchesReporter || matchesVs || isShortProperNoun;
+        boolean isKnownItem = matchesReporter || matchesVs;
 
         // 3. Sanitize lexical query by stripping statutory tokens
         String stripped = stripStatutoryPhrases(query, tuples, extractedStatuteSpans);
@@ -116,15 +154,68 @@ public class PrecedentQuerySanitizer {
         // 4. Check STATUTE_ONLY intent
         if (!isKnownItem && hasTuples) {
             if (cleanedLexical == null || isOnlyGenericWords(cleanedLexical)) {
-                return new SanitizedPrecedentQuery(query, null, tuples, QueryIntent.STATUTE_ONLY, false, false, null);
+                return new SanitizedPrecedentQuery(query, null, tuples, QueryIntent.STATUTE_ONLY,
+                        false, false, null, userTuples, conceptGroups);
             }
         }
 
         if (isKnownItem) {
-            return new SanitizedPrecedentQuery(query, cleanedLexical, tuples, QueryIntent.KNOWN_ITEM, true, false, null);
+            return new SanitizedPrecedentQuery(query, cleanedLexical, tuples, QueryIntent.KNOWN_ITEM,
+                    true, false, null, userTuples, conceptGroups);
         }
 
-        return new SanitizedPrecedentQuery(query, cleanedLexical, tuples, QueryIntent.HYBRID_LEGAL, false, false, null);
+        return new SanitizedPrecedentQuery(query, cleanedLexical, tuples, QueryIntent.HYBRID_LEGAL,
+                false, false, null, userTuples, conceptGroups);
+    }
+
+    /**
+     * Extracts up to 5 distinctive non-numeric title tokens (len >= 5) strictly from
+     * sanitizedLexicalQuery when the query is not a formal citation and has <= 7 words.
+     */
+    public static List<String> extractDistinctiveTitleTokens(SanitizedPrecedentQuery query) {
+        if (query == null || query.isFormalCitation()) {
+            return List.of();
+        }
+        String canonicalRaw = query.rawQuery();
+        if (canonicalRaw == null || canonicalRaw.isBlank()) {
+            return List.of();
+        }
+        if (canonicalRaw.split("\\s+").length > MAX_PER_TOKEN_TITLE_QUERY_WORDS) {
+            return List.of();
+        }
+
+        String lexical = query.sanitizedLexicalQuery();
+        if (lexical == null || lexical.isBlank()) {
+            return List.of();
+        }
+
+        String[] rawTokens = lexical.toLowerCase(Locale.ROOT).split("[^a-z0-9]+");
+        Set<String> distinctive = new LinkedHashSet<>();
+        for (String tok : rawTokens) {
+            if (tok.length() < MIN_DISTINCTIVE_TOKEN_LENGTH) {
+                continue;
+            }
+            boolean hasLetter = false;
+            for (int i = 0; i < tok.length(); i++) {
+                if (Character.isLetter(tok.charAt(i))) {
+                    hasLetter = true;
+                    break;
+                }
+            }
+            if (!hasLetter) {
+                continue;
+            }
+            if (STOPWORDS.contains(tok)
+                    || GENERIC_LEGAL_TERMS.contains(tok)
+                    || INSTITUTIONAL_LITIGANT_NOUNS.contains(tok)) {
+                continue;
+            }
+            distinctive.add(tok);
+            if (distinctive.size() >= MAX_DISTINCTIVE_TITLE_TOKENS) {
+                break;
+            }
+        }
+        return distinctive.isEmpty() ? List.of() : List.copyOf(distinctive);
     }
 
     private FormalCitationMatch detectFormalCitation(String query) {
@@ -163,16 +254,6 @@ public class PrecedentQuerySanitizer {
         }
 
         return new FormalCitationMatch(false, null);
-    }
-
-    private boolean containsGenericLegalTerms(String[] words) {
-        for (String w : words) {
-            String clean = w.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", "");
-            if (GENERIC_LEGAL_TERMS.contains(clean)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean isOnlyGenericWords(String text) {

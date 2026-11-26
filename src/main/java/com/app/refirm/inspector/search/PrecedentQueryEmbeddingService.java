@@ -57,7 +57,10 @@ public class PrecedentQueryEmbeddingService {
             return CompletableFuture.completedFuture(null);
         }
 
-        String trimmed = queryText.trim();
+        String trimmed = queryText.trim().replaceAll("\\s+", " ");
+        if (trimmed.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
         String cached = lruCache.get(trimmed);
         if (cached != null) {
             return CompletableFuture.completedFuture(cached);

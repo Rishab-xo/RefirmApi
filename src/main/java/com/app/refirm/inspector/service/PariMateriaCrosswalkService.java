@@ -205,6 +205,7 @@ public class PariMateriaCrosswalkService {
         Set<String> primaryCanonical = new LinkedHashSet<>();
         Set<String> allExpanded = new LinkedHashSet<>();
         Map<String, CrosswalkEdge> counterpartToOriginEdge = new LinkedHashMap<>();
+        List<Set<String>> conceptGroups = new ArrayList<>();
 
         for (String input : rawOrCanonicalTuples) {
             if (input == null || !input.contains(":")) {
@@ -216,11 +217,16 @@ public class PariMateriaCrosswalkService {
                 continue;
             }
 
-            primaryCanonical.add(canonical);
+            boolean isNewPrimary = primaryCanonical.add(canonical);
+            Set<String> group = new LinkedHashSet<>();
+            group.add(canonical);
             allExpanded.add(canonical);
 
             Optional<String> baseCanonical = extractBaseSectionTuple(canonical);
-            baseCanonical.ifPresent(allExpanded::add);
+            baseCanonical.ifPresent(base -> {
+                allExpanded.add(base);
+                group.add(base);
+            });
 
             // Lookup direct and base edges
             List<CrosswalkEdge> edges = new ArrayList<>(
@@ -236,18 +242,25 @@ public class PariMateriaCrosswalkService {
 
             for (CrosswalkEdge edge : edges) {
                 allExpanded.add(edge.targetTuple());
+                group.add(edge.targetTuple());
                 counterpartToOriginEdge.putIfAbsent(edge.targetTuple(), edge);
                 extractBaseSectionTuple(edge.targetTuple()).ifPresent(targetBase -> {
                     allExpanded.add(targetBase);
+                    group.add(targetBase);
                     counterpartToOriginEdge.putIfAbsent(targetBase, edge);
                 });
+            }
+
+            if (isNewPrimary) {
+                conceptGroups.add(Set.copyOf(group));
             }
         }
 
         return new ExpandedTupleQuery(
                 List.copyOf(primaryCanonical),
                 List.copyOf(allExpanded),
-                Collections.unmodifiableMap(counterpartToOriginEdge)
+                Collections.unmodifiableMap(counterpartToOriginEdge),
+                List.copyOf(conceptGroups)
         );
     }
 
@@ -372,8 +385,17 @@ public class PariMateriaCrosswalkService {
     public record ExpandedTupleQuery(
             List<String> primaryTuples,
             List<String> allExpandedTuples,
-            Map<String, CrosswalkEdge> counterpartEdgesByTargetTuple
-    ) {}
+            Map<String, CrosswalkEdge> counterpartEdgesByTargetTuple,
+            List<Set<String>> conceptGroups
+    ) {
+        public ExpandedTupleQuery(
+                List<String> primaryTuples,
+                List<String> allExpandedTuples,
+                Map<String, CrosswalkEdge> counterpartEdgesByTargetTuple
+        ) {
+            this(primaryTuples, allExpandedTuples, counterpartEdgesByTargetTuple, List.of());
+        }
+    }
 
     public record CrosswalkEdge(
             String sourceTuple,

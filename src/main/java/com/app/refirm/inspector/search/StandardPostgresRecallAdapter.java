@@ -47,7 +47,7 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
         }
 
         List<String> trigramIds = recallTrigram(query, criteria);
-        List<String> tupleIds = recallTuples(criteria);
+        List<String> tupleIds = recallTuples(query, criteria);
         List<String> textIds = recallText(query, criteria);
 
         double wTrigram, wTuple, wText;
@@ -63,9 +63,9 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
                 wTrigram = 0.5;
             }
             default -> {
-                wText = 1.25;
-                wTuple = 1.15;
-                wTrigram = 0.60;
+                wText = 1.60;
+                wTuple = 1.20;
+                wTrigram = 1.00;
             }
         }
 
@@ -130,30 +130,49 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
             }
         }
 
+        String canonicalRaw = query.rawQuery().trim().replaceAll("\\s+", " ");
         String sql = """
             SELECT authority_id,
                    GREATEST(similarity(case_title, :rawQuery), similarity(primary_citation, :rawQuery)) AS trgm_score
             FROM legal_precedent_index
             WHERE (case_title % :rawQuery OR primary_citation % :rawQuery)
-              AND (:courtFilter IS NULL OR court_code = :courtFilter)
-              AND (:topicFilter IS NULL OR :topicFilter = ANY(topic_slugs))
-              AND (:issueFilter IS NULL OR :issueFilter = ANY(issue_tags))
+              AND (CAST(:courtFilter AS VARCHAR) IS NULL OR court_code = CAST(:courtFilter AS VARCHAR))
+              AND (CAST(:topicFilter AS VARCHAR) IS NULL OR CAST(:topicFilter AS VARCHAR) = ANY(topic_slugs))
+              AND (CAST(:issueFilter AS VARCHAR) IS NULL OR CAST(:issueFilter AS VARCHAR) = ANY(issue_tags))
             ORDER BY trgm_score DESC
             LIMIT 40
         """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("rawQuery", query.rawQuery().trim())
+                .addValue("rawQuery", canonicalRaw)
                 .addValue("courtFilter", criteria != null ? criteria.courtCode() : null)
                 .addValue("topicFilter", criteria != null ? criteria.topicSlug() : null)
                 .addValue("issueFilter", criteria != null ? criteria.issueTag() : null);
 
+        List<String> fullQueryHits = Collections.emptyList();
         try {
-            return namedJdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("authority_id"));
+            fullQueryHits = namedJdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("authority_id"));
         } catch (Exception e) {
             log.warn("Standard adapter trigram notice: {}", e.getMessage());
-            return Collections.emptyList();
         }
+
+        List<String> perTokenHits = Collections.emptyList();
+        List<String> distinctiveTokens = PrecedentQuerySanitizer.extractDistinctiveTitleTokens(query);
+        PrecedentRecallSqlSupport.SqlWithParams tokenQuery =
+                PrecedentRecallSqlSupport.buildPerTokenTrigramQuery(distinctiveTokens, criteria);
+        if (tokenQuery != null) {
+            try {
+                perTokenHits = namedJdbcTemplate.query(
+                        tokenQuery.sql(),
+                        tokenQuery.params(),
+                        (rs, rowNum) -> rs.getString("authority_id")
+                );
+            } catch (Exception e) {
+                log.warn("Standard adapter per-token trigram notice: {}", e.getMessage());
+            }
+        }
+
+        return PrecedentRecallSqlSupport.mergeTrigramHits(fullQueryHits, perTokenHits);
     }
 
     private List<String> recallExactCitation(SanitizedPrecedentQuery query, PrecedentSearchCriteria criteria) {
@@ -200,31 +219,19 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
         }
     }
 
-    private List<String> recallTuples(PrecedentSearchCriteria criteria) {
-        if (criteria == null || criteria.expandedActSectionTuples() == null || criteria.expandedActSectionTuples().isEmpty()) {
+    private List<String> recallTuples(SanitizedPrecedentQuery query, PrecedentSearchCriteria criteria) {
+        PrecedentRecallSqlSupport.SqlWithParams tupleQuery =
+                PrecedentRecallSqlSupport.buildConceptGroupTupleQuery(query, criteria);
+        if (tupleQuery == null) {
             return Collections.emptyList();
         }
 
-        String sql = """
-            SELECT authority_id,
-                   cardinality(ARRAY(SELECT UNNEST(act_section_tuples) INTERSECT SELECT UNNEST(CAST(:queryTuples AS TEXT[])))) AS match_count
-            FROM legal_precedent_index
-            WHERE act_section_tuples && CAST(:queryTuples AS TEXT[])
-              AND (:courtFilter IS NULL OR court_code = :courtFilter)
-              AND (:topicFilter IS NULL OR :topicFilter = ANY(topic_slugs))
-              AND (:issueFilter IS NULL OR :issueFilter = ANY(issue_tags))
-            ORDER BY match_count DESC, court_tier_weight DESC, cited_by_count DESC
-            LIMIT 80
-        """;
-
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("queryTuples", criteria.expandedActSectionTuples().toArray(new String[0]))
-                .addValue("courtFilter", criteria.courtCode())
-                .addValue("topicFilter", criteria.topicSlug())
-                .addValue("issueFilter", criteria.issueTag());
-
         try {
-            return namedJdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("authority_id"));
+            return namedJdbcTemplate.query(
+                    tupleQuery.sql(),
+                    tupleQuery.params(),
+                    (rs, rowNum) -> rs.getString("authority_id")
+            );
         } catch (Exception e) {
             log.warn("Standard adapter tuple notice: {}", e.getMessage());
             return Collections.emptyList();
