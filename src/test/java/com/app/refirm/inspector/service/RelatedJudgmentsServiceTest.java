@@ -91,7 +91,7 @@ class RelatedJudgmentsServiceTest {
         RelatedJudgmentItem reliesItem = sampleCitationItem("r-1", "CITED", null, "Para 3", "quote y");
 
         when(relatedRepository.findTargetContext("auth-novec")).thenReturn(Optional.of(target));
-        when(relatedRepository.countCitationSummary("auth-novec")).thenReturn(new CitationSummaryCounts(12, 4, 2));
+        when(relatedRepository.countCitationSummary("auth-novec")).thenReturn(new CitationSummaryCounts(12, 4, 2, 1));
         when(relatedRepository.findCitedBy("auth-novec", false, 0, 15)).thenReturn(List.of(citedItem));
         when(relatedRepository.findReliesOn("auth-novec", false, 0, 15)).thenReturn(List.of(reliesItem));
 
@@ -101,6 +101,7 @@ class RelatedJudgmentsServiceTest {
         assertEquals(12, resp.citedByCount());
         assertEquals(4, resp.reliesOnCount());
         assertEquals(2, resp.negativeTreatmentCount());
+        assertEquals(1, resp.reliesOnNegativeCount());
         assertEquals(1, resp.citedBy().size());
         assertEquals(1, resp.reliesOn().size());
         assertTrue(resp.similarCases().isEmpty());
@@ -149,7 +150,7 @@ class RelatedJudgmentsServiceTest {
         );
 
         when(relatedRepository.findTargetContext("auth-2024-bnss")).thenReturn(Optional.of(target));
-        when(relatedRepository.countCitationSummary("auth-2024-bnss")).thenReturn(new CitationSummaryCounts(0, 0, 0));
+        when(relatedRepository.countCitationSummary("auth-2024-bnss")).thenReturn(new CitationSummaryCounts(0, 0, 0, 0));
         when(relatedRepository.findCitedBy("auth-2024-bnss", false, 0, 15)).thenReturn(List.of());
         when(relatedRepository.findReliesOn("auth-2024-bnss", false, 0, 15)).thenReturn(List.of());
         when(relatedRepository.findSimilarCandidates("auth-2024-bnss", "[0.1,0.2]", 80))
@@ -183,7 +184,7 @@ class RelatedJudgmentsServiceTest {
     void limitOffsetClampingAndHasMoreMath() {
         TargetContext target = new TargetContext("maneka-1978", "CONSTITUTIONAL", List.of(), null);
         when(relatedRepository.findTargetContext("maneka-1978")).thenReturn(Optional.of(target));
-        when(relatedRepository.countCitationSummary("maneka-1978")).thenReturn(new CitationSummaryCounts(302, 12, 5));
+        when(relatedRepository.countCitationSummary("maneka-1978")).thenReturn(new CitationSummaryCounts(302, 12, 5, 2));
 
         // 0 -> clamped to 1
         when(relatedRepository.findCitedBy("maneka-1978", false, 0, 1)).thenReturn(List.of());
@@ -210,6 +211,16 @@ class RelatedJudgmentsServiceTest {
         when(relatedRepository.findCitedBy("maneka-1978", true, 4, 1)).thenReturn(List.of(item));
         RelatedCitationPageResponse lastPage = service.getRelatedCitationsPage("maneka-1978", "CITED_BY", "NEGATIVE", 4, 1);
         assertFalse(lastPage.hasMore()); // (4 + 1) < 5 is false
+
+        // RELIES_ON NEGATIVE filter routes cleanly to findReliesOn(id, true, ...)
+        RelatedJudgmentItem overruledTarget = sampleCitationItem("r-overruled", "OVERRULED", "Overruled by 5J bench.", "Para 78", "quote");
+        when(relatedRepository.countFilteredCitations("maneka-1978", false, true)).thenReturn(2);
+        when(relatedRepository.findReliesOn("maneka-1978", true, 0, 20)).thenReturn(List.of(overruledTarget));
+        RelatedCitationPageResponse reliesNeg = service.getRelatedCitationsPage("maneka-1978", "relies_on", "negative", 0, 20);
+        assertEquals("RELIES_ON", reliesNeg.direction());
+        assertEquals("NEGATIVE", reliesNeg.treatment());
+        assertEquals(2, reliesNeg.totalCount());
+        assertEquals("r-overruled", reliesNeg.items().get(0).authorityId());
     }
 
     private static RelatedJudgmentItem sampleCitationItem(

@@ -2,6 +2,10 @@ package com.app.refirm.inspector.search;
 
 import com.app.refirm.inspector.domain.PrecedentIndexRecord;
 import com.app.refirm.inspector.domain.PrecedentSearchCriteria;
+import com.app.refirm.inspector.dto.JudgmentLibraryDTOs.JudgmentSearchResponse;
+import com.app.refirm.inspector.repository.PrecedentIndexRepository;
+import com.app.refirm.inspector.service.CorpusPrecedentRegistryService;
+import com.app.refirm.inspector.service.JudgmentLibraryService;
 import com.app.refirm.inspector.service.PariMateriaCrosswalkService;
 import com.app.refirm.rules.model.LegalDomain;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +17,10 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.Embedding;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.*;
 
@@ -618,6 +626,185 @@ class PrecedentHybridRankingTest {
         assertEquals(-35.0, resRajaOverruled.breakdown().goodLawPenalty(), "Rajagopalan must NOT bypass -35.0 overruled penalty");
         assertTrue(resRajaGood.breakdown().relevancePts() < 25.0, "Rajagopalan must NOT receive 42.0 direct-match floor");
         assertEquals("ak-gopalan-1950", ranked.get(0).record().authorityId());
+    }
+
+    // =========================================================================
+    // 8. JLIB-SRCH-004 THROUGH JLIB-SRCH-008 VERIFICATION TESTS
+    // =========================================================================
+
+    @Test
+    @DisplayName("JLIB-SRCH-006: Modern codes BNSS/BNS/BSA strip cleanly and classify STATUTE_ONLY")
+    void testModernActsSanitizationAndStatuteOnlyIntent() {
+        PariMateriaCrosswalkService crosswalk = new PariMateriaCrosswalkService(new ObjectMapper());
+        crosswalk.init();
+
+        SanitizedPrecedentQuery qBnss = sanitizer.sanitize(
+                "Section 528 BNSS", List.of("Section 528"), crosswalk.expandQueryTuples(List.of("BNSS:528")));
+        assertEquals(QueryIntent.STATUTE_ONLY, qBnss.intent());
+        assertNull(qBnss.sanitizedLexicalQuery());
+
+        SanitizedPrecedentQuery qBns = sanitizer.sanitize(
+                "Section 103 BNS", List.of("Section 103"), crosswalk.expandQueryTuples(List.of("BNS:103")));
+        assertEquals(QueryIntent.STATUTE_ONLY, qBns.intent());
+        assertNull(qBns.sanitizedLexicalQuery());
+
+        SanitizedPrecedentQuery qBsa = sanitizer.sanitize(
+                "Section 63 BSA", List.of("Section 63"), crosswalk.expandQueryTuples(List.of("BSA:63")));
+        assertEquals(QueryIntent.STATUTE_ONLY, qBsa.intent());
+        assertNull(qBsa.sanitizedLexicalQuery());
+
+        SanitizedPrecedentQuery qBnsMurder = sanitizer.sanitize(
+                "section 103 bns murder punishment", List.of("section 103"), crosswalk.expandQueryTuples(List.of("BNS:103")));
+        assertEquals(QueryIntent.HYBRID_LEGAL, qBnsMurder.intent());
+        assertEquals("murder punishment", qBnsMurder.sanitizedLexicalQuery().toLowerCase(Locale.ROOT));
+    }
+
+    @Test
+    @DisplayName("JLIB-SRCH-004: mergeTrigramHits ranks intersection first then interleaves remaining 1:1")
+    void testMergeTrigramHitsIntersectionAndInterleave() {
+        List<String> fullHits = List.of("full-1", "full-2", "shared-b", "shared-a", "full-3");
+        List<String> perTokenHits = List.of("tok-1", "shared-a", "tok-2", "shared-b");
+
+        List<String> merged = PrecedentRecallSqlSupport.mergeTrigramHits(fullHits, perTokenHits);
+
+        assertEquals(
+                List.of("shared-a", "shared-b", "tok-1", "full-1", "tok-2", "full-2", "full-3"),
+                merged,
+                "Intersection ordered by perTokenHits rank must lead, followed by 1:1 perToken/fullQuery interleaving"
+        );
+    }
+
+    @Test
+    @DisplayName("JLIB-SRCH-005C: Candidate-gated modern-act recency awards 10.0 only when BOTH query and candidate use modern acts")
+    void testCandidateGatedModernActRecency() {
+        PariMateriaCrosswalkService crosswalk = new PariMateriaCrosswalkService(new ObjectMapper());
+        crosswalk.init();
+
+        PariMateriaCrosswalkService.ExpandedTupleQuery bnsExpanded = crosswalk.expandQueryTuples(List.of("BNS:103"));
+        SanitizedPrecedentQuery bnsQuery = sanitizer.sanitize(
+                "section 103 bns murder punishment", List.of("section 103"), bnsExpanded);
+        PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(
+                bnsExpanded.allExpandedTuples(), "murder punishment", null, null, null, null, 10);
+
+        PrecedentIndexRecord bns2025 = createSampleRecord(
+                "bns-2025", "Modern Murder Ruling v. State", List.of("BNS:103"), "GOOD_LAW", 10, 0, 2025);
+        PrecedentIndexRecord ipc2024 = createSampleRecord(
+                "ipc-2024", "Transitional IPC Ruling v. State", List.of("IPC:302"), "GOOD_LAW", 10, 0, 2024);
+
+        List<RankedPrecedent> ranked = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(bns2025, 0.05, Map.of("TUPLE", 1)),
+                        new CandidateRecallItem(ipc2024, 0.05, Map.of("TUPLE", 1))
+                ),
+                bnsQuery, criteria, RankingProfile.SEARCH_LIBRARY
+        );
+
+        RankedPrecedent resBns = ranked.stream().filter(r -> r.record().authorityId().equals("bns-2025")).findFirst().orElseThrow();
+        RankedPrecedent resIpc = ranked.stream().filter(r -> r.record().authorityId().equals("ipc-2024")).findFirst().orElseThrow();
+
+        assertTrue(resBns.breakdown().recencyPts() > 6.0 && resBns.breakdown().recencyPts() <= 10.0,
+                "Actual BNS:103 candidate on BNS query must unlock 10.0 modern-act recency cap");
+        assertTrue(resIpc.breakdown().recencyPts() <= 6.0,
+                "IPC:302-only candidate on BNS query must remain capped at 6.0 recency");
+    }
+
+    @Test
+    @DisplayName("JLIB-SRCH-005D: Widened authorityPts math preserves CB=20.0, 2J SC=18.0, 0-cite SC=4.5, 5-cite SC=10.77")
+    void testWidenedAuthorityPtsSpread() {
+        SanitizedPrecedentQuery query = new SanitizedPrecedentQuery(
+                "constitutional liberty", "constitutional liberty", List.of(), QueryIntent.HYBRID_LEGAL);
+        PrecedentSearchCriteria criteria = new PrecedentSearchCriteria(List.of(), "constitutional liberty", null, null, null, null, 10);
+
+        PrecedentIndexRecord cbHigh = new PrecedentIndexRecord(
+                "cb-high", "d1", "doc", "s1", "IRAC", "CB High", "SC", "SC", 15, "2020-01-01", 2020,
+                "2020 SCC 1", List.of(), LegalDomain.CONSTITUTIONAL, List.of(), List.of(), List.of(), List.of(),
+                "BOTH_SIDES", "ALLOWED", "Ratio", List.of(), List.of(), null, true, "k", "u", "v",
+                200, 5, 0, "GOOD_LAW", null);
+        PrecedentIndexRecord sc2jHigh = new PrecedentIndexRecord(
+                "sc-high", "d2", "doc", "s1", "IRAC", "2J High", "SC", "SC", 10, "2020-01-01", 2020,
+                "2020 SCC 2", List.of(), LegalDomain.CONSTITUTIONAL, List.of(), List.of(), List.of(), List.of(),
+                "BOTH_SIDES", "ALLOWED", "Ratio", List.of(), List.of(), null, true, "k", "u", "v",
+                200, 2, 0, "GOOD_LAW", null);
+        PrecedentIndexRecord scZero = new PrecedentIndexRecord(
+                "sc-zero", "d3", "doc", "s1", "IRAC", "SC Zero", "SC", "SC", 10, "2020-01-01", 2020,
+                "2020 SCC 3", List.of(), LegalDomain.CONSTITUTIONAL, List.of(), List.of(), List.of(), List.of(),
+                "BOTH_SIDES", "ALLOWED", "Ratio", List.of(), List.of(), null, true, "k", "u", "v",
+                0, 2, 0, "GOOD_LAW", null);
+        PrecedentIndexRecord scFive = new PrecedentIndexRecord(
+                "sc-five", "d4", "doc", "s1", "IRAC", "SC Five", "SC", "SC", 10, "2020-01-01", 2020,
+                "2020 SCC 4", List.of(), LegalDomain.CONSTITUTIONAL, List.of(), List.of(), List.of(), List.of(),
+                "BOTH_SIDES", "ALLOWED", "Ratio", List.of(), List.of(), null, true, "k", "u", "v",
+                5, 2, 0, "GOOD_LAW", null);
+
+        List<RankedPrecedent> ranked = rankingService.rankCandidates(
+                List.of(
+                        new CandidateRecallItem(cbHigh, 0.05, Map.of("BM25", 1)),
+                        new CandidateRecallItem(sc2jHigh, 0.05, Map.of("BM25", 1)),
+                        new CandidateRecallItem(scZero, 0.05, Map.of("BM25", 1)),
+                        new CandidateRecallItem(scFive, 0.05, Map.of("BM25", 1))
+                ),
+                query, criteria, RankingProfile.SEARCH_LIBRARY
+        );
+
+        Map<String, Double> authById = new HashMap<>();
+        for (RankedPrecedent rp : ranked) {
+            authById.put(rp.record().authorityId(), rp.breakdown().authorityPts());
+        }
+        assertEquals(20.0, authById.get("cb-high"), 0.01);
+        assertEquals(18.0, authById.get("sc-high"), 0.01);
+        assertEquals(4.5, authById.get("sc-zero"), 0.01);
+        assertEquals(10.77, authById.get("sc-five"), 0.01);
+    }
+
+    @Test
+    @DisplayName("JLIB-SRCH-008: Non-browse empty recall skips BROWSE and SQL fallbacks; true empty browse still returns results")
+    @SuppressWarnings("unchecked")
+    void testHonestZeroMatchGuardVsTrueBrowse() {
+        NamedParameterJdbcTemplate namedJdbc = Mockito.mock(NamedParameterJdbcTemplate.class);
+        JdbcTemplate jdbc = Mockito.mock(JdbcTemplate.class);
+        PrecedentIndexRepository repo = Mockito.mock(PrecedentIndexRepository.class);
+        PrecedentQueryEmbeddingService emb = new PrecedentQueryEmbeddingService(null);
+        Mockito.when(repo.getRowMapper()).thenReturn((rs, rowNum) -> null);
+
+        // 1. Non-browse query returning 0 recall hits must NOT invoke browse SQL
+        NeonLakebaseRecallAdapter adapter = new NeonLakebaseRecallAdapter(namedJdbc, jdbc, repo, emb);
+        SanitizedPrecedentQuery nonBrowse = new SanitizedPrecedentQuery(
+                "zzqxvwplmk12345", "zzqxvwplmk12345", List.of(), QueryIntent.HYBRID_LEGAL);
+        RecallPool nonBrowsePool = adapter.recallCandidates(
+                nonBrowse, new PrecedentSearchCriteria(List.of(), "zzqxvwplmk12345", null, null, null, "SC", 5));
+        assertTrue(nonBrowsePool.items().isEmpty(), "Non-browse empty recall must remain empty");
+
+        // 2. True empty browse query (q="" + court="SC") MUST invoke browse SQL and return results
+        Mockito.when(namedJdbc.query(Mockito.anyString(), Mockito.any(SqlParameterSource.class), Mockito.any(RowMapper.class)))
+                .thenAnswer(inv -> {
+                    String sql = inv.getArgument(0, String.class);
+                    if (sql.contains("ORDER BY court_tier_weight DESC, cited_by_count DESC, decision_year DESC")) {
+                        return List.of("corp-browse-1");
+                    }
+                    if (sql.contains("WHERE authority_id = ANY")) {
+                        return List.of(createSampleRecord("corp-browse-1", "Browse Landmark v. State", List.of(), "GOOD_LAW", 10, 20, 2022));
+                    }
+                    return List.of();
+                });
+        SanitizedPrecedentQuery trueBrowse = sanitizer.sanitize("", List.of(), List.of());
+        assertTrue(PrecedentRecallSqlSupport.isTrueBrowseQuery(trueBrowse));
+        RecallPool browsePool = adapter.recallCandidates(
+                trueBrowse, new PrecedentSearchCriteria(List.of(), null, null, null, null, "SC", 5));
+        assertEquals(1, browsePool.items().size(), "True browse query with court=SC must still return browse hits");
+
+        // 3. JudgmentLibraryService must NOT trigger legacy SQL or corpus fallbacks when healthy hybrid search returns 0
+        PariMateriaCrosswalkService crosswalk = new PariMateriaCrosswalkService(new ObjectMapper());
+        crosswalk.init();
+        PrecedentHybridSearchService hybridSvc = Mockito.mock(PrecedentHybridSearchService.class);
+        CorpusPrecedentRegistryService corpusReg = Mockito.mock(CorpusPrecedentRegistryService.class);
+        Mockito.when(hybridSvc.search(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+                Mockito.anyInt(), Mockito.any(), Mockito.anyBoolean())).thenReturn(List.of());
+
+        JudgmentLibraryService libSvc = new JudgmentLibraryService(crosswalk, repo, corpusReg, namedJdbc, hybridSvc);
+        JudgmentSearchResponse resp = libSvc.searchJudgments("Section 482 CrPC", null, "HC", null, null, 5, true);
+        assertEquals(0, resp.totalResults());
+        Mockito.verify(repo, Mockito.never()).searchPrecedents(Mockito.any());
+        Mockito.verify(corpusReg, Mockito.never()).getAllPrecedents();
     }
 
     // =========================================================================

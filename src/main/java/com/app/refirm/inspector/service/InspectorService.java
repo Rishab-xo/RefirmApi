@@ -808,28 +808,28 @@ public class InspectorService {
 
         switch (action) {
             case "USE_IN_DRAFT" -> {
-                InAppJudgmentDrawerResponse drawer = drawerService.getDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                InAppJudgmentDrawerResponse drawer = requireDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                String title = safeText(drawer.caseTitle());
+                String ratio = safeRatioDecidendi(drawer);
                 String citationSentence = "\n\n> **Authority Pinned:** The Complainant additionally places reliance on *"
-                        + drawer.caseTitle() + "* (" + drawer.primaryCitation() + ") where it was held:\n> *"
-                        + drawer.iracBrief().ratioDecidendi() + "*\n";
+                        + title + "*" + formatCitationSuffix(drawer)
+                        + (!ratio.isEmpty() ? " where it was held:\n> *" + ratio + "*\n" : ".\n");
 
                 currentMarkdown = currentMarkdown + citationSentence;
-                changeSummary += " · Added citation '" + drawer.caseTitle() + "'";
+                changeSummary += " · Added citation '" + title + "'";
             }
             case "REPLACE" -> {
                 if (request.replacementAuthorityId() != null) {
-                    InAppJudgmentDrawerResponse replDrawer = drawerService.getDrawer(workspaceId, clerkUserId, request.replacementAuthorityId());
-                    InAppJudgmentDrawerResponse targetDrawer = drawerService.getDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
-                    currentMarkdown = currentMarkdown.replace(targetDrawer.caseTitle(), replDrawer.caseTitle())
-                            .replace(targetDrawer.primaryCitation(), replDrawer.primaryCitation());
-                    changeSummary += " · Replaced '" + targetDrawer.caseTitle() + "' with '" + replDrawer.caseTitle() + "'";
+                    InAppJudgmentDrawerResponse replDrawer = requireDrawer(workspaceId, clerkUserId, request.replacementAuthorityId());
+                    InAppJudgmentDrawerResponse targetDrawer = requireDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                    currentMarkdown = replaceAuthorityTokens(currentMarkdown, targetDrawer, replDrawer);
+                    changeSummary += " · Replaced '" + safeText(targetDrawer.caseTitle()) + "' with '" + safeText(replDrawer.caseTitle()) + "'";
                 }
             }
             case "REMOVE" -> {
-                InAppJudgmentDrawerResponse targetDrawer = drawerService.getDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
-                currentMarkdown = currentMarkdown.replace(targetDrawer.caseTitle(), "")
-                        .replace(targetDrawer.primaryCitation(), "");
-                changeSummary += " · Removed citation '" + targetDrawer.caseTitle() + "'";
+                InAppJudgmentDrawerResponse targetDrawer = requireDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                currentMarkdown = replaceAuthorityTokens(currentMarkdown, targetDrawer, null);
+                changeSummary += " · Removed citation '" + safeText(targetDrawer.caseTitle()) + "'";
             }
             default -> throw new IllegalArgumentException("Unknown citation action: " + action);
         }
@@ -883,29 +883,34 @@ public class InspectorService {
 
         switch (action) {
             case "USE_IN_DRAFT" -> {
-                InAppJudgmentDrawerResponse drawer = drawerService.getDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
-                String citationString = drawer.caseTitle() + (!drawer.primaryCitation().isBlank() ? " (" + drawer.primaryCitation() + ")" : "");
+                InAppJudgmentDrawerResponse drawer = requireDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                String title = safeText(drawer.caseTitle());
+                String ratio = safeRatioDecidendi(drawer);
+                String citationString = title + formatCitationSuffix(drawer);
 
                 if (!updatedSubmissions.isEmpty()) {
                     ArgumentSubmission firstSub = updatedSubmissions.get(0);
                     List<String> precs = new ArrayList<>(firstSub.pinnedPrecedents() != null ? firstSub.pinnedPrecedents() : List.of());
-                    if (!precs.contains(citationString) && !precs.contains(drawer.caseTitle())) {
+                    if (!precs.contains(citationString) && !precs.contains(title)) {
                         precs.add(citationString);
                     }
+                    String pinnedSummary = "\n\n> **Authority Pinned:** *" + title + "*" + formatCitationSuffix(drawer)
+                            + (!ratio.isEmpty() ? ": " + ratio : "");
                     updatedSubmissions.set(0, new ArgumentSubmission(
                             firstSub.submissionId(),
                             firstSub.title(),
-                            firstSub.legalProposition() + "\n\n> **Authority Pinned:** *" + drawer.caseTitle() + "* (" + drawer.primaryCitation() + "): " + drawer.iracBrief().ratioDecidendi(),
+                            safeText(firstSub.legalProposition()) + pinnedSummary,
                             firstSub.pinnedStatutes(),
                             precs,
                             firstSub.verifiedEvidenceAnchor(),
                             firstSub.evidentiaryGapWarning()
                     ));
                 } else {
+                    String ratioClause = !ratio.isEmpty() ? " where it was held:\n> *" + ratio + "*" : ".";
                     updatedSubmissions.add(new ArgumentSubmission(
                             "SUB_1",
                             "Legal Ground & Precedent Anchor",
-                            "The Complainant places heavy reliance on *" + drawer.caseTitle() + "* (" + drawer.primaryCitation() + ") where it was held:\n> *" + drawer.iracBrief().ratioDecidendi() + "*",
+                            "The Complainant places heavy reliance on *" + title + "*" + formatCitationSuffix(drawer) + ratioClause,
                             List.of(),
                             List.of(citationString),
                             "NONE_UPLOADED",
@@ -915,26 +920,26 @@ public class InspectorService {
             }
             case "REPLACE" -> {
                 if (request.replacementAuthorityId() != null) {
-                    InAppJudgmentDrawerResponse targetDrawer = drawerService.getDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
-                    InAppJudgmentDrawerResponse replDrawer = drawerService.getDrawer(workspaceId, clerkUserId, request.replacementAuthorityId());
+                    InAppJudgmentDrawerResponse targetDrawer = requireDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                    InAppJudgmentDrawerResponse replDrawer = requireDrawer(workspaceId, clerkUserId, request.replacementAuthorityId());
 
-                    String targetCit = targetDrawer.caseTitle();
-                    String replCit = replDrawer.caseTitle() + (!replDrawer.primaryCitation().isBlank() ? " (" + replDrawer.primaryCitation() + ")" : "");
+                    String targetTitle = safeText(targetDrawer.caseTitle());
+                    String targetPrimary = safeText(targetDrawer.primaryCitation());
+                    String replCit = safeText(replDrawer.caseTitle()) + formatCitationSuffix(replDrawer);
 
                     for (int i = 0; i < updatedSubmissions.size(); i++) {
                         ArgumentSubmission sub = updatedSubmissions.get(i);
                         List<String> precs = new ArrayList<>();
                         if (sub.pinnedPrecedents() != null) {
                             for (String p : sub.pinnedPrecedents()) {
-                                if (p.contains(targetDrawer.caseTitle()) || p.contains(targetDrawer.primaryCitation()) || p.contains(request.targetAuthorityId())) {
-                                    precs.add(replCit);
-                                } else {
-                                    precs.add(p);
-                                }
+                                boolean matched = (!targetTitle.isEmpty() && p.contains(targetTitle))
+                                        || (!targetPrimary.isEmpty() && p.contains(targetPrimary))
+                                        || p.contains(request.targetAuthorityId());
+                                precs.add(matched ? replCit : p);
                             }
                         }
                         String prop = sub.legalProposition() != null
-                                ? sub.legalProposition().replace(targetDrawer.caseTitle(), replDrawer.caseTitle()).replace(targetDrawer.primaryCitation(), replDrawer.primaryCitation())
+                                ? replaceAuthorityTokens(sub.legalProposition(), targetDrawer, replDrawer)
                                 : "";
 
                         updatedSubmissions.set(i, new ArgumentSubmission(
@@ -951,32 +956,41 @@ public class InspectorService {
                     for (int i = 0; i < updatedRebuttals.size(); i++) {
                         RebuttalMatrixItem reb = updatedRebuttals.get(i);
                         String anchor = reb.statutoryOrEvidentiaryAnchor();
-                        if (anchor != null && (anchor.contains(targetDrawer.caseTitle()) || anchor.contains(targetDrawer.primaryCitation()))) {
-                            anchor = anchor.replace(targetDrawer.caseTitle(), replDrawer.caseTitle()).replace(targetDrawer.primaryCitation(), replDrawer.primaryCitation());
+                        boolean matched = anchor != null
+                                && ((!targetTitle.isEmpty() && anchor.contains(targetTitle))
+                                || (!targetPrimary.isEmpty() && anchor.contains(targetPrimary)));
+                        if (matched) {
+                            String nextAnchor = replaceAuthorityTokens(anchor, targetDrawer, replDrawer);
+                            String nextCounter = replaceAuthorityTokens(reb.ourCounterRebuttal(), targetDrawer, replDrawer);
                             updatedRebuttals.set(i, new RebuttalMatrixItem(
                                     reb.rebuttalId(),
                                     reb.anticipatedOppositeArgument(),
-                                    reb.ourCounterRebuttal().replace(targetDrawer.caseTitle(), replDrawer.caseTitle()),
-                                    anchor
+                                    nextCounter,
+                                    nextAnchor
                             ));
                         }
                     }
                 }
             }
             case "REMOVE" -> {
-                InAppJudgmentDrawerResponse targetDrawer = drawerService.getDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                InAppJudgmentDrawerResponse targetDrawer = requireDrawer(workspaceId, clerkUserId, request.targetAuthorityId());
+                String targetTitle = safeText(targetDrawer.caseTitle());
+                String targetPrimary = safeText(targetDrawer.primaryCitation());
                 for (int i = 0; i < updatedSubmissions.size(); i++) {
                     ArgumentSubmission sub = updatedSubmissions.get(i);
                     List<String> precs = new ArrayList<>();
                     if (sub.pinnedPrecedents() != null) {
                         for (String p : sub.pinnedPrecedents()) {
-                            if (!p.contains(targetDrawer.caseTitle()) && !p.contains(targetDrawer.primaryCitation()) && !p.contains(request.targetAuthorityId())) {
+                            boolean matched = (!targetTitle.isEmpty() && p.contains(targetTitle))
+                                    || (!targetPrimary.isEmpty() && p.contains(targetPrimary))
+                                    || p.contains(request.targetAuthorityId());
+                            if (!matched) {
                                 precs.add(p);
                             }
                         }
                     }
                     String prop = sub.legalProposition() != null
-                            ? sub.legalProposition().replace(targetDrawer.caseTitle(), "").replace(targetDrawer.primaryCitation(), "")
+                            ? replaceAuthorityTokens(sub.legalProposition(), targetDrawer, null)
                             : "";
 
                     updatedSubmissions.set(i, new ArgumentSubmission(
@@ -1364,5 +1378,45 @@ public class InspectorService {
             return mOf.group(1).trim();
         }
         return "";
+    }
+
+    private InAppJudgmentDrawerResponse requireDrawer(UUID workspaceId, String clerkUserId, String authorityId) {
+        InAppJudgmentDrawerResponse drawer = drawerService.getDrawer(workspaceId, clerkUserId, authorityId);
+        if (drawer == null) {
+            throw new IllegalArgumentException("Judgment authority not found: " + authorityId);
+        }
+        return drawer;
+    }
+
+    private static String safeText(String value) {
+        return value != null ? value.trim() : "";
+    }
+
+    private static String safeRatioDecidendi(InAppJudgmentDrawerResponse drawer) {
+        return (drawer != null && drawer.iracBrief() != null)
+                ? safeText(drawer.iracBrief().ratioDecidendi())
+                : "";
+    }
+
+    private static String formatCitationSuffix(InAppJudgmentDrawerResponse drawer) {
+        String primary = drawer != null ? safeText(drawer.primaryCitation()) : "";
+        return !primary.isEmpty() ? " (" + primary + ")" : "";
+    }
+
+    private static String replaceAuthorityTokens(
+            String text,
+            InAppJudgmentDrawerResponse targetDrawer,
+            InAppJudgmentDrawerResponse replacementDrawer
+    ) {
+        if (text == null || targetDrawer == null) {
+            return text != null ? text : "";
+        }
+        String targetTitle = safeText(targetDrawer.caseTitle());
+        String targetPrimary = safeText(targetDrawer.primaryCitation());
+        String replTitle = replacementDrawer != null ? safeText(replacementDrawer.caseTitle()) : "";
+        String replPrimary = replacementDrawer != null ? safeText(replacementDrawer.primaryCitation()) : "";
+
+        String updated = !targetTitle.isEmpty() ? text.replace(targetTitle, replTitle) : text;
+        return !targetPrimary.isEmpty() ? updated.replace(targetPrimary, replPrimary) : updated;
     }
 }

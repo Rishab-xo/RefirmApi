@@ -229,17 +229,19 @@ public class JudgmentLibraryService {
             boolean debug
     ) {
         List<JudgmentAuthorityCard> results = new ArrayList<>();
+        boolean hybridHandled = false;
 
         if (precedentHybridSearchService != null) {
             try {
                 results = precedentHybridSearchService.search(q, domain, court, topic, issue, limit, RankingProfile.SEARCH_LIBRARY, debug);
+                hybridHandled = true;
             } catch (Exception e) {
                 log.warn("Hybrid search notice: {}", e.getMessage());
             }
         }
 
-        // Fallback to additive SQL search if hybrid search yielded no results
-        if (results.isEmpty() && precedentIndexRepository != null) {
+        // Fallback to additive SQL search ONLY when hybrid search is unavailable or errored
+        if (!hybridHandled && results.isEmpty() && precedentIndexRepository != null) {
             try {
                 List<String> extractedTuples = new ArrayList<>();
                 if (q != null && !q.isBlank()) {
@@ -283,8 +285,8 @@ public class JudgmentLibraryService {
             }
         }
 
-        // Fallback to in-memory catalog
-        if (results.isEmpty() && corpusRegistry != null) {
+        // Fallback to in-memory catalog ONLY when hybrid search is unavailable or errored
+        if (!hybridHandled && results.isEmpty() && corpusRegistry != null) {
             for (CorpusPrecedentEntry entry : corpusRegistry.getAllPrecedents()) {
                 String combined = (entry.caseTitle() + " " + entry.summary() + " " + entry.primaryCitation()).toLowerCase(Locale.ROOT);
                 if (q == null || q.isBlank() || combined.contains(q.toLowerCase(Locale.ROOT).trim())) {

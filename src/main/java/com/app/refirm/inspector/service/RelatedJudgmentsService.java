@@ -73,6 +73,7 @@ public class RelatedJudgmentsService {
                 summary.citedByCount(),
                 summary.reliesOnCount(),
                 summary.negativeTreatmentCount(),
+                summary.reliesOnNegativeCount(),
                 citedBy,
                 reliesOn,
                 similarCases

@@ -120,24 +120,25 @@ public class PrecedentRankingService {
                 }
             }
 
-            // 3. Court Hierarchy & Authority (0 - 20 pts)
+            // 3. Court Hierarchy & Authority (0 - 20 pts, CB max 20.0, SC max 18.0)
             double tierPts;
             if ((rec.benchCount() != null && rec.benchCount() >= 5) || rec.courtTierWeight() >= 15) {
-                tierPts = 10.0; // SC Constitution Bench
+                tierPts = 6.5; // SC Constitution Bench
             } else if ("SC".equalsIgnoreCase(rec.courtCode()) || rec.courtTierWeight() >= 10) {
-                tierPts = 8.0;  // Supreme Court
+                tierPts = 4.5; // Supreme Court
             } else if ("HC".equalsIgnoreCase(rec.courtCode()) || rec.courtTierWeight() >= 8) {
-                tierPts = 5.0;  // High Court
+                tierPts = 3.0; // High Court
             } else {
-                tierPts = 3.0;  // Tribunal / District Court
+                tierPts = 1.5; // Tribunal / District Court
             }
 
             double citeMetric = rec.citedByCount() + (0.25 * rec.hcCitedByCount());
-            double citePts = Math.min(10.0, Math.log1p(citeMetric) * 1.8);
+            double citePts = Math.min(13.5, 3.5 * Math.log(1.0 + citeMetric));
             double authorityPts = Math.min(20.0, tierPts + citePts);
 
-            // 4. Recency (0 - 10 pts, capped at 6.00 by default, up to 10.00 only for modern post-2015 enactments)
-            boolean isModernTarget = targetsModernEnactment(query);
+            // 4. Recency (0 - 10 pts, candidate-gated: 10.00 only when BOTH query and candidate target modern acts)
+            boolean isModernTarget = containsModernEnactment(query.rawTuples())
+                    && containsModernEnactment(rec.actSectionTuples());
             double maxRecency = isModernTarget ? 10.0 : 6.0;
 
             int age = Math.max(0, CURRENT_YEAR - rec.decisionYear());
@@ -240,11 +241,14 @@ public class PrecedentRankingService {
         return List.of();
     }
 
-    private boolean targetsModernEnactment(SanitizedPrecedentQuery query) {
-        if (query == null || query.rawTuples() == null || query.rawTuples().isEmpty()) {
+    private boolean containsModernEnactment(Collection<String> tuples) {
+        if (tuples == null || tuples.isEmpty()) {
             return false;
         }
-        for (String tuple : query.rawTuples()) {
+        for (String tuple : tuples) {
+            if (tuple == null || tuple.isBlank()) {
+                continue;
+            }
             int colonIdx = tuple.indexOf(':');
             String act = colonIdx > 0 ? tuple.substring(0, colonIdx).trim().toUpperCase(Locale.ROOT) : tuple.toUpperCase(Locale.ROOT);
             if (MODERN_ACTS.contains(act)) {

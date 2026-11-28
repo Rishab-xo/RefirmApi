@@ -380,9 +380,7 @@ public class AuthorityDrawerService {
                         asyncEnrichmentService.triggerAsyncEnrichment(rec, pages);
                     }
 
-                    IracBrief irac = rec.iracBrief() != null
-                            ? rec.iracBrief()
-                            : new IracBrief(rec.twoLineRatio(), List.of(), List.of(), rec.twoLineRatio(), "");
+                    IracBrief irac = resolveEffectiveIracBrief(rec);
 
                     return new InAppJudgmentDrawerResponse(
                             rec.authorityId(),
@@ -416,5 +414,38 @@ public class AuthorityDrawerService {
 
         log.warn("Corpus authority not found for ID: {}. Checking fallback.", authorityId);
         throw new IllegalArgumentException("Precedent authority not found in workspace vault or verified corpus: " + authorityId);
+    }
+
+    /**
+     * Resolves an effective IRAC brief when stored irac_json is null or contains only empty shell fields,
+     * populating ratio, legal propositions, statutory tuples, and disposal nature from the indexed record.
+     */
+    private static IracBrief resolveEffectiveIracBrief(PrecedentIndexRecord rec) {
+        IracBrief raw = rec.iracBrief();
+        String facts = raw != null && raw.facts() != null && !raw.facts().isBlank() ? raw.facts().trim() : "";
+        List<String> issues = raw != null && raw.issuesFramed() != null && !raw.issuesFramed().isEmpty()
+                ? raw.issuesFramed()
+                : (rec.legalPropositions() != null ? rec.legalPropositions() : List.of());
+        List<String> provisions = raw != null && raw.provisionsCited() != null && !raw.provisionsCited().isEmpty()
+                ? raw.provisionsCited()
+                : formatTuplesForIrac(rec.actSectionTuples());
+        String ratio = raw != null && raw.ratioDecidendi() != null && !raw.ratioDecidendi().isBlank()
+                ? raw.ratioDecidendi().trim()
+                : (rec.twoLineRatio() != null ? rec.twoLineRatio().trim() : "");
+        String finalOrder = raw != null && raw.finalOrderHeld() != null && !raw.finalOrderHeld().isBlank()
+                ? raw.finalOrderHeld().trim()
+                : (rec.disposalNature() != null ? rec.disposalNature().trim() : "");
+        return new IracBrief(facts, issues, provisions, ratio, finalOrder);
+    }
+
+    private static List<String> formatTuplesForIrac(List<String> tuples) {
+        if (tuples == null || tuples.isEmpty()) {
+            return List.of();
+        }
+        return tuples.stream()
+                .filter(t -> t != null && !t.isBlank())
+                .map(t -> t.replace(":", " § "))
+                .limit(12)
+                .toList();
     }
 }

@@ -84,6 +84,7 @@ public final class JudgmentLibraryDTOs {
             int citedByCount,
             int reliesOnCount,
             int negativeTreatmentCount,
+            int reliesOnNegativeCount,
             List<RelatedJudgmentItem> citedBy,
             List<RelatedJudgmentItem> reliesOn,
             List<RelatedJudgmentItem> similarCases

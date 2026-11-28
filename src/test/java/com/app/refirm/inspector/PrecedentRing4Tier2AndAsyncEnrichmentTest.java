@@ -13,6 +13,7 @@ import com.app.refirm.inspector.service.PrecedentAsyncEnrichmentService;
 import com.app.refirm.inspector.service.PrecedentAsyncEnrichmentService.DigestWindow;
 import com.app.refirm.inspector.service.Tier2VaquillReadThroughClient;
 import com.app.refirm.rules.model.LegalDomain;
+import com.app.refirm.workspace.domain.IracBrief;
 import com.app.refirm.workspace.domain.PartyPerspective;
 import com.app.refirm.workspace.entity.LegalWorkspace;
 import com.app.refirm.workspace.repository.LegalWorkspaceRepository;
@@ -272,6 +273,47 @@ class PrecedentRing4Tier2AndAsyncEnrichmentTest {
 
         // Verify async write-behind enrichment was triggered for CATALOG_STUB
         verify(mockAsync).triggerAsyncEnrichment(eq(stub), eq(hydratedPages));
+    }
+
+    @Test
+    @DisplayName("AuthorityDrawerService: Empty IracBrief shell falls back to indexed ratio, propositions, tuples, and disposal")
+    void testEmptyIracShellFallsBackToIndexedMetadata() {
+        LegalWorkspaceRepository workspaceRepo = mock(LegalWorkspaceRepository.class);
+        WorkspaceDocumentRepository docRepo = mock(WorkspaceDocumentRepository.class);
+        WorkspaceSavedAuthorityRepository savedRepo = mock(WorkspaceSavedAuthorityRepository.class);
+        PrecedentAuthorityProvider provider = mock(PrecedentAuthorityProvider.class);
+        CorpusPrecedentRegistryService corpusRegistry = mock(CorpusPrecedentRegistryService.class);
+        PariMateriaCrosswalkService crosswalk = mock(PariMateriaCrosswalkService.class);
+
+        PrecedentIndexRecord base = createSampleRecord("auth-empty-irac", "IRAC_ENRICHED");
+        PrecedentIndexRecord withEmptyShell = new PrecedentIndexRecord(
+                base.authorityId(), base.canonicalDedupKey(), base.parquetDocId(), base.parquetShard(),
+                base.enrichmentStatus(), base.caseTitle(), base.courtCode(), base.courtName(),
+                base.courtTierWeight(), base.judgmentDate(), base.decisionYear(), base.primaryCitation(),
+                base.equivalentCitations(), base.primaryDomain(), base.secondaryDomains(),
+                base.actSectionTuples(), base.topicSlugs(), base.issueTags(),
+                base.supportingPosture(), base.disposalNature(), base.twoLineRatio(),
+                base.legalPropositions(), base.triggerKeywords(),
+                new IracBrief("", List.of(), List.of(), "", ""),
+                base.hasFullText(), base.r2ObjectKey(), base.r2Url(), base.parserVersion(),
+                base.citedByCount(), base.benchCount(), base.hcCitedByCount(),
+                base.goodLawStatus(), base.overruledByAuthorityId()
+        );
+        when(precedentIndexRepository.findByAuthorityId("auth-empty-irac")).thenReturn(Optional.of(withEmptyShell));
+        when(precedentIndexRepository.findDrawerPagesByAuthorityId("auth-empty-irac"))
+                .thenReturn(List.of(new DrawerPage(1, "Full judgment text", List.of())));
+
+        AuthorityDrawerService drawerService = new AuthorityDrawerService(
+                workspaceRepo, docRepo, savedRepo, provider, corpusRegistry, null,
+                precedentIndexRepository, crosswalk
+        );
+
+        InAppJudgmentDrawerResponse response = drawerService.getCorpusAuthorityDrawer("auth-empty-irac");
+        assertNotNull(response.iracBrief());
+        assertEquals(base.twoLineRatio(), response.iracBrief().ratioDecidendi());
+        assertEquals(base.legalPropositions(), response.iracBrief().issuesFramed());
+        assertEquals(List.of("CRPC § 439", "BNSS § 483"), response.iracBrief().provisionsCited());
+        assertEquals("ALLOWED", response.iracBrief().finalOrderHeld());
     }
 
     private PrecedentIndexRecord createSampleRecord(String authorityId, String status) {

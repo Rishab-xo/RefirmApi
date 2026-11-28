@@ -36,6 +36,7 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
     private static final Logger log = LoggerFactory.getLogger(NeonLakebaseRecallAdapter.class);
     private static final double RRF_K = 20.0;
     private static final int CANDIDATE_POOL_LIMIT = 100;
+    private static final double MAX_VECTOR_COSINE_DISTANCE = 0.76;
 
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
     private final JdbcTemplate jdbcTemplate;
@@ -82,6 +83,7 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
         List<String> vectorIds = recallChannel4Vector(query, criteria, embeddingFuture);
 
         // Intent-specific RRF channel weights
+        boolean isStatutoryHybrid = query.rawTuples() != null && !query.rawTuples().isEmpty();
         double wTrigram, wTuple, wBm25, wVector;
         switch (query.intent()) {
             case KNOWN_ITEM -> {
@@ -96,17 +98,18 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
                 wTrigram = 0.5;
                 wVector = 0.5;
             }
-            case HYBRID_LEGAL -> {
-                wBm25 = 1.60;
-                wTuple = 1.20;
-                wTrigram = 1.00;
-                wVector = 0.85;
-            }
             default -> {
-                wBm25 = 1.60;
-                wTuple = 1.20;
-                wTrigram = 1.00;
-                wVector = 0.85;
+                if (isStatutoryHybrid) {
+                    wTuple = 1.45;
+                    wBm25 = 1.25;
+                    wVector = 0.90;
+                    wTrigram = 0.80;
+                } else {
+                    wBm25 = 1.60;
+                    wTrigram = 1.00;
+                    wVector = 0.85;
+                    wTuple = 0.0;
+                }
             }
         }
 
@@ -120,8 +123,8 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
         accumulateRRF(bm25Ids, "BM25", wBm25, rrfScores, authorityChannelRanks);
         accumulateRRF(vectorIds, "VECTOR", wVector, rrfScores, authorityChannelRanks);
 
-        // Browsing fallback: if no query text/tuples provided, recall by topic/issue/court filters
-        if (rrfScores.isEmpty() && criteria != null) {
+        // Browsing fallback ONLY for true browse requests (empty rawQuery and empty expandedTuples)
+        if (rrfScores.isEmpty() && criteria != null && PrecedentRecallSqlSupport.isTrueBrowseQuery(query)) {
             List<String> browseIds = recallBrowseCandidates(criteria);
             accumulateRRF(browseIds, "BROWSE", 1.0, rrfScores, authorityChannelRanks);
         }
@@ -402,19 +405,26 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
         }
 
         String sql = """
-            SELECT v.authority_id,
-                   (v.embedding <=> CAST(:queryVecLiteral AS halfvec(512))) AS cosine_dist
-            FROM legal_precedent_vectors v
-            JOIN legal_precedent_index lpi ON lpi.authority_id = v.authority_id
-            WHERE (CAST(:courtFilter AS VARCHAR) IS NULL OR lpi.court_code = CAST(:courtFilter AS VARCHAR))
+            WITH ann_pool AS MATERIALIZED (
+                SELECT v.authority_id,
+                       (v.embedding <=> CAST(:queryVecLiteral AS halfvec(512))) AS cosine_dist
+                FROM legal_precedent_vectors v
+                ORDER BY v.embedding <=> CAST(:queryVecLiteral AS halfvec(512)) ASC
+                LIMIT 80
+            )
+            SELECT lpi.authority_id
+            FROM ann_pool ann
+            JOIN legal_precedent_index lpi ON lpi.authority_id = ann.authority_id
+            WHERE ann.cosine_dist < :maxCosineDist
+              AND (CAST(:courtFilter AS VARCHAR) IS NULL OR lpi.court_code = CAST(:courtFilter AS VARCHAR))
               AND (CAST(:topicFilter AS VARCHAR) IS NULL OR CAST(:topicFilter AS VARCHAR) = ANY(lpi.topic_slugs))
               AND (CAST(:issueFilter AS VARCHAR) IS NULL OR CAST(:issueFilter AS VARCHAR) = ANY(lpi.issue_tags))
-            ORDER BY cosine_dist ASC
-            LIMIT 80
+            ORDER BY ann.cosine_dist ASC
         """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("queryVecLiteral", vectorLiteral)
+                .addValue("maxCosineDist", MAX_VECTOR_COSINE_DISTANCE)
                 .addValue("courtFilter", criteria != null ? criteria.courtCode() : null)
                 .addValue("topicFilter", criteria != null ? criteria.topicSlug() : null)
                 .addValue("issueFilter", criteria != null ? criteria.issueTag() : null);
@@ -449,29 +459,17 @@ public class NeonLakebaseRecallAdapter implements PrecedentRecallPort {
     }
 
     private List<String> recallBrowseCandidates(PrecedentSearchCriteria criteria) {
-        if (criteria == null) return Collections.emptyList();
-        boolean hasAnyFilter = (criteria.courtCode() != null && !criteria.courtCode().isBlank())
-                || (criteria.topicSlug() != null && !criteria.topicSlug().isBlank())
-                || (criteria.issueTag() != null && !criteria.issueTag().isBlank());
-        if (!hasAnyFilter) return Collections.emptyList();
-
-        String sql = """
-            SELECT authority_id
-            FROM legal_precedent_index
-            WHERE (CAST(:courtFilter AS VARCHAR) IS NULL OR court_code = CAST(:courtFilter AS VARCHAR))
-              AND (CAST(:topicFilter AS VARCHAR) IS NULL OR CAST(:topicFilter AS VARCHAR) = ANY(topic_slugs))
-              AND (CAST(:issueFilter AS VARCHAR) IS NULL OR CAST(:issueFilter AS VARCHAR) = ANY(issue_tags))
-            ORDER BY court_tier_weight DESC, cited_by_count DESC, decision_year DESC
-            LIMIT 80
-        """;
-
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("courtFilter", criteria.courtCode())
-                .addValue("topicFilter", criteria.topicSlug())
-                .addValue("issueFilter", criteria.issueTag());
+        PrecedentRecallSqlSupport.SqlWithParams browseQuery = PrecedentRecallSqlSupport.buildBrowseQuery(criteria);
+        if (browseQuery == null) {
+            return Collections.emptyList();
+        }
 
         try {
-            return namedJdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("authority_id"));
+            return namedJdbcTemplate.query(
+                    browseQuery.sql(),
+                    browseQuery.params(),
+                    (rs, rowNum) -> rs.getString("authority_id")
+            );
         } catch (Exception e) {
             log.warn("Notice in Browse Channel: {}", e.getMessage());
             return Collections.emptyList();

@@ -50,6 +50,7 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
         List<String> tupleIds = recallTuples(query, criteria);
         List<String> textIds = recallText(query, criteria);
 
+        boolean isStatutoryHybrid = query.rawTuples() != null && !query.rawTuples().isEmpty();
         double wTrigram, wTuple, wText;
         switch (query.intent()) {
             case KNOWN_ITEM -> {
@@ -63,9 +64,15 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
                 wTrigram = 0.5;
             }
             default -> {
-                wText = 1.60;
-                wTuple = 1.20;
-                wTrigram = 1.00;
+                if (isStatutoryHybrid) {
+                    wTuple = 1.45;
+                    wText = 1.25;
+                    wTrigram = 0.80;
+                } else {
+                    wText = 1.60;
+                    wTrigram = 1.00;
+                    wTuple = 0.0;
+                }
             }
         }
 
@@ -75,6 +82,12 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
         accumulate(trigramIds, "TRIGRAM", wTrigram, rrfScores, authorityChannelRanks);
         accumulate(tupleIds, "TUPLE", wTuple, rrfScores, authorityChannelRanks);
         accumulate(textIds, "BM25", wText, rrfScores, authorityChannelRanks);
+
+        // Browsing fallback strictly for true browse requests (no query text or statutory tuples)
+        if (rrfScores.isEmpty() && criteria != null && PrecedentRecallSqlSupport.isTrueBrowseQuery(query)) {
+            List<String> browseIds = recallBrowseCandidates(criteria);
+            accumulate(browseIds, "BROWSE", 1.0, rrfScores, authorityChannelRanks);
+        }
 
         if (rrfScores.isEmpty()) {
             return RecallPool.empty();
@@ -281,6 +294,23 @@ public class StandardPostgresRecallAdapter implements PrecedentRecallPort {
         } catch (Exception e) {
             log.warn("Standard adapter hydrate notice: {}", e.getMessage());
             return Collections.emptyMap();
+        }
+    }
+
+    private List<String> recallBrowseCandidates(PrecedentSearchCriteria criteria) {
+        PrecedentRecallSqlSupport.SqlWithParams browseQuery = PrecedentRecallSqlSupport.buildBrowseQuery(criteria);
+        if (browseQuery == null) {
+            return Collections.emptyList();
+        }
+        try {
+            return namedJdbcTemplate.query(
+                    browseQuery.sql(),
+                    browseQuery.params(),
+                    (rs, rowNum) -> rs.getString("authority_id")
+            );
+        } catch (Exception e) {
+            log.warn("Standard adapter browse notice: {}", e.getMessage());
+            return Collections.emptyList();
         }
     }
 }

@@ -33,7 +33,8 @@ public class RelatedPrecedentRepository {
     public record CitationSummaryCounts(
             int citedByCount,
             int reliesOnCount,
-            int negativeTreatmentCount
+            int negativeTreatmentCount,
+            int reliesOnNegativeCount
     ) {}
 
     public record SimilarCandidateRow(
@@ -67,6 +68,14 @@ public class RelatedPrecedentRepository {
         CASE WHEN c.reason_status IN ('VERIFIED', 'CURATED') THEN c.substantive_reason ELSE NULL END AS substantive_reason,
         c.para_ref, c.anchor_quote, lpi.two_line_ratio
         """;
+
+    private static final String TREATMENT_ORDER_SQL = """
+            CASE c.treatment_type
+              WHEN 'OVERRULED' THEN 0
+              WHEN 'PER_INCURIAM' THEN 1
+              WHEN 'DISTINGUISHED' THEN 2
+              ELSE 3
+            END ASC""";
 
     private static final RowMapper<RelatedJudgmentItem> CITATION_ROW_MAPPER = RelatedPrecedentRepository::mapCitationRow;
 
@@ -116,17 +125,24 @@ public class RelatedPrecedentRepository {
         });
 
         String outboundSql = """
-            SELECT COUNT(*)::int
+            SELECT COUNT(*)::int AS relies_on_count,
+                   COUNT(*) FILTER (
+                       WHERE treatment_type IN ('OVERRULED', 'PER_INCURIAM', 'DISTINGUISHED')
+                   )::int AS relies_on_negative_count
             FROM legal_precedent_citations
             WHERE citing_authority_id = :id
             """;
-        Integer reliesOn = namedJdbcTemplate.queryForObject(outboundSql, params, Integer.class);
+        int[] outbound = namedJdbcTemplate.queryForObject(outboundSql, params, (rs, rowNum) -> new int[]{
+                rs.getInt("relies_on_count"),
+                rs.getInt("relies_on_negative_count")
+        });
 
         int citedByCount = inbound != null ? inbound[0] : 0;
         int negativeCount = inbound != null ? inbound[1] : 0;
-        int reliesOnCount = reliesOn != null ? reliesOn : 0;
+        int reliesOnCount = outbound != null ? outbound[0] : 0;
+        int reliesOnNegativeCount = outbound != null ? outbound[1] : 0;
 
-        return new CitationSummaryCounts(citedByCount, reliesOnCount, negativeCount);
+        return new CitationSummaryCounts(citedByCount, reliesOnCount, negativeCount, reliesOnNegativeCount);
     }
 
     public List<RelatedJudgmentItem> findCitedBy(String authorityId, boolean negativeOnly, int offset, int limit) {
@@ -136,15 +152,12 @@ public class RelatedPrecedentRepository {
             WHERE c.cited_authority_id = :id
               AND (:negativeOnly = FALSE OR c.treatment_type IN ('OVERRULED', 'PER_INCURIAM', 'DISTINGUISHED'))
             ORDER BY
-              CASE c.treatment_type
-                WHEN 'OVERRULED' THEN 0
-                WHEN 'PER_INCURIAM' THEN 1
-                WHEN 'DISTINGUISHED' THEN 2
-                ELSE 3
-              END ASC,
+            """ + " " + TREATMENT_ORDER_SQL + """
+              ,
               lpi.decision_year DESC NULLS LAST,
               lpi.court_tier_weight DESC NULLS LAST,
-              COALESCE(lpi.cited_by_count, 0) DESC
+              COALESCE(lpi.cited_by_count, 0) DESC,
+              lpi.authority_id ASC
             OFFSET :offset LIMIT :limit
             """;
 
@@ -158,9 +171,12 @@ public class RelatedPrecedentRepository {
             WHERE c.citing_authority_id = :id
               AND (:negativeOnly = FALSE OR c.treatment_type IN ('OVERRULED', 'PER_INCURIAM', 'DISTINGUISHED'))
             ORDER BY
+            """ + " " + TREATMENT_ORDER_SQL + """
+              ,
               lpi.court_tier_weight DESC NULLS LAST,
               COALESCE(lpi.cited_by_count, 0) DESC,
-              lpi.decision_year DESC NULLS LAST
+              lpi.decision_year DESC NULLS LAST,
+              lpi.authority_id ASC
             OFFSET :offset LIMIT :limit
             """;
 

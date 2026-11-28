@@ -47,7 +47,34 @@ public class PrecedentQuerySanitizer {
     );
 
     private static final Pattern ACT_NAMES_PATTERN = Pattern.compile(
-            "(?i)\\b(?:cr\\.?p\\.?c\\.?|c\\.?p\\.?c\\.?|i\\.?p\\.?c\\.?|n\\.?i\\.?\\s*act|negotiable\\s+instruments\\s+act|rera|ibc|arbitration(?:\\s+and\\s+conciliation)?(?:\\s+act)?|constitution(?:\\s+of\\s+india)?|evidence\\s+act|companies\\s+act|contract\\s+act|motor\\s+vehicles\\s+act|pocso|ndps|pmla|sarfaesi)\\b"
+            "(?i)(?<![A-Za-z0-9])(?:"
+                    + "bhar(?:a)?tiya\\s+nagarik\\s+suraksha\\s+sanhita|"
+                    + "bhar(?:a)?tiya\\s+nyaya\\s+sanhita|"
+                    + "bhar(?:a)?tiya\\s+sakshya\\s+adhiniyam|"
+                    + "code\\s+of\\s+criminal\\s+procedure|"
+                    + "code\\s+of\\s+civil\\s+procedure|"
+                    + "indian\\s+penal\\s+code|"
+                    + "indian\\s+evidence\\s+act|"
+                    + "negotiable\\s+instruments\\s+act|"
+                    + "consumer\\s+protection\\s+act|"
+                    + "commercial\\s+courts\\s+act|"
+                    + "insolvency\\s+and\\s+bankruptcy\\s+code|"
+                    + "arbitration(?:\\s+and\\s+conciliation)?(?:\\s+act)?|"
+                    + "constitution(?:\\s+of\\s+india)?|"
+                    + "motor\\s+vehicles\\s+act|"
+                    + "companies\\s+act|"
+                    + "contract\\s+act|"
+                    + "evidence\\s+act|"
+                    + "b\\.?n\\.?s\\.?s\\.?|"
+                    + "b\\.?n\\.?s\\.?|"
+                    + "b\\.?s\\.?a\\.?|"
+                    + "cr\\.?p\\.?c\\.?|"
+                    + "c\\.?p\\.?c\\.?|"
+                    + "i\\.?p\\.?c\\.?|"
+                    + "c\\.?p\\.?a\\.?|"
+                    + "n\\.?i\\.?\\s*act|"
+                    + "rera|ibc|pocso|ndps|pmla|sarfaesi"
+                    + ")(?:,?\\s*(?:19|20)\\d{2})?(?![A-Za-z0-9])"
     );
 
     private static final Set<String> GENERIC_LEGAL_TERMS = Set.of(

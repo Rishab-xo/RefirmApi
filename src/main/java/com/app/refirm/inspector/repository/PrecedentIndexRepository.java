@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Array;
@@ -382,7 +383,9 @@ public class PrecedentIndexRepository {
 
     /**
      * Lazy Table 2 Writer: Idempotently saves or updates pages_json in legal_precedent_okf_content.
+     * Uses REQUIRES_NEW so lazy hydration invoked from a readOnly drawer transaction can commit cleanly.
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveDrawerPages(String authorityId, List<DrawerPage> pages) {
         if (authorityId == null || authorityId.isBlank() || pages == null || pages.isEmpty()) {
             return;
